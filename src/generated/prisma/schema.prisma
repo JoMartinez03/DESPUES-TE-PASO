@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum TransactionType {
+  DEBT
+  PAYMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  TRANSACTION_PENDING
+  TRANSACTION_CONFIRMED
+  TRANSACTION_REJECTED
+  GENERAL
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  username  String   @unique
+  email     String   @unique
+  password  String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  friendshipsSent       Friendship[]         @relation("FriendshipRequester")
+  friendshipsReceived   Friendship[]         @relation("FriendshipAddressee")
+  transactionsCreated   Transaction[]        @relation("TransactionCreator")
+  transactionsDebtor    Transaction[]        @relation("TransactionDebtor")
+  transactionsCreditor  Transaction[]        @relation("TransactionCreditor")
+  transactionsToConfirm Transaction[]        @relation("TransactionConfirmation")
+  gatherings            Gathering[]
+  expensesCreated       Expense[]            @relation("ExpenseCreator")
+  expenseParticipations ExpenseParticipant[]
+  notifications         Notification[]
+
+  @@map("users")
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  requester User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee User @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  notifications Notification[]
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+  @@map("friendships")
+}
+
+model Transaction {
+  id                        String            @id @default(cuid())
+  creatorId                 String
+  debtorId                  String
+  creditorId                String
+  amount                    Decimal           @db.Decimal(14, 2)
+  currency                  String            @default("ARS") @db.VarChar(3)
+  description               String
+  type                      TransactionType
+  status                    TransactionStatus @default(PENDING)
+  pendingConfirmationFromId String
+  occurredAt                DateTime          @default(now())
+  confirmedAt               DateTime?
+  rejectedAt                DateTime?
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+
+  creator          User           @relation("TransactionCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  debtor           User           @relation("TransactionDebtor", fields: [debtorId], references: [id], onDelete: Restrict)
+  creditor         User           @relation("TransactionCreditor", fields: [creditorId], references: [id], onDelete: Restrict)
+  confirmationFrom User           @relation("TransactionConfirmation", fields: [pendingConfirmationFromId], references: [id], onDelete: Restrict)
+  notifications    Notification[]
+
+  @@index([status, creditorId])
+  @@index([status, debtorId])
+  @@index([status, pendingConfirmationFromId])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model Gathering {
+  id          String   @id @default(cuid())
+  creatorId   String
+  name        String
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator       User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  expenses      Expense[]
+  notifications Notification[]
+
+  @@index([creatorId])
+  @@map("gatherings")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  gatheringId String
+  createdById String
+  title       String
+  amount      Decimal  @db.Decimal(14, 2)
+  currency    String   @default("ARS") @db.VarChar(3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  gathering    Gathering            @relation(fields: [gatheringId], references: [id], onDelete: Cascade)
+  creator      User                 @relation("ExpenseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  participants ExpenseParticipant[]
+
+  @@index([gatheringId])
+  @@map("expenses")
+}
+
+model ExpenseParticipant {
+  id        String   @id @default(cuid())
+  expenseId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([expenseId, userId])
+  @@index([userId])
+  @@map("expense_participants")
+}
+
+model Notification {
+  id                   String           @id @default(cuid())
+  userId               String
+  type                 NotificationType
+  title                String
+  body                 String
+  read                 Boolean          @default(false)
+  relatedTransactionId String?
+  relatedFriendshipId  String?
+  relatedGatheringId   String?
+  createdAt            DateTime         @default(now())
+
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedTransaction Transaction? @relation(fields: [relatedTransactionId], references: [id], onDelete: Cascade)
+  relatedFriendship  Friendship?  @relation(fields: [relatedFriendshipId], references: [id], onDelete: Cascade)
+  relatedGathering   Gathering?   @relation(fields: [relatedGatheringId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@map("notifications")
+}
