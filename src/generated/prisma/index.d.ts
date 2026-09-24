@@ -3122,6 +3122,7 @@ export namespace Prisma {
     id: string | null
     requesterId: string | null
     addresseeId: string | null
+    pairKey: string | null
     status: $Enums.FriendshipStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3131,6 +3132,7 @@ export namespace Prisma {
     id: string | null
     requesterId: string | null
     addresseeId: string | null
+    pairKey: string | null
     status: $Enums.FriendshipStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3140,6 +3142,7 @@ export namespace Prisma {
     id: number
     requesterId: number
     addresseeId: number
+    pairKey: number
     status: number
     createdAt: number
     updatedAt: number
@@ -3151,6 +3154,7 @@ export namespace Prisma {
     id?: true
     requesterId?: true
     addresseeId?: true
+    pairKey?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -3160,6 +3164,7 @@ export namespace Prisma {
     id?: true
     requesterId?: true
     addresseeId?: true
+    pairKey?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -3169,6 +3174,7 @@ export namespace Prisma {
     id?: true
     requesterId?: true
     addresseeId?: true
+    pairKey?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -3251,6 +3257,7 @@ export namespace Prisma {
     id: string
     requesterId: string
     addresseeId: string
+    pairKey: string
     status: $Enums.FriendshipStatus
     createdAt: Date
     updatedAt: Date
@@ -3277,6 +3284,7 @@ export namespace Prisma {
     id?: boolean
     requesterId?: boolean
     addresseeId?: boolean
+    pairKey?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3290,6 +3298,7 @@ export namespace Prisma {
     id?: boolean
     requesterId?: boolean
     addresseeId?: boolean
+    pairKey?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3301,6 +3310,7 @@ export namespace Prisma {
     id?: boolean
     requesterId?: boolean
     addresseeId?: boolean
+    pairKey?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3312,12 +3322,13 @@ export namespace Prisma {
     id?: boolean
     requesterId?: boolean
     addresseeId?: boolean
+    pairKey?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FriendshipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "requesterId" | "addresseeId" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["friendship"]>
+  export type FriendshipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "requesterId" | "addresseeId" | "pairKey" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["friendship"]>
   export type FriendshipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     requester?: boolean | UserDefaultArgs<ExtArgs>
     addressee?: boolean | UserDefaultArgs<ExtArgs>
@@ -3344,6 +3355,7 @@ export namespace Prisma {
       id: string
       requesterId: string
       addresseeId: string
+      pairKey: string
       status: $Enums.FriendshipStatus
       createdAt: Date
       updatedAt: Date
@@ -3776,6 +3788,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Friendship", 'String'>
     readonly requesterId: FieldRef<"Friendship", 'String'>
     readonly addresseeId: FieldRef<"Friendship", 'String'>
+    readonly pairKey: FieldRef<"Friendship", 'String'>
     readonly status: FieldRef<"Friendship", 'FriendshipStatus'>
     readonly createdAt: FieldRef<"Friendship", 'DateTime'>
     readonly updatedAt: FieldRef<"Friendship", 'DateTime'>
@@ -10123,6 +10136,7 @@ export namespace Prisma {
     id: 'id',
     requesterId: 'requesterId',
     addresseeId: 'addresseeId',
+    pairKey: 'pairKey',
     status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -10460,6 +10474,7 @@ export namespace Prisma {
     id?: StringFilter<"Friendship"> | string
     requesterId?: StringFilter<"Friendship"> | string
     addresseeId?: StringFilter<"Friendship"> | string
+    pairKey?: StringFilter<"Friendship"> | string
     status?: EnumFriendshipStatusFilter<"Friendship"> | $Enums.FriendshipStatus
     createdAt?: DateTimeFilter<"Friendship"> | Date | string
     updatedAt?: DateTimeFilter<"Friendship"> | Date | string
@@ -10472,6 +10487,7 @@ export namespace Prisma {
     id?: SortOrder
     requesterId?: SortOrder
     addresseeId?: SortOrder
+    pairKey?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10482,7 +10498,7 @@ export namespace Prisma {
 
   export type FriendshipWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    requesterId_addresseeId?: FriendshipRequesterIdAddresseeIdCompoundUniqueInput
+    pairKey?: string
     AND?: FriendshipWhereInput | FriendshipWhereInput[]
     OR?: FriendshipWhereInput[]
     NOT?: FriendshipWhereInput | FriendshipWhereInput[]
@@ -10494,12 +10510,13 @@ export namespace Prisma {
     requester?: XOR<UserScalarRelationFilter, UserWhereInput>
     addressee?: XOR<UserScalarRelationFilter, UserWhereInput>
     notifications?: NotificationListRelationFilter
-  }, "id" | "requesterId_addresseeId">
+  }, "id" | "pairKey">
 
   export type FriendshipOrderByWithAggregationInput = {
     id?: SortOrder
     requesterId?: SortOrder
     addresseeId?: SortOrder
+    pairKey?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10515,6 +10532,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Friendship"> | string
     requesterId?: StringWithAggregatesFilter<"Friendship"> | string
     addresseeId?: StringWithAggregatesFilter<"Friendship"> | string
+    pairKey?: StringWithAggregatesFilter<"Friendship"> | string
     status?: EnumFriendshipStatusWithAggregatesFilter<"Friendship"> | $Enums.FriendshipStatus
     createdAt?: DateTimeWithAggregatesFilter<"Friendship"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Friendship"> | Date | string
@@ -11050,6 +11068,7 @@ export namespace Prisma {
 
   export type FriendshipCreateInput = {
     id?: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11062,6 +11081,7 @@ export namespace Prisma {
     id?: string
     requesterId: string
     addresseeId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11070,6 +11090,7 @@ export namespace Prisma {
 
   export type FriendshipUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11082,6 +11103,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     requesterId?: StringFieldUpdateOperationsInput | string
     addresseeId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11092,6 +11114,7 @@ export namespace Prisma {
     id?: string
     requesterId: string
     addresseeId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11099,6 +11122,7 @@ export namespace Prisma {
 
   export type FriendshipUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11108,6 +11132,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     requesterId?: StringFieldUpdateOperationsInput | string
     addresseeId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11730,15 +11755,11 @@ export namespace Prisma {
     isNot?: UserWhereInput
   }
 
-  export type FriendshipRequesterIdAddresseeIdCompoundUniqueInput = {
-    requesterId: string
-    addresseeId: string
-  }
-
   export type FriendshipCountOrderByAggregateInput = {
     id?: SortOrder
     requesterId?: SortOrder
     addresseeId?: SortOrder
+    pairKey?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11748,6 +11769,7 @@ export namespace Prisma {
     id?: SortOrder
     requesterId?: SortOrder
     addresseeId?: SortOrder
+    pairKey?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11757,6 +11779,7 @@ export namespace Prisma {
     id?: SortOrder
     requesterId?: SortOrder
     addresseeId?: SortOrder
+    pairKey?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13245,6 +13268,7 @@ export namespace Prisma {
 
   export type FriendshipCreateWithoutRequesterInput = {
     id?: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13255,6 +13279,7 @@ export namespace Prisma {
   export type FriendshipUncheckedCreateWithoutRequesterInput = {
     id?: string
     addresseeId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13273,6 +13298,7 @@ export namespace Prisma {
 
   export type FriendshipCreateWithoutAddresseeInput = {
     id?: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13283,6 +13309,7 @@ export namespace Prisma {
   export type FriendshipUncheckedCreateWithoutAddresseeInput = {
     id?: string
     requesterId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13626,6 +13653,7 @@ export namespace Prisma {
     id?: StringFilter<"Friendship"> | string
     requesterId?: StringFilter<"Friendship"> | string
     addresseeId?: StringFilter<"Friendship"> | string
+    pairKey?: StringFilter<"Friendship"> | string
     status?: EnumFriendshipStatusFilter<"Friendship"> | $Enums.FriendshipStatus
     createdAt?: DateTimeFilter<"Friendship"> | Date | string
     updatedAt?: DateTimeFilter<"Friendship"> | Date | string
@@ -15157,6 +15185,7 @@ export namespace Prisma {
 
   export type FriendshipCreateWithoutNotificationsInput = {
     id?: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15168,6 +15197,7 @@ export namespace Prisma {
     id?: string
     requesterId: string
     addresseeId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15316,6 +15346,7 @@ export namespace Prisma {
 
   export type FriendshipUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15327,6 +15358,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     requesterId?: StringFieldUpdateOperationsInput | string
     addresseeId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15368,6 +15400,7 @@ export namespace Prisma {
   export type FriendshipCreateManyRequesterInput = {
     id?: string
     addresseeId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15376,6 +15409,7 @@ export namespace Prisma {
   export type FriendshipCreateManyAddresseeInput = {
     id?: string
     requesterId: string
+    pairKey: string
     status?: $Enums.FriendshipStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15488,6 +15522,7 @@ export namespace Prisma {
 
   export type FriendshipUpdateWithoutRequesterInput = {
     id?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15498,6 +15533,7 @@ export namespace Prisma {
   export type FriendshipUncheckedUpdateWithoutRequesterInput = {
     id?: StringFieldUpdateOperationsInput | string
     addresseeId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15507,6 +15543,7 @@ export namespace Prisma {
   export type FriendshipUncheckedUpdateManyWithoutRequesterInput = {
     id?: StringFieldUpdateOperationsInput | string
     addresseeId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15514,6 +15551,7 @@ export namespace Prisma {
 
   export type FriendshipUpdateWithoutAddresseeInput = {
     id?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15524,6 +15562,7 @@ export namespace Prisma {
   export type FriendshipUncheckedUpdateWithoutAddresseeInput = {
     id?: StringFieldUpdateOperationsInput | string
     requesterId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15533,6 +15572,7 @@ export namespace Prisma {
   export type FriendshipUncheckedUpdateManyWithoutAddresseeInput = {
     id?: StringFieldUpdateOperationsInput | string
     requesterId?: StringFieldUpdateOperationsInput | string
+    pairKey?: StringFieldUpdateOperationsInput | string
     status?: EnumFriendshipStatusFieldUpdateOperationsInput | $Enums.FriendshipStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

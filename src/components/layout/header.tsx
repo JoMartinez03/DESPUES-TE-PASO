@@ -1,12 +1,15 @@
 import { Brand } from "@/components/layout/brand"
 import { NotificationsBell } from "@/components/layout/notifications-bell"
 import { cn } from "@/lib/utils"
+import type { NotificationItem } from "@/queries/notifications"
 
 export function Header({
   unreadCount,
+  notifications,
   className,
 }: {
   unreadCount: number
+  notifications: NotificationItem[]
   className?: string
 }) {
   return (
@@ -17,7 +20,7 @@ export function Header({
       )}
     >
       <Brand />
-      <NotificationsBell unreadCount={unreadCount} />
+      <NotificationsBell unreadCount={unreadCount} notifications={notifications} />
     </header>
   )
 }

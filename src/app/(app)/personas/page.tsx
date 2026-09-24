@@ -1,39 +1,28 @@
-import Link from "next/link"
-import { ChevronRight, UserPlus } from "lucide-react"
-import { AddFriendSheet } from "@/components/auth/add-friend-sheet"
+import { UserPlus } from "lucide-react"
+import { AddFriendSheet } from "@/components/friends/add-friend-sheet"
+import { FriendCard } from "@/components/friends/friend-card"
+import { IncomingRequests } from "@/components/friends/incoming-requests"
+import { OutgoingRequests } from "@/components/friends/outgoing-requests"
 import { EmptyState } from "@/components/shared/empty-state"
 import { PageHeader } from "@/components/shared/page-header"
-import { UserAvatar } from "@/components/shared/user-avatar"
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session"
+import {
+  getFriends,
+  getIncomingRequests,
+  getOutgoingRequests,
+} from "@/queries/friendships"
 
 export default async function PersonasPage() {
   await requireUser()
   const session = await auth()
   const user = session!.user
 
-  const friendships = await prisma.friendship.findMany({
-    where: {
-      status: "ACCEPTED",
-      OR: [{ requesterId: user.id }, { addresseeId: user.id }],
-    },
-    include: {
-      requester: {
-        select: { id: true, name: true, username: true, avatar: true },
-      },
-      addressee: {
-        select: { id: true, name: true, username: true, avatar: true },
-      },
-    },
-    orderBy: { updatedAt: "desc" },
-  })
-
-  const friends = friendships.map((friendship) =>
-    friendship.requester.id === user.id
-      ? friendship.addressee
-      : friendship.requester,
-  )
+  const [friends, incomingRequests, outgoingRequests] = await Promise.all([
+    getFriends(user.id),
+    getIncomingRequests(user.id),
+    getOutgoingRequests(user.id),
+  ])
 
   return (
     <div className="space-y-6">
@@ -43,6 +32,9 @@ export default async function PersonasPage() {
         action={<AddFriendSheet />}
       />
 
+      <IncomingRequests requests={incomingRequests} />
+      <OutgoingRequests requests={outgoingRequests} />
+
       {friends.length === 0 ? (
         <EmptyState
           icon={UserPlus}
@@ -51,26 +43,16 @@ export default async function PersonasPage() {
           action={<AddFriendSheet />}
         />
       ) : (
-        <div className="flex flex-col gap-2">
-          {friends.map((friend) => (
-            <Link
-              key={friend.id}
-              href={`/personas/${friend.id}`}
-              className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-primary/40"
-            >
-              <UserAvatar name={friend.name} avatar={friend.avatar} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {friend.name}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  @{friend.username}
-                </p>
-              </div>
-              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-            </Link>
-          ))}
-        </div>
+        <section className="space-y-3" aria-label="Tus amigos">
+          <h2 className="font-heading text-sm font-semibold text-foreground">
+            Amigos
+          </h2>
+          <div className="flex flex-col gap-2">
+            {friends.map((friend) => (
+              <FriendCard key={friend.id} friend={friend} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   )

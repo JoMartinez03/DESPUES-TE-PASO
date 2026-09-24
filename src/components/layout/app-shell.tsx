@@ -4,14 +4,17 @@ import { FabAction } from "@/components/layout/fab-action"
 import { Header } from "@/components/layout/header"
 import { Sidebar } from "@/components/layout/sidebar"
 import type { SessionUser } from "@/lib/user"
+import type { NotificationItem } from "@/queries/notifications"
 
 export function AppShell({
   user,
   unreadCount,
+  notifications,
   children,
 }: {
   user: SessionUser
   unreadCount: number
+  notifications: NotificationItem[]
   children: ReactNode
 }) {
   return (
@@ -20,7 +23,7 @@ export function AppShell({
         <Sidebar user={user} />
       </div>
       <div className="lg:pl-64">
-        <Header unreadCount={unreadCount} />
+        <Header unreadCount={unreadCount} notifications={notifications} />
         <main className="mx-auto w-full max-w-2xl px-4 pt-6 pb-32 lg:max-w-4xl lg:px-8 lg:pt-10 lg:pb-16">
           {children}
         </main>
