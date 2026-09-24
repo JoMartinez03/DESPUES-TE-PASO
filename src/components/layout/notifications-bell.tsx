@@ -49,6 +49,12 @@ export function NotificationsBell({
     router.push("/personas")
   }
 
+  function handleOpen(item: NotificationItem) {
+    setOpen(false)
+    if (item.href) router.push(item.href)
+    else goToFriends()
+  }
+
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
@@ -97,7 +103,7 @@ export function NotificationsBell({
               <li key={item.id}>
                 <button
                   type="button"
-                  onClick={goToFriends}
+                  onClick={() => handleOpen(item)}
                   className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted"
                 >
                   <span

@@ -4,13 +4,11 @@ import { UserAvatar } from "@/components/shared/user-avatar"
 import { formatMoney } from "@/lib/format"
 import type { FriendWithBalance } from "@/queries/friendships"
 
-function isSettledBalance(amount: number) {
-  return !Number.isFinite(amount) || amount === 0
-}
-
 export function FriendCard({ friend }: { friend: FriendWithBalance }) {
   const amount = Number(friend.balance.amount.toString())
-  const settled = isSettledBalance(amount)
+  const settled = !Number.isFinite(amount) || amount === 0
+  const owesYou = amount > 0
+  const youOwe = amount < 0
 
   return (
     <Link
@@ -28,7 +26,12 @@ export function FriendCard({ friend }: { friend: FriendWithBalance }) {
               <span className="text-muted-foreground">Al día</span>
             </span>
           ) : (
-            <span className="font-medium text-foreground">
+            <span
+              className={`font-medium tabular-nums ${
+                owesYou ? "text-emerald-600" : "text-foreground"
+              }`}
+            >
+              {owesYou ? "+" : "−"}
               {formatMoney(friend.balance.amount, friend.balance.currency)}
             </span>
           )}
@@ -38,10 +41,14 @@ export function FriendCard({ friend }: { friend: FriendWithBalance }) {
                 ·
               </span>
               <span className="text-muted-foreground">
-                {formatMoney(friend.balance.amount, friend.balance.currency)}
+                {owesYou ? "Te debe" : youOwe ? "Le debés" : "Sin movimientos"}
               </span>
             </>
-          ) : null}
+          ) : (
+            <span className="text-muted-foreground">
+              {owesYou ? "Te debe" : "Le debés"}
+            </span>
+          )}
         </div>
       </div>
       <ChevronRight className="size-4 shrink-0 text-muted-foreground" />

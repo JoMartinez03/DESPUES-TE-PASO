@@ -36,3 +36,25 @@ export function formatShortDate(date: Date | string): string {
     month: "short",
   }).format(value)
 }
+
+export type SignedMoney = {
+  symbol: "+" | "−"
+  text: string
+}
+
+/**
+ * Formatea un valor en dinero con el signo ya resuelto para balances.
+ * `+` indica que te deben, `−` que debés; cero devuelve "Estás al día".
+ */
+export function formatSignedMoney(
+  amount: number | string | { toString(): string },
+  currency: string = "ARS",
+): SignedMoney {
+  const value =
+    typeof amount === "object" ? Number(amount.toString()) : Number(amount)
+  const safe = Number.isFinite(value) ? value : 0
+  const absolute = formatMoney(Math.abs(safe), currency)
+  if (safe > 0) return { symbol: "+", text: absolute }
+  if (safe < 0) return { symbol: "−", text: absolute }
+  return { symbol: "+", text: formatMoney(0, currency) }
+}

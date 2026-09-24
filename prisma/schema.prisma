@@ -101,6 +101,8 @@ model Transaction {
   @@index([status, creditorId])
   @@index([status, debtorId])
   @@index([status, pendingConfirmationFromId])
+  @@index([status, debtorId, creditorId])
+  @@index([status, creditorId, debtorId])
   @@index([createdAt])
   @@map("transactions")
 }

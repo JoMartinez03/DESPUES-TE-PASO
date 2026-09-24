@@ -5,6 +5,7 @@ import {
   relativeStatus,
   type RelativeFriendshipStatus,
 } from "@/lib/friendship"
+import { netBalancesForUser } from "@/queries/transactions"
 
 const ZERO = new Prisma.Decimal(0)
 
@@ -68,6 +69,8 @@ export async function getFriends(userId: string): Promise<FriendWithBalance[]> {
     orderBy: { updatedAt: "desc" },
   })
 
+  const balances = await netBalancesForUser(userId)
+
   return friendships.map((friendship) => {
     const friend =
       friendship.requester.id === userId
@@ -77,7 +80,10 @@ export async function getFriends(userId: string): Promise<FriendWithBalance[]> {
       ...friend,
       friendshipId: friendship.id,
       friendsSince: friendship.createdAt,
-      balance: { amount: ZERO, currency: "ARS" },
+      balance: {
+        amount: balances.get(friend.id) ?? ZERO,
+        currency: "ARS",
+      },
     }
   })
 }
