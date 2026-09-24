@@ -7,14 +7,19 @@ import { auth } from "@/lib/auth"
 import { formatMoney } from "@/lib/format"
 import { requireUser } from "@/lib/session"
 import { getDashboardSummary } from "@/queries/dashboard"
+import { getProfileExcerpt } from "@/queries/profile"
 
 export default async function DashboardPage() {
   await requireUser()
   const session = await auth()
   const user = session!.user
 
-  const summary = await getDashboardSummary(user.id)
-  const firstName = user.name?.split(" ")[0] ?? "compañerx"
+  const [summary, dbUser] = await Promise.all([
+    getDashboardSummary(user.id),
+    getProfileExcerpt(user.id),
+  ])
+  const firstName =
+    (dbUser?.name ?? user.name)?.split(" ")[0] ?? "compañerx"
 
   return (
     <div className="space-y-8">

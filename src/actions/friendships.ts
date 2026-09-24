@@ -119,6 +119,7 @@ export async function sendFriendRequest(
           select: { id: true },
         })
         if (!duplicateNotification) {
+          // Snapshot histórico: embebe el nombre al momento de crearse; no se reescribe.
           await tx.notification.create({
             data: {
               userId: targetId,

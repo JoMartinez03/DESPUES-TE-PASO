@@ -108,6 +108,7 @@ export async function createDebt(
       select: { id: true },
     })
 
+    // Snapshot histórico: embebe el nombre al momento de crearse; no se reescribe.
     const body =
       paidBy === "me"
         ? `${me} agregó un gasto de ${formatMoney(amount)}: ${description}. Le debés a ${me}.`

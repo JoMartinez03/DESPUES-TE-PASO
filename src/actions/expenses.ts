@@ -180,6 +180,8 @@ export async function createExpense(
       shares,
     })
 
+    // Snapshots históricos: el cuerpo embebe el apodo del actor al momento de
+    // crearse y no se reescribe si el usuario cambia su nombre después.
     const body = expenseNotificationBody(actorName, data.title, amount, context.name)
     for (const userId of participantIds) {
       if (userId === selfId) continue

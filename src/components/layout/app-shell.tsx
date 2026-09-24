@@ -3,7 +3,7 @@ import { BottomNav } from "@/components/layout/bottom-nav"
 import { FabAction } from "@/components/layout/fab-action"
 import { Header } from "@/components/layout/header"
 import { Sidebar } from "@/components/layout/sidebar"
-import type { SessionUser } from "@/lib/user"
+import type { CurrentUser } from "@/lib/user"
 import type { NotificationItem } from "@/queries/notifications"
 
 export function AppShell({
@@ -12,7 +12,7 @@ export function AppShell({
   notifications,
   children,
 }: {
-  user: SessionUser
+  user: CurrentUser
   unreadCount: number
   notifications: NotificationItem[]
   children: ReactNode

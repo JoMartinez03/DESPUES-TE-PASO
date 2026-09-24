@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation"
 import { NAV_ITEMS } from "@/components/layout/nav-items"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { cn } from "@/lib/utils"
-import type { SessionUser } from "@/lib/user"
+import type { CurrentUser } from "@/lib/user"
 
 function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function Sidebar({ user }: { user: SessionUser }) {
+export function Sidebar({ user }: { user: CurrentUser }) {
   const pathname = usePathname()
 
   return (
@@ -52,7 +52,7 @@ export function Sidebar({ user }: { user: SessionUser }) {
           className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-sidebar-accent/60"
         >
           <UserAvatar
-            name={user.name ?? "Usuario"}
+            name={user.name}
             avatar={user.avatar}
             className="[&_[data-slot=avatar-fallback]]:bg-sidebar-accent"
           />
@@ -60,11 +60,6 @@ export function Sidebar({ user }: { user: SessionUser }) {
             <p className="truncate text-sm font-medium text-sidebar-foreground">
               {user.name}
             </p>
-            {user.username ? (
-              <p className="truncate text-xs text-sidebar-foreground/60">
-                @{user.username}
-              </p>
-            ) : null}
           </div>
         </Link>
       </div>
