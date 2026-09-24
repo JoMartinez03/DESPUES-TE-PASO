@@ -24,6 +24,11 @@ enum TransactionStatus {
   REJECTED
 }
 
+enum ExpenseSplitType {
+  EQUAL
+  CUSTOM
+}
+
 enum NotificationType {
   FRIEND_REQUEST
   TRANSACTION_PENDING
@@ -42,14 +47,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  friendshipsSent       Friendship[]         @relation("FriendshipRequester")
-  friendshipsReceived   Friendship[]         @relation("FriendshipAddressee")
-  transactionsCreated   Transaction[]        @relation("TransactionCreator")
-  transactionsDebtor    Transaction[]        @relation("TransactionDebtor")
-  transactionsCreditor  Transaction[]        @relation("TransactionCreditor")
-  transactionsToConfirm Transaction[]        @relation("TransactionConfirmation")
+  friendshipsSent       Friendship[]           @relation("FriendshipRequester")
+  friendshipsReceived   Friendship[]           @relation("FriendshipAddressee")
+  transactionsCreated   Transaction[]          @relation("TransactionCreator")
+  transactionsDebtor    Transaction[]          @relation("TransactionDebtor")
+  transactionsCreditor  Transaction[]          @relation("TransactionCreditor")
+  transactionsToConfirm Transaction[]          @relation("TransactionConfirmation")
   gatherings            Gathering[]
-  expensesCreated       Expense[]            @relation("ExpenseCreator")
+  gatheringParticipants GatheringParticipant[]
+  expensesCreated       Expense[]              @relation("ExpenseCreator")
+  expensesPaid          Expense[]              @relation("ExpensePayer")
   expenseParticipations ExpenseParticipant[]
   notifications         Notification[]
 
@@ -85,6 +92,7 @@ model Transaction {
   description               String
   type                      TransactionType
   status                    TransactionStatus @default(PENDING)
+  expenseId                 String?
   pendingConfirmationFromId String
   occurredAt                DateTime          @default(now())
   confirmedAt               DateTime?
@@ -96,6 +104,7 @@ model Transaction {
   debtor           User           @relation("TransactionDebtor", fields: [debtorId], references: [id], onDelete: Restrict)
   creditor         User           @relation("TransactionCreditor", fields: [creditorId], references: [id], onDelete: Restrict)
   confirmationFrom User           @relation("TransactionConfirmation", fields: [pendingConfirmationFromId], references: [id], onDelete: Restrict)
+  expense          Expense?       @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   notifications    Notification[]
 
   @@index([status, creditorId])
@@ -104,6 +113,7 @@ model Transaction {
   @@index([status, debtorId, creditorId])
   @@index([status, creditorId, debtorId])
   @@index([createdAt])
+  @@index([expenseId])
   @@map("transactions")
 }
 
@@ -116,37 +126,58 @@ model Gathering {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  creator       User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creator       User                   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   expenses      Expense[]
+  participants  GatheringParticipant[]
   notifications Notification[]
 
   @@index([creatorId])
   @@map("gatherings")
 }
 
-model Expense {
+model GatheringParticipant {
   id          String   @id @default(cuid())
   gatheringId String
-  createdById String
-  title       String
-  amount      Decimal  @db.Decimal(14, 2)
-  currency    String   @default("ARS") @db.VarChar(3)
+  userId      String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  gathering Gathering @relation(fields: [gatheringId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gatheringId, userId])
+  @@index([userId])
+  @@map("gathering_participants")
+}
+
+model Expense {
+  id          String           @id @default(cuid())
+  gatheringId String
+  createdById String
+  payerId     String
+  title       String
+  amount      Decimal          @db.Decimal(14, 2)
+  splitType   ExpenseSplitType @default(EQUAL)
+  currency    String           @default("ARS") @db.VarChar(3)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   gathering    Gathering            @relation(fields: [gatheringId], references: [id], onDelete: Cascade)
   creator      User                 @relation("ExpenseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  payer        User                 @relation("ExpensePayer", fields: [payerId], references: [id], onDelete: Restrict)
   participants ExpenseParticipant[]
+  transactions Transaction[]
 
   @@index([gatheringId])
+  @@index([payerId])
   @@map("expenses")
 }
 
 model ExpenseParticipant {
-  id        String   @id @default(cuid())
-  expenseId String
-  userId    String
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  expenseId   String
+  userId      String
+  shareAmount Decimal  @db.Decimal(14, 2)
+  createdAt   DateTime @default(now())
 
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)

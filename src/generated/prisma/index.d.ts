@@ -34,6 +34,11 @@ export type Transaction = $Result.DefaultSelection<Prisma.$TransactionPayload>
  */
 export type Gathering = $Result.DefaultSelection<Prisma.$GatheringPayload>
 /**
+ * Model GatheringParticipant
+ * 
+ */
+export type GatheringParticipant = $Result.DefaultSelection<Prisma.$GatheringParticipantPayload>
+/**
  * Model Expense
  * 
  */
@@ -79,6 +84,14 @@ export const TransactionStatus: {
 export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus]
 
 
+export const ExpenseSplitType: {
+  EQUAL: 'EQUAL',
+  CUSTOM: 'CUSTOM'
+};
+
+export type ExpenseSplitType = (typeof ExpenseSplitType)[keyof typeof ExpenseSplitType]
+
+
 export const NotificationType: {
   FRIEND_REQUEST: 'FRIEND_REQUEST',
   TRANSACTION_PENDING: 'TRANSACTION_PENDING',
@@ -102,6 +115,10 @@ export const TransactionType: typeof $Enums.TransactionType
 export type TransactionStatus = $Enums.TransactionStatus
 
 export const TransactionStatus: typeof $Enums.TransactionStatus
+
+export type ExpenseSplitType = $Enums.ExpenseSplitType
+
+export const ExpenseSplitType: typeof $Enums.ExpenseSplitType
 
 export type NotificationType = $Enums.NotificationType
 
@@ -267,6 +284,16 @@ export class PrismaClient<
     * ```
     */
   get gathering(): Prisma.GatheringDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.gatheringParticipant`: Exposes CRUD operations for the **GatheringParticipant** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GatheringParticipants
+    * const gatheringParticipants = await prisma.gatheringParticipant.findMany()
+    * ```
+    */
+  get gatheringParticipant(): Prisma.GatheringParticipantDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.expense`: Exposes CRUD operations for the **Expense** model.
@@ -748,6 +775,7 @@ export namespace Prisma {
     Friendship: 'Friendship',
     Transaction: 'Transaction',
     Gathering: 'Gathering',
+    GatheringParticipant: 'GatheringParticipant',
     Expense: 'Expense',
     ExpenseParticipant: 'ExpenseParticipant',
     Notification: 'Notification'
@@ -766,7 +794,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "friendship" | "transaction" | "gathering" | "expense" | "expenseParticipant" | "notification"
+      modelProps: "user" | "friendship" | "transaction" | "gathering" | "gatheringParticipant" | "expense" | "expenseParticipant" | "notification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1063,6 +1091,80 @@ export namespace Prisma {
           count: {
             args: Prisma.GatheringCountArgs<ExtArgs>
             result: $Utils.Optional<GatheringCountAggregateOutputType> | number
+          }
+        }
+      }
+      GatheringParticipant: {
+        payload: Prisma.$GatheringParticipantPayload<ExtArgs>
+        fields: Prisma.GatheringParticipantFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GatheringParticipantFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GatheringParticipantFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>
+          }
+          findFirst: {
+            args: Prisma.GatheringParticipantFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GatheringParticipantFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>
+          }
+          findMany: {
+            args: Prisma.GatheringParticipantFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>[]
+          }
+          create: {
+            args: Prisma.GatheringParticipantCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>
+          }
+          createMany: {
+            args: Prisma.GatheringParticipantCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GatheringParticipantCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>[]
+          }
+          delete: {
+            args: Prisma.GatheringParticipantDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>
+          }
+          update: {
+            args: Prisma.GatheringParticipantUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>
+          }
+          deleteMany: {
+            args: Prisma.GatheringParticipantDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GatheringParticipantUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GatheringParticipantUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>[]
+          }
+          upsert: {
+            args: Prisma.GatheringParticipantUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GatheringParticipantPayload>
+          }
+          aggregate: {
+            args: Prisma.GatheringParticipantAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGatheringParticipant>
+          }
+          groupBy: {
+            args: Prisma.GatheringParticipantGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GatheringParticipantGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GatheringParticipantCountArgs<ExtArgs>
+            result: $Utils.Optional<GatheringParticipantCountAggregateOutputType> | number
           }
         }
       }
@@ -1415,6 +1517,7 @@ export namespace Prisma {
     friendship?: FriendshipOmit
     transaction?: TransactionOmit
     gathering?: GatheringOmit
+    gatheringParticipant?: GatheringParticipantOmit
     expense?: ExpenseOmit
     expenseParticipant?: ExpenseParticipantOmit
     notification?: NotificationOmit
@@ -1505,7 +1608,9 @@ export namespace Prisma {
     transactionsCreditor: number
     transactionsToConfirm: number
     gatherings: number
+    gatheringParticipants: number
     expensesCreated: number
+    expensesPaid: number
     expenseParticipations: number
     notifications: number
   }
@@ -1518,7 +1623,9 @@ export namespace Prisma {
     transactionsCreditor?: boolean | UserCountOutputTypeCountTransactionsCreditorArgs
     transactionsToConfirm?: boolean | UserCountOutputTypeCountTransactionsToConfirmArgs
     gatherings?: boolean | UserCountOutputTypeCountGatheringsArgs
+    gatheringParticipants?: boolean | UserCountOutputTypeCountGatheringParticipantsArgs
     expensesCreated?: boolean | UserCountOutputTypeCountExpensesCreatedArgs
+    expensesPaid?: boolean | UserCountOutputTypeCountExpensesPaidArgs
     expenseParticipations?: boolean | UserCountOutputTypeCountExpenseParticipationsArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   }
@@ -1586,7 +1693,21 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountGatheringParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GatheringParticipantWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountExpensesCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountExpensesPaidArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ExpenseWhereInput
   }
 
@@ -1673,11 +1794,13 @@ export namespace Prisma {
 
   export type GatheringCountOutputType = {
     expenses: number
+    participants: number
     notifications: number
   }
 
   export type GatheringCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     expenses?: boolean | GatheringCountOutputTypeCountExpensesArgs
+    participants?: boolean | GatheringCountOutputTypeCountParticipantsArgs
     notifications?: boolean | GatheringCountOutputTypeCountNotificationsArgs
   }
 
@@ -1702,6 +1825,13 @@ export namespace Prisma {
   /**
    * GatheringCountOutputType without action
    */
+  export type GatheringCountOutputTypeCountParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GatheringParticipantWhereInput
+  }
+
+  /**
+   * GatheringCountOutputType without action
+   */
   export type GatheringCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
   }
@@ -1713,10 +1843,12 @@ export namespace Prisma {
 
   export type ExpenseCountOutputType = {
     participants: number
+    transactions: number
   }
 
   export type ExpenseCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     participants?: boolean | ExpenseCountOutputTypeCountParticipantsArgs
+    transactions?: boolean | ExpenseCountOutputTypeCountTransactionsArgs
   }
 
   // Custom InputTypes
@@ -1735,6 +1867,13 @@ export namespace Prisma {
    */
   export type ExpenseCountOutputTypeCountParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ExpenseParticipantWhereInput
+  }
+
+  /**
+   * ExpenseCountOutputType without action
+   */
+  export type ExpenseCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TransactionWhereInput
   }
 
 
@@ -1937,7 +2076,9 @@ export namespace Prisma {
     transactionsCreditor?: boolean | User$transactionsCreditorArgs<ExtArgs>
     transactionsToConfirm?: boolean | User$transactionsToConfirmArgs<ExtArgs>
     gatherings?: boolean | User$gatheringsArgs<ExtArgs>
+    gatheringParticipants?: boolean | User$gatheringParticipantsArgs<ExtArgs>
     expensesCreated?: boolean | User$expensesCreatedArgs<ExtArgs>
+    expensesPaid?: boolean | User$expensesPaidArgs<ExtArgs>
     expenseParticipations?: boolean | User$expenseParticipationsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1985,7 +2126,9 @@ export namespace Prisma {
     transactionsCreditor?: boolean | User$transactionsCreditorArgs<ExtArgs>
     transactionsToConfirm?: boolean | User$transactionsToConfirmArgs<ExtArgs>
     gatherings?: boolean | User$gatheringsArgs<ExtArgs>
+    gatheringParticipants?: boolean | User$gatheringParticipantsArgs<ExtArgs>
     expensesCreated?: boolean | User$expensesCreatedArgs<ExtArgs>
+    expensesPaid?: boolean | User$expensesPaidArgs<ExtArgs>
     expenseParticipations?: boolean | User$expenseParticipationsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -2003,7 +2146,9 @@ export namespace Prisma {
       transactionsCreditor: Prisma.$TransactionPayload<ExtArgs>[]
       transactionsToConfirm: Prisma.$TransactionPayload<ExtArgs>[]
       gatherings: Prisma.$GatheringPayload<ExtArgs>[]
+      gatheringParticipants: Prisma.$GatheringParticipantPayload<ExtArgs>[]
       expensesCreated: Prisma.$ExpensePayload<ExtArgs>[]
+      expensesPaid: Prisma.$ExpensePayload<ExtArgs>[]
       expenseParticipations: Prisma.$ExpenseParticipantPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
@@ -2417,7 +2562,9 @@ export namespace Prisma {
     transactionsCreditor<T extends User$transactionsCreditorArgs<ExtArgs> = {}>(args?: Subset<T, User$transactionsCreditorArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     transactionsToConfirm<T extends User$transactionsToConfirmArgs<ExtArgs> = {}>(args?: Subset<T, User$transactionsToConfirmArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     gatherings<T extends User$gatheringsArgs<ExtArgs> = {}>(args?: Subset<T, User$gatheringsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GatheringPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    gatheringParticipants<T extends User$gatheringParticipantsArgs<ExtArgs> = {}>(args?: Subset<T, User$gatheringParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     expensesCreated<T extends User$expensesCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$expensesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expensesPaid<T extends User$expensesPaidArgs<ExtArgs> = {}>(args?: Subset<T, User$expensesPaidArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     expenseParticipations<T extends User$expenseParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, User$expenseParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -3018,9 +3165,57 @@ export namespace Prisma {
   }
 
   /**
+   * User.gatheringParticipants
+   */
+  export type User$gatheringParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    where?: GatheringParticipantWhereInput
+    orderBy?: GatheringParticipantOrderByWithRelationInput | GatheringParticipantOrderByWithRelationInput[]
+    cursor?: GatheringParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GatheringParticipantScalarFieldEnum | GatheringParticipantScalarFieldEnum[]
+  }
+
+  /**
    * User.expensesCreated
    */
   export type User$expensesCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    cursor?: ExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * User.expensesPaid
+   */
+  export type User$expensesPaidArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Expense
      */
@@ -4265,6 +4460,7 @@ export namespace Prisma {
     description: string | null
     type: $Enums.TransactionType | null
     status: $Enums.TransactionStatus | null
+    expenseId: string | null
     pendingConfirmationFromId: string | null
     occurredAt: Date | null
     confirmedAt: Date | null
@@ -4283,6 +4479,7 @@ export namespace Prisma {
     description: string | null
     type: $Enums.TransactionType | null
     status: $Enums.TransactionStatus | null
+    expenseId: string | null
     pendingConfirmationFromId: string | null
     occurredAt: Date | null
     confirmedAt: Date | null
@@ -4301,6 +4498,7 @@ export namespace Prisma {
     description: number
     type: number
     status: number
+    expenseId: number
     pendingConfirmationFromId: number
     occurredAt: number
     confirmedAt: number
@@ -4329,6 +4527,7 @@ export namespace Prisma {
     description?: true
     type?: true
     status?: true
+    expenseId?: true
     pendingConfirmationFromId?: true
     occurredAt?: true
     confirmedAt?: true
@@ -4347,6 +4546,7 @@ export namespace Prisma {
     description?: true
     type?: true
     status?: true
+    expenseId?: true
     pendingConfirmationFromId?: true
     occurredAt?: true
     confirmedAt?: true
@@ -4365,6 +4565,7 @@ export namespace Prisma {
     description?: true
     type?: true
     status?: true
+    expenseId?: true
     pendingConfirmationFromId?: true
     occurredAt?: true
     confirmedAt?: true
@@ -4470,6 +4671,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status: $Enums.TransactionStatus
+    expenseId: string | null
     pendingConfirmationFromId: string
     occurredAt: Date
     confirmedAt: Date | null
@@ -4507,6 +4709,7 @@ export namespace Prisma {
     description?: boolean
     type?: boolean
     status?: boolean
+    expenseId?: boolean
     pendingConfirmationFromId?: boolean
     occurredAt?: boolean
     confirmedAt?: boolean
@@ -4517,6 +4720,7 @@ export namespace Prisma {
     debtor?: boolean | UserDefaultArgs<ExtArgs>
     creditor?: boolean | UserDefaultArgs<ExtArgs>
     confirmationFrom?: boolean | UserDefaultArgs<ExtArgs>
+    expense?: boolean | Transaction$expenseArgs<ExtArgs>
     notifications?: boolean | Transaction$notificationsArgs<ExtArgs>
     _count?: boolean | TransactionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
@@ -4531,6 +4735,7 @@ export namespace Prisma {
     description?: boolean
     type?: boolean
     status?: boolean
+    expenseId?: boolean
     pendingConfirmationFromId?: boolean
     occurredAt?: boolean
     confirmedAt?: boolean
@@ -4541,6 +4746,7 @@ export namespace Prisma {
     debtor?: boolean | UserDefaultArgs<ExtArgs>
     creditor?: boolean | UserDefaultArgs<ExtArgs>
     confirmationFrom?: boolean | UserDefaultArgs<ExtArgs>
+    expense?: boolean | Transaction$expenseArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
 
   export type TransactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -4553,6 +4759,7 @@ export namespace Prisma {
     description?: boolean
     type?: boolean
     status?: boolean
+    expenseId?: boolean
     pendingConfirmationFromId?: boolean
     occurredAt?: boolean
     confirmedAt?: boolean
@@ -4563,6 +4770,7 @@ export namespace Prisma {
     debtor?: boolean | UserDefaultArgs<ExtArgs>
     creditor?: boolean | UserDefaultArgs<ExtArgs>
     confirmationFrom?: boolean | UserDefaultArgs<ExtArgs>
+    expense?: boolean | Transaction$expenseArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
 
   export type TransactionSelectScalar = {
@@ -4575,6 +4783,7 @@ export namespace Prisma {
     description?: boolean
     type?: boolean
     status?: boolean
+    expenseId?: boolean
     pendingConfirmationFromId?: boolean
     occurredAt?: boolean
     confirmedAt?: boolean
@@ -4583,12 +4792,13 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "creatorId" | "debtorId" | "creditorId" | "amount" | "currency" | "description" | "type" | "status" | "pendingConfirmationFromId" | "occurredAt" | "confirmedAt" | "rejectedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["transaction"]>
+  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "creatorId" | "debtorId" | "creditorId" | "amount" | "currency" | "description" | "type" | "status" | "expenseId" | "pendingConfirmationFromId" | "occurredAt" | "confirmedAt" | "rejectedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["transaction"]>
   export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     debtor?: boolean | UserDefaultArgs<ExtArgs>
     creditor?: boolean | UserDefaultArgs<ExtArgs>
     confirmationFrom?: boolean | UserDefaultArgs<ExtArgs>
+    expense?: boolean | Transaction$expenseArgs<ExtArgs>
     notifications?: boolean | Transaction$notificationsArgs<ExtArgs>
     _count?: boolean | TransactionCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -4597,12 +4807,14 @@ export namespace Prisma {
     debtor?: boolean | UserDefaultArgs<ExtArgs>
     creditor?: boolean | UserDefaultArgs<ExtArgs>
     confirmationFrom?: boolean | UserDefaultArgs<ExtArgs>
+    expense?: boolean | Transaction$expenseArgs<ExtArgs>
   }
   export type TransactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     debtor?: boolean | UserDefaultArgs<ExtArgs>
     creditor?: boolean | UserDefaultArgs<ExtArgs>
     confirmationFrom?: boolean | UserDefaultArgs<ExtArgs>
+    expense?: boolean | Transaction$expenseArgs<ExtArgs>
   }
 
   export type $TransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4612,6 +4824,7 @@ export namespace Prisma {
       debtor: Prisma.$UserPayload<ExtArgs>
       creditor: Prisma.$UserPayload<ExtArgs>
       confirmationFrom: Prisma.$UserPayload<ExtArgs>
+      expense: Prisma.$ExpensePayload<ExtArgs> | null
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -4624,6 +4837,7 @@ export namespace Prisma {
       description: string
       type: $Enums.TransactionType
       status: $Enums.TransactionStatus
+      expenseId: string | null
       pendingConfirmationFromId: string
       occurredAt: Date
       confirmedAt: Date | null
@@ -5028,6 +5242,7 @@ export namespace Prisma {
     debtor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     creditor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     confirmationFrom<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    expense<T extends Transaction$expenseArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$expenseArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     notifications<T extends Transaction$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5067,6 +5282,7 @@ export namespace Prisma {
     readonly description: FieldRef<"Transaction", 'String'>
     readonly type: FieldRef<"Transaction", 'TransactionType'>
     readonly status: FieldRef<"Transaction", 'TransactionStatus'>
+    readonly expenseId: FieldRef<"Transaction", 'String'>
     readonly pendingConfirmationFromId: FieldRef<"Transaction", 'String'>
     readonly occurredAt: FieldRef<"Transaction", 'DateTime'>
     readonly confirmedAt: FieldRef<"Transaction", 'DateTime'>
@@ -5474,6 +5690,25 @@ export namespace Prisma {
   }
 
   /**
+   * Transaction.expense
+   */
+  export type Transaction$expenseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+  }
+
+  /**
    * Transaction.notifications
    */
   export type Transaction$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5698,6 +5933,7 @@ export namespace Prisma {
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
     expenses?: boolean | Gathering$expensesArgs<ExtArgs>
+    participants?: boolean | Gathering$participantsArgs<ExtArgs>
     notifications?: boolean | Gathering$notificationsArgs<ExtArgs>
     _count?: boolean | GatheringCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["gathering"]>
@@ -5738,6 +5974,7 @@ export namespace Prisma {
   export type GatheringInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     expenses?: boolean | Gathering$expensesArgs<ExtArgs>
+    participants?: boolean | Gathering$participantsArgs<ExtArgs>
     notifications?: boolean | Gathering$notificationsArgs<ExtArgs>
     _count?: boolean | GatheringCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -5753,6 +5990,7 @@ export namespace Prisma {
     objects: {
       creator: Prisma.$UserPayload<ExtArgs>
       expenses: Prisma.$ExpensePayload<ExtArgs>[]
+      participants: Prisma.$GatheringParticipantPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -6159,6 +6397,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     expenses<T extends Gathering$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Gathering$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    participants<T extends Gathering$participantsArgs<ExtArgs> = {}>(args?: Subset<T, Gathering$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends Gathering$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Gathering$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -6621,6 +6860,30 @@ export namespace Prisma {
   }
 
   /**
+   * Gathering.participants
+   */
+  export type Gathering$participantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    where?: GatheringParticipantWhereInput
+    orderBy?: GatheringParticipantOrderByWithRelationInput | GatheringParticipantOrderByWithRelationInput[]
+    cursor?: GatheringParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GatheringParticipantScalarFieldEnum | GatheringParticipantScalarFieldEnum[]
+  }
+
+  /**
    * Gathering.notifications
    */
   export type Gathering$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6664,6 +6927,1064 @@ export namespace Prisma {
 
 
   /**
+   * Model GatheringParticipant
+   */
+
+  export type AggregateGatheringParticipant = {
+    _count: GatheringParticipantCountAggregateOutputType | null
+    _min: GatheringParticipantMinAggregateOutputType | null
+    _max: GatheringParticipantMaxAggregateOutputType | null
+  }
+
+  export type GatheringParticipantMinAggregateOutputType = {
+    id: string | null
+    gatheringId: string | null
+    userId: string | null
+    createdAt: Date | null
+  }
+
+  export type GatheringParticipantMaxAggregateOutputType = {
+    id: string | null
+    gatheringId: string | null
+    userId: string | null
+    createdAt: Date | null
+  }
+
+  export type GatheringParticipantCountAggregateOutputType = {
+    id: number
+    gatheringId: number
+    userId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type GatheringParticipantMinAggregateInputType = {
+    id?: true
+    gatheringId?: true
+    userId?: true
+    createdAt?: true
+  }
+
+  export type GatheringParticipantMaxAggregateInputType = {
+    id?: true
+    gatheringId?: true
+    userId?: true
+    createdAt?: true
+  }
+
+  export type GatheringParticipantCountAggregateInputType = {
+    id?: true
+    gatheringId?: true
+    userId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type GatheringParticipantAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GatheringParticipant to aggregate.
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GatheringParticipants to fetch.
+     */
+    orderBy?: GatheringParticipantOrderByWithRelationInput | GatheringParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GatheringParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GatheringParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GatheringParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GatheringParticipants
+    **/
+    _count?: true | GatheringParticipantCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GatheringParticipantMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GatheringParticipantMaxAggregateInputType
+  }
+
+  export type GetGatheringParticipantAggregateType<T extends GatheringParticipantAggregateArgs> = {
+        [P in keyof T & keyof AggregateGatheringParticipant]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGatheringParticipant[P]>
+      : GetScalarType<T[P], AggregateGatheringParticipant[P]>
+  }
+
+
+
+
+  export type GatheringParticipantGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GatheringParticipantWhereInput
+    orderBy?: GatheringParticipantOrderByWithAggregationInput | GatheringParticipantOrderByWithAggregationInput[]
+    by: GatheringParticipantScalarFieldEnum[] | GatheringParticipantScalarFieldEnum
+    having?: GatheringParticipantScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GatheringParticipantCountAggregateInputType | true
+    _min?: GatheringParticipantMinAggregateInputType
+    _max?: GatheringParticipantMaxAggregateInputType
+  }
+
+  export type GatheringParticipantGroupByOutputType = {
+    id: string
+    gatheringId: string
+    userId: string
+    createdAt: Date
+    _count: GatheringParticipantCountAggregateOutputType | null
+    _min: GatheringParticipantMinAggregateOutputType | null
+    _max: GatheringParticipantMaxAggregateOutputType | null
+  }
+
+  type GetGatheringParticipantGroupByPayload<T extends GatheringParticipantGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GatheringParticipantGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GatheringParticipantGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GatheringParticipantGroupByOutputType[P]>
+            : GetScalarType<T[P], GatheringParticipantGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GatheringParticipantSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    gatheringId?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    gathering?: boolean | GatheringDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["gatheringParticipant"]>
+
+  export type GatheringParticipantSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    gatheringId?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    gathering?: boolean | GatheringDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["gatheringParticipant"]>
+
+  export type GatheringParticipantSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    gatheringId?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    gathering?: boolean | GatheringDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["gatheringParticipant"]>
+
+  export type GatheringParticipantSelectScalar = {
+    id?: boolean
+    gatheringId?: boolean
+    userId?: boolean
+    createdAt?: boolean
+  }
+
+  export type GatheringParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "gatheringId" | "userId" | "createdAt", ExtArgs["result"]["gatheringParticipant"]>
+  export type GatheringParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    gathering?: boolean | GatheringDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GatheringParticipantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    gathering?: boolean | GatheringDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GatheringParticipantIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    gathering?: boolean | GatheringDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $GatheringParticipantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GatheringParticipant"
+    objects: {
+      gathering: Prisma.$GatheringPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      gatheringId: string
+      userId: string
+      createdAt: Date
+    }, ExtArgs["result"]["gatheringParticipant"]>
+    composites: {}
+  }
+
+  type GatheringParticipantGetPayload<S extends boolean | null | undefined | GatheringParticipantDefaultArgs> = $Result.GetResult<Prisma.$GatheringParticipantPayload, S>
+
+  type GatheringParticipantCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GatheringParticipantFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GatheringParticipantCountAggregateInputType | true
+    }
+
+  export interface GatheringParticipantDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GatheringParticipant'], meta: { name: 'GatheringParticipant' } }
+    /**
+     * Find zero or one GatheringParticipant that matches the filter.
+     * @param {GatheringParticipantFindUniqueArgs} args - Arguments to find a GatheringParticipant
+     * @example
+     * // Get one GatheringParticipant
+     * const gatheringParticipant = await prisma.gatheringParticipant.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GatheringParticipantFindUniqueArgs>(args: SelectSubset<T, GatheringParticipantFindUniqueArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GatheringParticipant that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GatheringParticipantFindUniqueOrThrowArgs} args - Arguments to find a GatheringParticipant
+     * @example
+     * // Get one GatheringParticipant
+     * const gatheringParticipant = await prisma.gatheringParticipant.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GatheringParticipantFindUniqueOrThrowArgs>(args: SelectSubset<T, GatheringParticipantFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GatheringParticipant that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantFindFirstArgs} args - Arguments to find a GatheringParticipant
+     * @example
+     * // Get one GatheringParticipant
+     * const gatheringParticipant = await prisma.gatheringParticipant.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GatheringParticipantFindFirstArgs>(args?: SelectSubset<T, GatheringParticipantFindFirstArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GatheringParticipant that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantFindFirstOrThrowArgs} args - Arguments to find a GatheringParticipant
+     * @example
+     * // Get one GatheringParticipant
+     * const gatheringParticipant = await prisma.gatheringParticipant.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GatheringParticipantFindFirstOrThrowArgs>(args?: SelectSubset<T, GatheringParticipantFindFirstOrThrowArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GatheringParticipants that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GatheringParticipants
+     * const gatheringParticipants = await prisma.gatheringParticipant.findMany()
+     * 
+     * // Get first 10 GatheringParticipants
+     * const gatheringParticipants = await prisma.gatheringParticipant.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gatheringParticipantWithIdOnly = await prisma.gatheringParticipant.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GatheringParticipantFindManyArgs>(args?: SelectSubset<T, GatheringParticipantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GatheringParticipant.
+     * @param {GatheringParticipantCreateArgs} args - Arguments to create a GatheringParticipant.
+     * @example
+     * // Create one GatheringParticipant
+     * const GatheringParticipant = await prisma.gatheringParticipant.create({
+     *   data: {
+     *     // ... data to create a GatheringParticipant
+     *   }
+     * })
+     * 
+     */
+    create<T extends GatheringParticipantCreateArgs>(args: SelectSubset<T, GatheringParticipantCreateArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GatheringParticipants.
+     * @param {GatheringParticipantCreateManyArgs} args - Arguments to create many GatheringParticipants.
+     * @example
+     * // Create many GatheringParticipants
+     * const gatheringParticipant = await prisma.gatheringParticipant.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GatheringParticipantCreateManyArgs>(args?: SelectSubset<T, GatheringParticipantCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GatheringParticipants and returns the data saved in the database.
+     * @param {GatheringParticipantCreateManyAndReturnArgs} args - Arguments to create many GatheringParticipants.
+     * @example
+     * // Create many GatheringParticipants
+     * const gatheringParticipant = await prisma.gatheringParticipant.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GatheringParticipants and only return the `id`
+     * const gatheringParticipantWithIdOnly = await prisma.gatheringParticipant.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GatheringParticipantCreateManyAndReturnArgs>(args?: SelectSubset<T, GatheringParticipantCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GatheringParticipant.
+     * @param {GatheringParticipantDeleteArgs} args - Arguments to delete one GatheringParticipant.
+     * @example
+     * // Delete one GatheringParticipant
+     * const GatheringParticipant = await prisma.gatheringParticipant.delete({
+     *   where: {
+     *     // ... filter to delete one GatheringParticipant
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GatheringParticipantDeleteArgs>(args: SelectSubset<T, GatheringParticipantDeleteArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GatheringParticipant.
+     * @param {GatheringParticipantUpdateArgs} args - Arguments to update one GatheringParticipant.
+     * @example
+     * // Update one GatheringParticipant
+     * const gatheringParticipant = await prisma.gatheringParticipant.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GatheringParticipantUpdateArgs>(args: SelectSubset<T, GatheringParticipantUpdateArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GatheringParticipants.
+     * @param {GatheringParticipantDeleteManyArgs} args - Arguments to filter GatheringParticipants to delete.
+     * @example
+     * // Delete a few GatheringParticipants
+     * const { count } = await prisma.gatheringParticipant.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GatheringParticipantDeleteManyArgs>(args?: SelectSubset<T, GatheringParticipantDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GatheringParticipants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GatheringParticipants
+     * const gatheringParticipant = await prisma.gatheringParticipant.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GatheringParticipantUpdateManyArgs>(args: SelectSubset<T, GatheringParticipantUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GatheringParticipants and returns the data updated in the database.
+     * @param {GatheringParticipantUpdateManyAndReturnArgs} args - Arguments to update many GatheringParticipants.
+     * @example
+     * // Update many GatheringParticipants
+     * const gatheringParticipant = await prisma.gatheringParticipant.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GatheringParticipants and only return the `id`
+     * const gatheringParticipantWithIdOnly = await prisma.gatheringParticipant.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GatheringParticipantUpdateManyAndReturnArgs>(args: SelectSubset<T, GatheringParticipantUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GatheringParticipant.
+     * @param {GatheringParticipantUpsertArgs} args - Arguments to update or create a GatheringParticipant.
+     * @example
+     * // Update or create a GatheringParticipant
+     * const gatheringParticipant = await prisma.gatheringParticipant.upsert({
+     *   create: {
+     *     // ... data to create a GatheringParticipant
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GatheringParticipant we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GatheringParticipantUpsertArgs>(args: SelectSubset<T, GatheringParticipantUpsertArgs<ExtArgs>>): Prisma__GatheringParticipantClient<$Result.GetResult<Prisma.$GatheringParticipantPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GatheringParticipants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantCountArgs} args - Arguments to filter GatheringParticipants to count.
+     * @example
+     * // Count the number of GatheringParticipants
+     * const count = await prisma.gatheringParticipant.count({
+     *   where: {
+     *     // ... the filter for the GatheringParticipants we want to count
+     *   }
+     * })
+    **/
+    count<T extends GatheringParticipantCountArgs>(
+      args?: Subset<T, GatheringParticipantCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GatheringParticipantCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GatheringParticipant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GatheringParticipantAggregateArgs>(args: Subset<T, GatheringParticipantAggregateArgs>): Prisma.PrismaPromise<GetGatheringParticipantAggregateType<T>>
+
+    /**
+     * Group by GatheringParticipant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GatheringParticipantGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GatheringParticipantGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GatheringParticipantGroupByArgs['orderBy'] }
+        : { orderBy?: GatheringParticipantGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GatheringParticipantGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGatheringParticipantGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GatheringParticipant model
+   */
+  readonly fields: GatheringParticipantFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GatheringParticipant.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GatheringParticipantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    gathering<T extends GatheringDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GatheringDefaultArgs<ExtArgs>>): Prisma__GatheringClient<$Result.GetResult<Prisma.$GatheringPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GatheringParticipant model
+   */
+  interface GatheringParticipantFieldRefs {
+    readonly id: FieldRef<"GatheringParticipant", 'String'>
+    readonly gatheringId: FieldRef<"GatheringParticipant", 'String'>
+    readonly userId: FieldRef<"GatheringParticipant", 'String'>
+    readonly createdAt: FieldRef<"GatheringParticipant", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GatheringParticipant findUnique
+   */
+  export type GatheringParticipantFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which GatheringParticipant to fetch.
+     */
+    where: GatheringParticipantWhereUniqueInput
+  }
+
+  /**
+   * GatheringParticipant findUniqueOrThrow
+   */
+  export type GatheringParticipantFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which GatheringParticipant to fetch.
+     */
+    where: GatheringParticipantWhereUniqueInput
+  }
+
+  /**
+   * GatheringParticipant findFirst
+   */
+  export type GatheringParticipantFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which GatheringParticipant to fetch.
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GatheringParticipants to fetch.
+     */
+    orderBy?: GatheringParticipantOrderByWithRelationInput | GatheringParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GatheringParticipants.
+     */
+    cursor?: GatheringParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GatheringParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GatheringParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GatheringParticipants.
+     */
+    distinct?: GatheringParticipantScalarFieldEnum | GatheringParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * GatheringParticipant findFirstOrThrow
+   */
+  export type GatheringParticipantFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which GatheringParticipant to fetch.
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GatheringParticipants to fetch.
+     */
+    orderBy?: GatheringParticipantOrderByWithRelationInput | GatheringParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GatheringParticipants.
+     */
+    cursor?: GatheringParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GatheringParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GatheringParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GatheringParticipants.
+     */
+    distinct?: GatheringParticipantScalarFieldEnum | GatheringParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * GatheringParticipant findMany
+   */
+  export type GatheringParticipantFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which GatheringParticipants to fetch.
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GatheringParticipants to fetch.
+     */
+    orderBy?: GatheringParticipantOrderByWithRelationInput | GatheringParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GatheringParticipants.
+     */
+    cursor?: GatheringParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GatheringParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GatheringParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GatheringParticipants.
+     */
+    distinct?: GatheringParticipantScalarFieldEnum | GatheringParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * GatheringParticipant create
+   */
+  export type GatheringParticipantCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GatheringParticipant.
+     */
+    data: XOR<GatheringParticipantCreateInput, GatheringParticipantUncheckedCreateInput>
+  }
+
+  /**
+   * GatheringParticipant createMany
+   */
+  export type GatheringParticipantCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GatheringParticipants.
+     */
+    data: GatheringParticipantCreateManyInput | GatheringParticipantCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GatheringParticipant createManyAndReturn
+   */
+  export type GatheringParticipantCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * The data used to create many GatheringParticipants.
+     */
+    data: GatheringParticipantCreateManyInput | GatheringParticipantCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GatheringParticipant update
+   */
+  export type GatheringParticipantUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GatheringParticipant.
+     */
+    data: XOR<GatheringParticipantUpdateInput, GatheringParticipantUncheckedUpdateInput>
+    /**
+     * Choose, which GatheringParticipant to update.
+     */
+    where: GatheringParticipantWhereUniqueInput
+  }
+
+  /**
+   * GatheringParticipant updateMany
+   */
+  export type GatheringParticipantUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GatheringParticipants.
+     */
+    data: XOR<GatheringParticipantUpdateManyMutationInput, GatheringParticipantUncheckedUpdateManyInput>
+    /**
+     * Filter which GatheringParticipants to update
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * Limit how many GatheringParticipants to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GatheringParticipant updateManyAndReturn
+   */
+  export type GatheringParticipantUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * The data used to update GatheringParticipants.
+     */
+    data: XOR<GatheringParticipantUpdateManyMutationInput, GatheringParticipantUncheckedUpdateManyInput>
+    /**
+     * Filter which GatheringParticipants to update
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * Limit how many GatheringParticipants to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GatheringParticipant upsert
+   */
+  export type GatheringParticipantUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GatheringParticipant to update in case it exists.
+     */
+    where: GatheringParticipantWhereUniqueInput
+    /**
+     * In case the GatheringParticipant found by the `where` argument doesn't exist, create a new GatheringParticipant with this data.
+     */
+    create: XOR<GatheringParticipantCreateInput, GatheringParticipantUncheckedCreateInput>
+    /**
+     * In case the GatheringParticipant was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GatheringParticipantUpdateInput, GatheringParticipantUncheckedUpdateInput>
+  }
+
+  /**
+   * GatheringParticipant delete
+   */
+  export type GatheringParticipantDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+    /**
+     * Filter which GatheringParticipant to delete.
+     */
+    where: GatheringParticipantWhereUniqueInput
+  }
+
+  /**
+   * GatheringParticipant deleteMany
+   */
+  export type GatheringParticipantDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GatheringParticipants to delete
+     */
+    where?: GatheringParticipantWhereInput
+    /**
+     * Limit how many GatheringParticipants to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GatheringParticipant without action
+   */
+  export type GatheringParticipantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GatheringParticipant
+     */
+    select?: GatheringParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GatheringParticipant
+     */
+    omit?: GatheringParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GatheringParticipantInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Expense
    */
 
@@ -6687,8 +8008,10 @@ export namespace Prisma {
     id: string | null
     gatheringId: string | null
     createdById: string | null
+    payerId: string | null
     title: string | null
     amount: Decimal | null
+    splitType: $Enums.ExpenseSplitType | null
     currency: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6698,8 +8021,10 @@ export namespace Prisma {
     id: string | null
     gatheringId: string | null
     createdById: string | null
+    payerId: string | null
     title: string | null
     amount: Decimal | null
+    splitType: $Enums.ExpenseSplitType | null
     currency: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6709,8 +8034,10 @@ export namespace Prisma {
     id: number
     gatheringId: number
     createdById: number
+    payerId: number
     title: number
     amount: number
+    splitType: number
     currency: number
     createdAt: number
     updatedAt: number
@@ -6730,8 +8057,10 @@ export namespace Prisma {
     id?: true
     gatheringId?: true
     createdById?: true
+    payerId?: true
     title?: true
     amount?: true
+    splitType?: true
     currency?: true
     createdAt?: true
     updatedAt?: true
@@ -6741,8 +8070,10 @@ export namespace Prisma {
     id?: true
     gatheringId?: true
     createdById?: true
+    payerId?: true
     title?: true
     amount?: true
+    splitType?: true
     currency?: true
     createdAt?: true
     updatedAt?: true
@@ -6752,8 +8083,10 @@ export namespace Prisma {
     id?: true
     gatheringId?: true
     createdById?: true
+    payerId?: true
     title?: true
     amount?: true
+    splitType?: true
     currency?: true
     createdAt?: true
     updatedAt?: true
@@ -6850,8 +8183,10 @@ export namespace Prisma {
     id: string
     gatheringId: string
     createdById: string
+    payerId: string
     title: string
     amount: Decimal
+    splitType: $Enums.ExpenseSplitType
     currency: string
     createdAt: Date
     updatedAt: Date
@@ -6880,14 +8215,18 @@ export namespace Prisma {
     id?: boolean
     gatheringId?: boolean
     createdById?: boolean
+    payerId?: boolean
     title?: boolean
     amount?: boolean
+    splitType?: boolean
     currency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     gathering?: boolean | GatheringDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    payer?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Expense$participantsArgs<ExtArgs>
+    transactions?: boolean | Expense$transactionsArgs<ExtArgs>
     _count?: boolean | ExpenseCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["expense"]>
 
@@ -6895,53 +8234,65 @@ export namespace Prisma {
     id?: boolean
     gatheringId?: boolean
     createdById?: boolean
+    payerId?: boolean
     title?: boolean
     amount?: boolean
+    splitType?: boolean
     currency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     gathering?: boolean | GatheringDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    payer?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["expense"]>
 
   export type ExpenseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     gatheringId?: boolean
     createdById?: boolean
+    payerId?: boolean
     title?: boolean
     amount?: boolean
+    splitType?: boolean
     currency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     gathering?: boolean | GatheringDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    payer?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["expense"]>
 
   export type ExpenseSelectScalar = {
     id?: boolean
     gatheringId?: boolean
     createdById?: boolean
+    payerId?: boolean
     title?: boolean
     amount?: boolean
+    splitType?: boolean
     currency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ExpenseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "gatheringId" | "createdById" | "title" | "amount" | "currency" | "createdAt" | "updatedAt", ExtArgs["result"]["expense"]>
+  export type ExpenseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "gatheringId" | "createdById" | "payerId" | "title" | "amount" | "splitType" | "currency" | "createdAt" | "updatedAt", ExtArgs["result"]["expense"]>
   export type ExpenseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     gathering?: boolean | GatheringDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    payer?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Expense$participantsArgs<ExtArgs>
+    transactions?: boolean | Expense$transactionsArgs<ExtArgs>
     _count?: boolean | ExpenseCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ExpenseIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     gathering?: boolean | GatheringDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    payer?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type ExpenseIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     gathering?: boolean | GatheringDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    payer?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $ExpensePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6949,14 +8300,18 @@ export namespace Prisma {
     objects: {
       gathering: Prisma.$GatheringPayload<ExtArgs>
       creator: Prisma.$UserPayload<ExtArgs>
+      payer: Prisma.$UserPayload<ExtArgs>
       participants: Prisma.$ExpenseParticipantPayload<ExtArgs>[]
+      transactions: Prisma.$TransactionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       gatheringId: string
       createdById: string
+      payerId: string
       title: string
       amount: Prisma.Decimal
+      splitType: $Enums.ExpenseSplitType
       currency: string
       createdAt: Date
       updatedAt: Date
@@ -7356,7 +8711,9 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     gathering<T extends GatheringDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GatheringDefaultArgs<ExtArgs>>): Prisma__GatheringClient<$Result.GetResult<Prisma.$GatheringPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    payer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     participants<T extends Expense$participantsArgs<ExtArgs> = {}>(args?: Subset<T, Expense$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    transactions<T extends Expense$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Expense$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7389,8 +8746,10 @@ export namespace Prisma {
     readonly id: FieldRef<"Expense", 'String'>
     readonly gatheringId: FieldRef<"Expense", 'String'>
     readonly createdById: FieldRef<"Expense", 'String'>
+    readonly payerId: FieldRef<"Expense", 'String'>
     readonly title: FieldRef<"Expense", 'String'>
     readonly amount: FieldRef<"Expense", 'Decimal'>
+    readonly splitType: FieldRef<"Expense", 'ExpenseSplitType'>
     readonly currency: FieldRef<"Expense", 'String'>
     readonly createdAt: FieldRef<"Expense", 'DateTime'>
     readonly updatedAt: FieldRef<"Expense", 'DateTime'>
@@ -7819,6 +9178,30 @@ export namespace Prisma {
   }
 
   /**
+   * Expense.transactions
+   */
+  export type Expense$transactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transaction
+     */
+    select?: TransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transaction
+     */
+    omit?: TransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TransactionInclude<ExtArgs> | null
+    where?: TransactionWhereInput
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
+    cursor?: TransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
    * Expense without action
    */
   export type ExpenseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7843,14 +9226,25 @@ export namespace Prisma {
 
   export type AggregateExpenseParticipant = {
     _count: ExpenseParticipantCountAggregateOutputType | null
+    _avg: ExpenseParticipantAvgAggregateOutputType | null
+    _sum: ExpenseParticipantSumAggregateOutputType | null
     _min: ExpenseParticipantMinAggregateOutputType | null
     _max: ExpenseParticipantMaxAggregateOutputType | null
+  }
+
+  export type ExpenseParticipantAvgAggregateOutputType = {
+    shareAmount: Decimal | null
+  }
+
+  export type ExpenseParticipantSumAggregateOutputType = {
+    shareAmount: Decimal | null
   }
 
   export type ExpenseParticipantMinAggregateOutputType = {
     id: string | null
     expenseId: string | null
     userId: string | null
+    shareAmount: Decimal | null
     createdAt: Date | null
   }
 
@@ -7858,6 +9252,7 @@ export namespace Prisma {
     id: string | null
     expenseId: string | null
     userId: string | null
+    shareAmount: Decimal | null
     createdAt: Date | null
   }
 
@@ -7865,15 +9260,25 @@ export namespace Prisma {
     id: number
     expenseId: number
     userId: number
+    shareAmount: number
     createdAt: number
     _all: number
   }
 
 
+  export type ExpenseParticipantAvgAggregateInputType = {
+    shareAmount?: true
+  }
+
+  export type ExpenseParticipantSumAggregateInputType = {
+    shareAmount?: true
+  }
+
   export type ExpenseParticipantMinAggregateInputType = {
     id?: true
     expenseId?: true
     userId?: true
+    shareAmount?: true
     createdAt?: true
   }
 
@@ -7881,6 +9286,7 @@ export namespace Prisma {
     id?: true
     expenseId?: true
     userId?: true
+    shareAmount?: true
     createdAt?: true
   }
 
@@ -7888,6 +9294,7 @@ export namespace Prisma {
     id?: true
     expenseId?: true
     userId?: true
+    shareAmount?: true
     createdAt?: true
     _all?: true
   }
@@ -7930,6 +9337,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ExpenseParticipantAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ExpenseParticipantSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ExpenseParticipantMinAggregateInputType
@@ -7960,6 +9379,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ExpenseParticipantCountAggregateInputType | true
+    _avg?: ExpenseParticipantAvgAggregateInputType
+    _sum?: ExpenseParticipantSumAggregateInputType
     _min?: ExpenseParticipantMinAggregateInputType
     _max?: ExpenseParticipantMaxAggregateInputType
   }
@@ -7968,8 +9389,11 @@ export namespace Prisma {
     id: string
     expenseId: string
     userId: string
+    shareAmount: Decimal
     createdAt: Date
     _count: ExpenseParticipantCountAggregateOutputType | null
+    _avg: ExpenseParticipantAvgAggregateOutputType | null
+    _sum: ExpenseParticipantSumAggregateOutputType | null
     _min: ExpenseParticipantMinAggregateOutputType | null
     _max: ExpenseParticipantMaxAggregateOutputType | null
   }
@@ -7992,6 +9416,7 @@ export namespace Prisma {
     id?: boolean
     expenseId?: boolean
     userId?: boolean
+    shareAmount?: boolean
     createdAt?: boolean
     expense?: boolean | ExpenseDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8001,6 +9426,7 @@ export namespace Prisma {
     id?: boolean
     expenseId?: boolean
     userId?: boolean
+    shareAmount?: boolean
     createdAt?: boolean
     expense?: boolean | ExpenseDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8010,6 +9436,7 @@ export namespace Prisma {
     id?: boolean
     expenseId?: boolean
     userId?: boolean
+    shareAmount?: boolean
     createdAt?: boolean
     expense?: boolean | ExpenseDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8019,10 +9446,11 @@ export namespace Prisma {
     id?: boolean
     expenseId?: boolean
     userId?: boolean
+    shareAmount?: boolean
     createdAt?: boolean
   }
 
-  export type ExpenseParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "expenseId" | "userId" | "createdAt", ExtArgs["result"]["expenseParticipant"]>
+  export type ExpenseParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "expenseId" | "userId" | "shareAmount" | "createdAt", ExtArgs["result"]["expenseParticipant"]>
   export type ExpenseParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     expense?: boolean | ExpenseDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8046,6 +9474,7 @@ export namespace Prisma {
       id: string
       expenseId: string
       userId: string
+      shareAmount: Prisma.Decimal
       createdAt: Date
     }, ExtArgs["result"]["expenseParticipant"]>
     composites: {}
@@ -8475,6 +9904,7 @@ export namespace Prisma {
     readonly id: FieldRef<"ExpenseParticipant", 'String'>
     readonly expenseId: FieldRef<"ExpenseParticipant", 'String'>
     readonly userId: FieldRef<"ExpenseParticipant", 'String'>
+    readonly shareAmount: FieldRef<"ExpenseParticipant", 'Decimal'>
     readonly createdAt: FieldRef<"ExpenseParticipant", 'DateTime'>
   }
     
@@ -10155,6 +11585,7 @@ export namespace Prisma {
     description: 'description',
     type: 'type',
     status: 'status',
+    expenseId: 'expenseId',
     pendingConfirmationFromId: 'pendingConfirmationFromId',
     occurredAt: 'occurredAt',
     confirmedAt: 'confirmedAt',
@@ -10179,12 +11610,24 @@ export namespace Prisma {
   export type GatheringScalarFieldEnum = (typeof GatheringScalarFieldEnum)[keyof typeof GatheringScalarFieldEnum]
 
 
+  export const GatheringParticipantScalarFieldEnum: {
+    id: 'id',
+    gatheringId: 'gatheringId',
+    userId: 'userId',
+    createdAt: 'createdAt'
+  };
+
+  export type GatheringParticipantScalarFieldEnum = (typeof GatheringParticipantScalarFieldEnum)[keyof typeof GatheringParticipantScalarFieldEnum]
+
+
   export const ExpenseScalarFieldEnum: {
     id: 'id',
     gatheringId: 'gatheringId',
     createdById: 'createdById',
+    payerId: 'payerId',
     title: 'title',
     amount: 'amount',
+    splitType: 'splitType',
     currency: 'currency',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -10197,6 +11640,7 @@ export namespace Prisma {
     id: 'id',
     expenseId: 'expenseId',
     userId: 'userId',
+    shareAmount: 'shareAmount',
     createdAt: 'createdAt'
   };
 
@@ -10333,6 +11777,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'ExpenseSplitType'
+   */
+  export type EnumExpenseSplitTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExpenseSplitType'>
+    
+
+
+  /**
+   * Reference to a field of type 'ExpenseSplitType[]'
+   */
+  export type ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExpenseSplitType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'NotificationType'
    */
   export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
@@ -10389,7 +11847,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionListRelationFilter
     transactionsToConfirm?: TransactionListRelationFilter
     gatherings?: GatheringListRelationFilter
+    gatheringParticipants?: GatheringParticipantListRelationFilter
     expensesCreated?: ExpenseListRelationFilter
+    expensesPaid?: ExpenseListRelationFilter
     expenseParticipations?: ExpenseParticipantListRelationFilter
     notifications?: NotificationListRelationFilter
   }
@@ -10410,7 +11870,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionOrderByRelationAggregateInput
     transactionsToConfirm?: TransactionOrderByRelationAggregateInput
     gatherings?: GatheringOrderByRelationAggregateInput
+    gatheringParticipants?: GatheringParticipantOrderByRelationAggregateInput
     expensesCreated?: ExpenseOrderByRelationAggregateInput
+    expensesPaid?: ExpenseOrderByRelationAggregateInput
     expenseParticipations?: ExpenseParticipantOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
   }
@@ -10434,7 +11896,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionListRelationFilter
     transactionsToConfirm?: TransactionListRelationFilter
     gatherings?: GatheringListRelationFilter
+    gatheringParticipants?: GatheringParticipantListRelationFilter
     expensesCreated?: ExpenseListRelationFilter
+    expensesPaid?: ExpenseListRelationFilter
     expenseParticipations?: ExpenseParticipantListRelationFilter
     notifications?: NotificationListRelationFilter
   }, "id" | "username" | "email">
@@ -10551,6 +12015,7 @@ export namespace Prisma {
     description?: StringFilter<"Transaction"> | string
     type?: EnumTransactionTypeFilter<"Transaction"> | $Enums.TransactionType
     status?: EnumTransactionStatusFilter<"Transaction"> | $Enums.TransactionStatus
+    expenseId?: StringNullableFilter<"Transaction"> | string | null
     pendingConfirmationFromId?: StringFilter<"Transaction"> | string
     occurredAt?: DateTimeFilter<"Transaction"> | Date | string
     confirmedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
@@ -10561,6 +12026,7 @@ export namespace Prisma {
     debtor?: XOR<UserScalarRelationFilter, UserWhereInput>
     creditor?: XOR<UserScalarRelationFilter, UserWhereInput>
     confirmationFrom?: XOR<UserScalarRelationFilter, UserWhereInput>
+    expense?: XOR<ExpenseNullableScalarRelationFilter, ExpenseWhereInput> | null
     notifications?: NotificationListRelationFilter
   }
 
@@ -10574,6 +12040,7 @@ export namespace Prisma {
     description?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    expenseId?: SortOrderInput | SortOrder
     pendingConfirmationFromId?: SortOrder
     occurredAt?: SortOrder
     confirmedAt?: SortOrderInput | SortOrder
@@ -10584,6 +12051,7 @@ export namespace Prisma {
     debtor?: UserOrderByWithRelationInput
     creditor?: UserOrderByWithRelationInput
     confirmationFrom?: UserOrderByWithRelationInput
+    expense?: ExpenseOrderByWithRelationInput
     notifications?: NotificationOrderByRelationAggregateInput
   }
 
@@ -10600,6 +12068,7 @@ export namespace Prisma {
     description?: StringFilter<"Transaction"> | string
     type?: EnumTransactionTypeFilter<"Transaction"> | $Enums.TransactionType
     status?: EnumTransactionStatusFilter<"Transaction"> | $Enums.TransactionStatus
+    expenseId?: StringNullableFilter<"Transaction"> | string | null
     pendingConfirmationFromId?: StringFilter<"Transaction"> | string
     occurredAt?: DateTimeFilter<"Transaction"> | Date | string
     confirmedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
@@ -10610,6 +12079,7 @@ export namespace Prisma {
     debtor?: XOR<UserScalarRelationFilter, UserWhereInput>
     creditor?: XOR<UserScalarRelationFilter, UserWhereInput>
     confirmationFrom?: XOR<UserScalarRelationFilter, UserWhereInput>
+    expense?: XOR<ExpenseNullableScalarRelationFilter, ExpenseWhereInput> | null
     notifications?: NotificationListRelationFilter
   }, "id">
 
@@ -10623,6 +12093,7 @@ export namespace Prisma {
     description?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    expenseId?: SortOrderInput | SortOrder
     pendingConfirmationFromId?: SortOrder
     occurredAt?: SortOrder
     confirmedAt?: SortOrderInput | SortOrder
@@ -10649,6 +12120,7 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Transaction"> | string
     type?: EnumTransactionTypeWithAggregatesFilter<"Transaction"> | $Enums.TransactionType
     status?: EnumTransactionStatusWithAggregatesFilter<"Transaction"> | $Enums.TransactionStatus
+    expenseId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     pendingConfirmationFromId?: StringWithAggregatesFilter<"Transaction"> | string
     occurredAt?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
     confirmedAt?: DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
@@ -10670,6 +12142,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Gathering"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     expenses?: ExpenseListRelationFilter
+    participants?: GatheringParticipantListRelationFilter
     notifications?: NotificationListRelationFilter
   }
 
@@ -10683,6 +12156,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     creator?: UserOrderByWithRelationInput
     expenses?: ExpenseOrderByRelationAggregateInput
+    participants?: GatheringParticipantOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
   }
 
@@ -10699,6 +12173,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Gathering"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     expenses?: ExpenseListRelationFilter
+    participants?: GatheringParticipantListRelationFilter
     notifications?: NotificationListRelationFilter
   }, "id">
 
@@ -10728,6 +12203,60 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Gathering"> | Date | string
   }
 
+  export type GatheringParticipantWhereInput = {
+    AND?: GatheringParticipantWhereInput | GatheringParticipantWhereInput[]
+    OR?: GatheringParticipantWhereInput[]
+    NOT?: GatheringParticipantWhereInput | GatheringParticipantWhereInput[]
+    id?: StringFilter<"GatheringParticipant"> | string
+    gatheringId?: StringFilter<"GatheringParticipant"> | string
+    userId?: StringFilter<"GatheringParticipant"> | string
+    createdAt?: DateTimeFilter<"GatheringParticipant"> | Date | string
+    gathering?: XOR<GatheringScalarRelationFilter, GatheringWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type GatheringParticipantOrderByWithRelationInput = {
+    id?: SortOrder
+    gatheringId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    gathering?: GatheringOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type GatheringParticipantWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    gatheringId_userId?: GatheringParticipantGatheringIdUserIdCompoundUniqueInput
+    AND?: GatheringParticipantWhereInput | GatheringParticipantWhereInput[]
+    OR?: GatheringParticipantWhereInput[]
+    NOT?: GatheringParticipantWhereInput | GatheringParticipantWhereInput[]
+    gatheringId?: StringFilter<"GatheringParticipant"> | string
+    userId?: StringFilter<"GatheringParticipant"> | string
+    createdAt?: DateTimeFilter<"GatheringParticipant"> | Date | string
+    gathering?: XOR<GatheringScalarRelationFilter, GatheringWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "gatheringId_userId">
+
+  export type GatheringParticipantOrderByWithAggregationInput = {
+    id?: SortOrder
+    gatheringId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    _count?: GatheringParticipantCountOrderByAggregateInput
+    _max?: GatheringParticipantMaxOrderByAggregateInput
+    _min?: GatheringParticipantMinOrderByAggregateInput
+  }
+
+  export type GatheringParticipantScalarWhereWithAggregatesInput = {
+    AND?: GatheringParticipantScalarWhereWithAggregatesInput | GatheringParticipantScalarWhereWithAggregatesInput[]
+    OR?: GatheringParticipantScalarWhereWithAggregatesInput[]
+    NOT?: GatheringParticipantScalarWhereWithAggregatesInput | GatheringParticipantScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GatheringParticipant"> | string
+    gatheringId?: StringWithAggregatesFilter<"GatheringParticipant"> | string
+    userId?: StringWithAggregatesFilter<"GatheringParticipant"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"GatheringParticipant"> | Date | string
+  }
+
   export type ExpenseWhereInput = {
     AND?: ExpenseWhereInput | ExpenseWhereInput[]
     OR?: ExpenseWhereInput[]
@@ -10735,28 +12264,36 @@ export namespace Prisma {
     id?: StringFilter<"Expense"> | string
     gatheringId?: StringFilter<"Expense"> | string
     createdById?: StringFilter<"Expense"> | string
+    payerId?: StringFilter<"Expense"> | string
     title?: StringFilter<"Expense"> | string
     amount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFilter<"Expense"> | $Enums.ExpenseSplitType
     currency?: StringFilter<"Expense"> | string
     createdAt?: DateTimeFilter<"Expense"> | Date | string
     updatedAt?: DateTimeFilter<"Expense"> | Date | string
     gathering?: XOR<GatheringScalarRelationFilter, GatheringWhereInput>
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    payer?: XOR<UserScalarRelationFilter, UserWhereInput>
     participants?: ExpenseParticipantListRelationFilter
+    transactions?: TransactionListRelationFilter
   }
 
   export type ExpenseOrderByWithRelationInput = {
     id?: SortOrder
     gatheringId?: SortOrder
     createdById?: SortOrder
+    payerId?: SortOrder
     title?: SortOrder
     amount?: SortOrder
+    splitType?: SortOrder
     currency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     gathering?: GatheringOrderByWithRelationInput
     creator?: UserOrderByWithRelationInput
+    payer?: UserOrderByWithRelationInput
     participants?: ExpenseParticipantOrderByRelationAggregateInput
+    transactions?: TransactionOrderByRelationAggregateInput
   }
 
   export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
@@ -10766,22 +12303,28 @@ export namespace Prisma {
     NOT?: ExpenseWhereInput | ExpenseWhereInput[]
     gatheringId?: StringFilter<"Expense"> | string
     createdById?: StringFilter<"Expense"> | string
+    payerId?: StringFilter<"Expense"> | string
     title?: StringFilter<"Expense"> | string
     amount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFilter<"Expense"> | $Enums.ExpenseSplitType
     currency?: StringFilter<"Expense"> | string
     createdAt?: DateTimeFilter<"Expense"> | Date | string
     updatedAt?: DateTimeFilter<"Expense"> | Date | string
     gathering?: XOR<GatheringScalarRelationFilter, GatheringWhereInput>
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    payer?: XOR<UserScalarRelationFilter, UserWhereInput>
     participants?: ExpenseParticipantListRelationFilter
+    transactions?: TransactionListRelationFilter
   }, "id">
 
   export type ExpenseOrderByWithAggregationInput = {
     id?: SortOrder
     gatheringId?: SortOrder
     createdById?: SortOrder
+    payerId?: SortOrder
     title?: SortOrder
     amount?: SortOrder
+    splitType?: SortOrder
     currency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10799,8 +12342,10 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Expense"> | string
     gatheringId?: StringWithAggregatesFilter<"Expense"> | string
     createdById?: StringWithAggregatesFilter<"Expense"> | string
+    payerId?: StringWithAggregatesFilter<"Expense"> | string
     title?: StringWithAggregatesFilter<"Expense"> | string
     amount?: DecimalWithAggregatesFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeWithAggregatesFilter<"Expense"> | $Enums.ExpenseSplitType
     currency?: StringWithAggregatesFilter<"Expense"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Expense"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Expense"> | Date | string
@@ -10813,6 +12358,7 @@ export namespace Prisma {
     id?: StringFilter<"ExpenseParticipant"> | string
     expenseId?: StringFilter<"ExpenseParticipant"> | string
     userId?: StringFilter<"ExpenseParticipant"> | string
+    shareAmount?: DecimalFilter<"ExpenseParticipant"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFilter<"ExpenseParticipant"> | Date | string
     expense?: XOR<ExpenseScalarRelationFilter, ExpenseWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -10822,6 +12368,7 @@ export namespace Prisma {
     id?: SortOrder
     expenseId?: SortOrder
     userId?: SortOrder
+    shareAmount?: SortOrder
     createdAt?: SortOrder
     expense?: ExpenseOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
@@ -10835,6 +12382,7 @@ export namespace Prisma {
     NOT?: ExpenseParticipantWhereInput | ExpenseParticipantWhereInput[]
     expenseId?: StringFilter<"ExpenseParticipant"> | string
     userId?: StringFilter<"ExpenseParticipant"> | string
+    shareAmount?: DecimalFilter<"ExpenseParticipant"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFilter<"ExpenseParticipant"> | Date | string
     expense?: XOR<ExpenseScalarRelationFilter, ExpenseWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -10844,10 +12392,13 @@ export namespace Prisma {
     id?: SortOrder
     expenseId?: SortOrder
     userId?: SortOrder
+    shareAmount?: SortOrder
     createdAt?: SortOrder
     _count?: ExpenseParticipantCountOrderByAggregateInput
+    _avg?: ExpenseParticipantAvgOrderByAggregateInput
     _max?: ExpenseParticipantMaxOrderByAggregateInput
     _min?: ExpenseParticipantMinOrderByAggregateInput
+    _sum?: ExpenseParticipantSumOrderByAggregateInput
   }
 
   export type ExpenseParticipantScalarWhereWithAggregatesInput = {
@@ -10857,6 +12408,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"ExpenseParticipant"> | string
     expenseId?: StringWithAggregatesFilter<"ExpenseParticipant"> | string
     userId?: StringWithAggregatesFilter<"ExpenseParticipant"> | string
+    shareAmount?: DecimalWithAggregatesFilter<"ExpenseParticipant"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeWithAggregatesFilter<"ExpenseParticipant"> | Date | string
   }
 
@@ -10965,7 +12517,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -10986,7 +12540,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -11007,7 +12563,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -11028,7 +12586,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -11154,6 +12714,7 @@ export namespace Prisma {
     debtor: UserCreateNestedOneWithoutTransactionsDebtorInput
     creditor: UserCreateNestedOneWithoutTransactionsCreditorInput
     confirmationFrom: UserCreateNestedOneWithoutTransactionsToConfirmInput
+    expense?: ExpenseCreateNestedOneWithoutTransactionsInput
     notifications?: NotificationCreateNestedManyWithoutRelatedTransactionInput
   }
 
@@ -11167,6 +12728,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -11192,6 +12754,7 @@ export namespace Prisma {
     debtor?: UserUpdateOneRequiredWithoutTransactionsDebtorNestedInput
     creditor?: UserUpdateOneRequiredWithoutTransactionsCreditorNestedInput
     confirmationFrom?: UserUpdateOneRequiredWithoutTransactionsToConfirmNestedInput
+    expense?: ExpenseUpdateOneWithoutTransactionsNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedTransactionNestedInput
   }
 
@@ -11205,6 +12768,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11224,6 +12788,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -11256,6 +12821,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11273,6 +12839,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
     expenses?: ExpenseCreateNestedManyWithoutGatheringInput
+    participants?: GatheringParticipantCreateNestedManyWithoutGatheringInput
     notifications?: NotificationCreateNestedManyWithoutRelatedGatheringInput
   }
 
@@ -11285,6 +12852,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
+    participants?: GatheringParticipantUncheckedCreateNestedManyWithoutGatheringInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutRelatedGatheringInput
   }
 
@@ -11297,6 +12865,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
     expenses?: ExpenseUpdateManyWithoutGatheringNestedInput
+    participants?: GatheringParticipantUpdateManyWithoutGatheringNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedGatheringNestedInput
   }
 
@@ -11309,6 +12878,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
+    participants?: GatheringParticipantUncheckedUpdateManyWithoutGatheringNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutRelatedGatheringNestedInput
   }
 
@@ -11341,60 +12911,121 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GatheringParticipantCreateInput = {
+    id?: string
+    createdAt?: Date | string
+    gathering: GatheringCreateNestedOneWithoutParticipantsInput
+    user: UserCreateNestedOneWithoutGatheringParticipantsInput
+  }
+
+  export type GatheringParticipantUncheckedCreateInput = {
+    id?: string
+    gatheringId: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type GatheringParticipantUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gathering?: GatheringUpdateOneRequiredWithoutParticipantsNestedInput
+    user?: UserUpdateOneRequiredWithoutGatheringParticipantsNestedInput
+  }
+
+  export type GatheringParticipantUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GatheringParticipantCreateManyInput = {
+    id?: string
+    gatheringId: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type GatheringParticipantUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GatheringParticipantUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ExpenseCreateInput = {
     id?: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     gathering: GatheringCreateNestedOneWithoutExpensesInput
     creator: UserCreateNestedOneWithoutExpensesCreatedInput
+    payer: UserCreateNestedOneWithoutExpensesPaidInput
     participants?: ExpenseParticipantCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseUncheckedCreateInput = {
     id?: string
     gatheringId: string
     createdById: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ExpenseParticipantUncheckedCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gathering?: GatheringUpdateOneRequiredWithoutExpensesNestedInput
     creator?: UserUpdateOneRequiredWithoutExpensesCreatedNestedInput
+    payer?: UserUpdateOneRequiredWithoutExpensesPaidNestedInput
     participants?: ExpenseParticipantUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     gatheringId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ExpenseParticipantUncheckedUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseCreateManyInput = {
     id?: string
     gatheringId: string
     createdById: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11404,6 +13035,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11413,8 +13045,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     gatheringId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11422,6 +13056,7 @@ export namespace Prisma {
 
   export type ExpenseParticipantCreateInput = {
     id?: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     expense: ExpenseCreateNestedOneWithoutParticipantsInput
     user: UserCreateNestedOneWithoutExpenseParticipationsInput
@@ -11431,11 +13066,13 @@ export namespace Prisma {
     id?: string
     expenseId: string
     userId: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
   }
 
   export type ExpenseParticipantUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expense?: ExpenseUpdateOneRequiredWithoutParticipantsNestedInput
     user?: UserUpdateOneRequiredWithoutExpenseParticipationsNestedInput
@@ -11445,6 +13082,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     expenseId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11452,11 +13090,13 @@ export namespace Prisma {
     id?: string
     expenseId: string
     userId: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
   }
 
   export type ExpenseParticipantUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11464,6 +13104,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     expenseId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11613,6 +13254,12 @@ export namespace Prisma {
     none?: GatheringWhereInput
   }
 
+  export type GatheringParticipantListRelationFilter = {
+    every?: GatheringParticipantWhereInput
+    some?: GatheringParticipantWhereInput
+    none?: GatheringParticipantWhereInput
+  }
+
   export type ExpenseListRelationFilter = {
     every?: ExpenseWhereInput
     some?: ExpenseWhereInput
@@ -11645,6 +13292,10 @@ export namespace Prisma {
   }
 
   export type GatheringOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GatheringParticipantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11831,6 +13482,11 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type ExpenseNullableScalarRelationFilter = {
+    is?: ExpenseWhereInput | null
+    isNot?: ExpenseWhereInput | null
+  }
+
   export type TransactionCountOrderByAggregateInput = {
     id?: SortOrder
     creatorId?: SortOrder
@@ -11841,6 +13497,7 @@ export namespace Prisma {
     description?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    expenseId?: SortOrder
     pendingConfirmationFromId?: SortOrder
     occurredAt?: SortOrder
     confirmedAt?: SortOrder
@@ -11863,6 +13520,7 @@ export namespace Prisma {
     description?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    expenseId?: SortOrder
     pendingConfirmationFromId?: SortOrder
     occurredAt?: SortOrder
     confirmedAt?: SortOrder
@@ -11881,6 +13539,7 @@ export namespace Prisma {
     description?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    expenseId?: SortOrder
     pendingConfirmationFromId?: SortOrder
     occurredAt?: SortOrder
     confirmedAt?: SortOrder
@@ -11978,12 +13637,47 @@ export namespace Prisma {
     isNot?: GatheringWhereInput
   }
 
+  export type GatheringParticipantGatheringIdUserIdCompoundUniqueInput = {
+    gatheringId: string
+    userId: string
+  }
+
+  export type GatheringParticipantCountOrderByAggregateInput = {
+    id?: SortOrder
+    gatheringId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GatheringParticipantMaxOrderByAggregateInput = {
+    id?: SortOrder
+    gatheringId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GatheringParticipantMinOrderByAggregateInput = {
+    id?: SortOrder
+    gatheringId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EnumExpenseSplitTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ExpenseSplitType | EnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumExpenseSplitTypeFilter<$PrismaModel> | $Enums.ExpenseSplitType
+  }
+
   export type ExpenseCountOrderByAggregateInput = {
     id?: SortOrder
     gatheringId?: SortOrder
     createdById?: SortOrder
+    payerId?: SortOrder
     title?: SortOrder
     amount?: SortOrder
+    splitType?: SortOrder
     currency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11997,8 +13691,10 @@ export namespace Prisma {
     id?: SortOrder
     gatheringId?: SortOrder
     createdById?: SortOrder
+    payerId?: SortOrder
     title?: SortOrder
     amount?: SortOrder
+    splitType?: SortOrder
     currency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12008,8 +13704,10 @@ export namespace Prisma {
     id?: SortOrder
     gatheringId?: SortOrder
     createdById?: SortOrder
+    payerId?: SortOrder
     title?: SortOrder
     amount?: SortOrder
+    splitType?: SortOrder
     currency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12017,6 +13715,16 @@ export namespace Prisma {
 
   export type ExpenseSumOrderByAggregateInput = {
     amount?: SortOrder
+  }
+
+  export type EnumExpenseSplitTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ExpenseSplitType | EnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumExpenseSplitTypeWithAggregatesFilter<$PrismaModel> | $Enums.ExpenseSplitType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumExpenseSplitTypeFilter<$PrismaModel>
+    _max?: NestedEnumExpenseSplitTypeFilter<$PrismaModel>
   }
 
   export type ExpenseScalarRelationFilter = {
@@ -12033,13 +13741,19 @@ export namespace Prisma {
     id?: SortOrder
     expenseId?: SortOrder
     userId?: SortOrder
+    shareAmount?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ExpenseParticipantAvgOrderByAggregateInput = {
+    shareAmount?: SortOrder
   }
 
   export type ExpenseParticipantMaxOrderByAggregateInput = {
     id?: SortOrder
     expenseId?: SortOrder
     userId?: SortOrder
+    shareAmount?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -12047,7 +13761,12 @@ export namespace Prisma {
     id?: SortOrder
     expenseId?: SortOrder
     userId?: SortOrder
+    shareAmount?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ExpenseParticipantSumOrderByAggregateInput = {
+    shareAmount?: SortOrder
   }
 
   export type EnumNotificationTypeFilter<$PrismaModel = never> = {
@@ -12183,10 +13902,24 @@ export namespace Prisma {
     connect?: GatheringWhereUniqueInput | GatheringWhereUniqueInput[]
   }
 
+  export type GatheringParticipantCreateNestedManyWithoutUserInput = {
+    create?: XOR<GatheringParticipantCreateWithoutUserInput, GatheringParticipantUncheckedCreateWithoutUserInput> | GatheringParticipantCreateWithoutUserInput[] | GatheringParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutUserInput | GatheringParticipantCreateOrConnectWithoutUserInput[]
+    createMany?: GatheringParticipantCreateManyUserInputEnvelope
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+  }
+
   export type ExpenseCreateNestedManyWithoutCreatorInput = {
     create?: XOR<ExpenseCreateWithoutCreatorInput, ExpenseUncheckedCreateWithoutCreatorInput> | ExpenseCreateWithoutCreatorInput[] | ExpenseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: ExpenseCreateOrConnectWithoutCreatorInput | ExpenseCreateOrConnectWithoutCreatorInput[]
     createMany?: ExpenseCreateManyCreatorInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
+  export type ExpenseCreateNestedManyWithoutPayerInput = {
+    create?: XOR<ExpenseCreateWithoutPayerInput, ExpenseUncheckedCreateWithoutPayerInput> | ExpenseCreateWithoutPayerInput[] | ExpenseUncheckedCreateWithoutPayerInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutPayerInput | ExpenseCreateOrConnectWithoutPayerInput[]
+    createMany?: ExpenseCreateManyPayerInputEnvelope
     connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
@@ -12253,10 +13986,24 @@ export namespace Prisma {
     connect?: GatheringWhereUniqueInput | GatheringWhereUniqueInput[]
   }
 
+  export type GatheringParticipantUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<GatheringParticipantCreateWithoutUserInput, GatheringParticipantUncheckedCreateWithoutUserInput> | GatheringParticipantCreateWithoutUserInput[] | GatheringParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutUserInput | GatheringParticipantCreateOrConnectWithoutUserInput[]
+    createMany?: GatheringParticipantCreateManyUserInputEnvelope
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+  }
+
   export type ExpenseUncheckedCreateNestedManyWithoutCreatorInput = {
     create?: XOR<ExpenseCreateWithoutCreatorInput, ExpenseUncheckedCreateWithoutCreatorInput> | ExpenseCreateWithoutCreatorInput[] | ExpenseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: ExpenseCreateOrConnectWithoutCreatorInput | ExpenseCreateOrConnectWithoutCreatorInput[]
     createMany?: ExpenseCreateManyCreatorInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
+  export type ExpenseUncheckedCreateNestedManyWithoutPayerInput = {
+    create?: XOR<ExpenseCreateWithoutPayerInput, ExpenseUncheckedCreateWithoutPayerInput> | ExpenseCreateWithoutPayerInput[] | ExpenseUncheckedCreateWithoutPayerInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutPayerInput | ExpenseCreateOrConnectWithoutPayerInput[]
+    createMany?: ExpenseCreateManyPayerInputEnvelope
     connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
@@ -12384,6 +14131,20 @@ export namespace Prisma {
     deleteMany?: GatheringScalarWhereInput | GatheringScalarWhereInput[]
   }
 
+  export type GatheringParticipantUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GatheringParticipantCreateWithoutUserInput, GatheringParticipantUncheckedCreateWithoutUserInput> | GatheringParticipantCreateWithoutUserInput[] | GatheringParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutUserInput | GatheringParticipantCreateOrConnectWithoutUserInput[]
+    upsert?: GatheringParticipantUpsertWithWhereUniqueWithoutUserInput | GatheringParticipantUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GatheringParticipantCreateManyUserInputEnvelope
+    set?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    disconnect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    delete?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    update?: GatheringParticipantUpdateWithWhereUniqueWithoutUserInput | GatheringParticipantUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GatheringParticipantUpdateManyWithWhereWithoutUserInput | GatheringParticipantUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GatheringParticipantScalarWhereInput | GatheringParticipantScalarWhereInput[]
+  }
+
   export type ExpenseUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<ExpenseCreateWithoutCreatorInput, ExpenseUncheckedCreateWithoutCreatorInput> | ExpenseCreateWithoutCreatorInput[] | ExpenseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: ExpenseCreateOrConnectWithoutCreatorInput | ExpenseCreateOrConnectWithoutCreatorInput[]
@@ -12395,6 +14156,20 @@ export namespace Prisma {
     connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
     update?: ExpenseUpdateWithWhereUniqueWithoutCreatorInput | ExpenseUpdateWithWhereUniqueWithoutCreatorInput[]
     updateMany?: ExpenseUpdateManyWithWhereWithoutCreatorInput | ExpenseUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
+  export type ExpenseUpdateManyWithoutPayerNestedInput = {
+    create?: XOR<ExpenseCreateWithoutPayerInput, ExpenseUncheckedCreateWithoutPayerInput> | ExpenseCreateWithoutPayerInput[] | ExpenseUncheckedCreateWithoutPayerInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutPayerInput | ExpenseCreateOrConnectWithoutPayerInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutPayerInput | ExpenseUpsertWithWhereUniqueWithoutPayerInput[]
+    createMany?: ExpenseCreateManyPayerInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutPayerInput | ExpenseUpdateWithWhereUniqueWithoutPayerInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutPayerInput | ExpenseUpdateManyWithWhereWithoutPayerInput[]
     deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
@@ -12524,6 +14299,20 @@ export namespace Prisma {
     deleteMany?: GatheringScalarWhereInput | GatheringScalarWhereInput[]
   }
 
+  export type GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GatheringParticipantCreateWithoutUserInput, GatheringParticipantUncheckedCreateWithoutUserInput> | GatheringParticipantCreateWithoutUserInput[] | GatheringParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutUserInput | GatheringParticipantCreateOrConnectWithoutUserInput[]
+    upsert?: GatheringParticipantUpsertWithWhereUniqueWithoutUserInput | GatheringParticipantUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GatheringParticipantCreateManyUserInputEnvelope
+    set?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    disconnect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    delete?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    update?: GatheringParticipantUpdateWithWhereUniqueWithoutUserInput | GatheringParticipantUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GatheringParticipantUpdateManyWithWhereWithoutUserInput | GatheringParticipantUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GatheringParticipantScalarWhereInput | GatheringParticipantScalarWhereInput[]
+  }
+
   export type ExpenseUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<ExpenseCreateWithoutCreatorInput, ExpenseUncheckedCreateWithoutCreatorInput> | ExpenseCreateWithoutCreatorInput[] | ExpenseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: ExpenseCreateOrConnectWithoutCreatorInput | ExpenseCreateOrConnectWithoutCreatorInput[]
@@ -12535,6 +14324,20 @@ export namespace Prisma {
     connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
     update?: ExpenseUpdateWithWhereUniqueWithoutCreatorInput | ExpenseUpdateWithWhereUniqueWithoutCreatorInput[]
     updateMany?: ExpenseUpdateManyWithWhereWithoutCreatorInput | ExpenseUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutPayerNestedInput = {
+    create?: XOR<ExpenseCreateWithoutPayerInput, ExpenseUncheckedCreateWithoutPayerInput> | ExpenseCreateWithoutPayerInput[] | ExpenseUncheckedCreateWithoutPayerInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutPayerInput | ExpenseCreateOrConnectWithoutPayerInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutPayerInput | ExpenseUpsertWithWhereUniqueWithoutPayerInput[]
+    createMany?: ExpenseCreateManyPayerInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutPayerInput | ExpenseUpdateWithWhereUniqueWithoutPayerInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutPayerInput | ExpenseUpdateManyWithWhereWithoutPayerInput[]
     deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
@@ -12664,6 +14467,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type ExpenseCreateNestedOneWithoutTransactionsInput = {
+    create?: XOR<ExpenseCreateWithoutTransactionsInput, ExpenseUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: ExpenseCreateOrConnectWithoutTransactionsInput
+    connect?: ExpenseWhereUniqueInput
+  }
+
   export type NotificationCreateNestedManyWithoutRelatedTransactionInput = {
     create?: XOR<NotificationCreateWithoutRelatedTransactionInput, NotificationUncheckedCreateWithoutRelatedTransactionInput> | NotificationCreateWithoutRelatedTransactionInput[] | NotificationUncheckedCreateWithoutRelatedTransactionInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutRelatedTransactionInput | NotificationCreateOrConnectWithoutRelatedTransactionInput[]
@@ -12730,6 +14539,16 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTransactionsToConfirmInput, UserUpdateWithoutTransactionsToConfirmInput>, UserUncheckedUpdateWithoutTransactionsToConfirmInput>
   }
 
+  export type ExpenseUpdateOneWithoutTransactionsNestedInput = {
+    create?: XOR<ExpenseCreateWithoutTransactionsInput, ExpenseUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: ExpenseCreateOrConnectWithoutTransactionsInput
+    upsert?: ExpenseUpsertWithoutTransactionsInput
+    disconnect?: ExpenseWhereInput | boolean
+    delete?: ExpenseWhereInput | boolean
+    connect?: ExpenseWhereUniqueInput
+    update?: XOR<XOR<ExpenseUpdateToOneWithWhereWithoutTransactionsInput, ExpenseUpdateWithoutTransactionsInput>, ExpenseUncheckedUpdateWithoutTransactionsInput>
+  }
+
   export type NotificationUpdateManyWithoutRelatedTransactionNestedInput = {
     create?: XOR<NotificationCreateWithoutRelatedTransactionInput, NotificationUncheckedCreateWithoutRelatedTransactionInput> | NotificationCreateWithoutRelatedTransactionInput[] | NotificationUncheckedCreateWithoutRelatedTransactionInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutRelatedTransactionInput | NotificationCreateOrConnectWithoutRelatedTransactionInput[]
@@ -12771,6 +14590,13 @@ export namespace Prisma {
     connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
+  export type GatheringParticipantCreateNestedManyWithoutGatheringInput = {
+    create?: XOR<GatheringParticipantCreateWithoutGatheringInput, GatheringParticipantUncheckedCreateWithoutGatheringInput> | GatheringParticipantCreateWithoutGatheringInput[] | GatheringParticipantUncheckedCreateWithoutGatheringInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutGatheringInput | GatheringParticipantCreateOrConnectWithoutGatheringInput[]
+    createMany?: GatheringParticipantCreateManyGatheringInputEnvelope
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+  }
+
   export type NotificationCreateNestedManyWithoutRelatedGatheringInput = {
     create?: XOR<NotificationCreateWithoutRelatedGatheringInput, NotificationUncheckedCreateWithoutRelatedGatheringInput> | NotificationCreateWithoutRelatedGatheringInput[] | NotificationUncheckedCreateWithoutRelatedGatheringInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutRelatedGatheringInput | NotificationCreateOrConnectWithoutRelatedGatheringInput[]
@@ -12783,6 +14609,13 @@ export namespace Prisma {
     connectOrCreate?: ExpenseCreateOrConnectWithoutGatheringInput | ExpenseCreateOrConnectWithoutGatheringInput[]
     createMany?: ExpenseCreateManyGatheringInputEnvelope
     connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
+  export type GatheringParticipantUncheckedCreateNestedManyWithoutGatheringInput = {
+    create?: XOR<GatheringParticipantCreateWithoutGatheringInput, GatheringParticipantUncheckedCreateWithoutGatheringInput> | GatheringParticipantCreateWithoutGatheringInput[] | GatheringParticipantUncheckedCreateWithoutGatheringInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutGatheringInput | GatheringParticipantCreateOrConnectWithoutGatheringInput[]
+    createMany?: GatheringParticipantCreateManyGatheringInputEnvelope
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
   }
 
   export type NotificationUncheckedCreateNestedManyWithoutRelatedGatheringInput = {
@@ -12814,6 +14647,20 @@ export namespace Prisma {
     deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
+  export type GatheringParticipantUpdateManyWithoutGatheringNestedInput = {
+    create?: XOR<GatheringParticipantCreateWithoutGatheringInput, GatheringParticipantUncheckedCreateWithoutGatheringInput> | GatheringParticipantCreateWithoutGatheringInput[] | GatheringParticipantUncheckedCreateWithoutGatheringInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutGatheringInput | GatheringParticipantCreateOrConnectWithoutGatheringInput[]
+    upsert?: GatheringParticipantUpsertWithWhereUniqueWithoutGatheringInput | GatheringParticipantUpsertWithWhereUniqueWithoutGatheringInput[]
+    createMany?: GatheringParticipantCreateManyGatheringInputEnvelope
+    set?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    disconnect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    delete?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    update?: GatheringParticipantUpdateWithWhereUniqueWithoutGatheringInput | GatheringParticipantUpdateWithWhereUniqueWithoutGatheringInput[]
+    updateMany?: GatheringParticipantUpdateManyWithWhereWithoutGatheringInput | GatheringParticipantUpdateManyWithWhereWithoutGatheringInput[]
+    deleteMany?: GatheringParticipantScalarWhereInput | GatheringParticipantScalarWhereInput[]
+  }
+
   export type NotificationUpdateManyWithoutRelatedGatheringNestedInput = {
     create?: XOR<NotificationCreateWithoutRelatedGatheringInput, NotificationUncheckedCreateWithoutRelatedGatheringInput> | NotificationCreateWithoutRelatedGatheringInput[] | NotificationUncheckedCreateWithoutRelatedGatheringInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutRelatedGatheringInput | NotificationCreateOrConnectWithoutRelatedGatheringInput[]
@@ -12842,6 +14689,20 @@ export namespace Prisma {
     deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
+  export type GatheringParticipantUncheckedUpdateManyWithoutGatheringNestedInput = {
+    create?: XOR<GatheringParticipantCreateWithoutGatheringInput, GatheringParticipantUncheckedCreateWithoutGatheringInput> | GatheringParticipantCreateWithoutGatheringInput[] | GatheringParticipantUncheckedCreateWithoutGatheringInput[]
+    connectOrCreate?: GatheringParticipantCreateOrConnectWithoutGatheringInput | GatheringParticipantCreateOrConnectWithoutGatheringInput[]
+    upsert?: GatheringParticipantUpsertWithWhereUniqueWithoutGatheringInput | GatheringParticipantUpsertWithWhereUniqueWithoutGatheringInput[]
+    createMany?: GatheringParticipantCreateManyGatheringInputEnvelope
+    set?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    disconnect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    delete?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    connect?: GatheringParticipantWhereUniqueInput | GatheringParticipantWhereUniqueInput[]
+    update?: GatheringParticipantUpdateWithWhereUniqueWithoutGatheringInput | GatheringParticipantUpdateWithWhereUniqueWithoutGatheringInput[]
+    updateMany?: GatheringParticipantUpdateManyWithWhereWithoutGatheringInput | GatheringParticipantUpdateManyWithWhereWithoutGatheringInput[]
+    deleteMany?: GatheringParticipantScalarWhereInput | GatheringParticipantScalarWhereInput[]
+  }
+
   export type NotificationUncheckedUpdateManyWithoutRelatedGatheringNestedInput = {
     create?: XOR<NotificationCreateWithoutRelatedGatheringInput, NotificationUncheckedCreateWithoutRelatedGatheringInput> | NotificationCreateWithoutRelatedGatheringInput[] | NotificationUncheckedCreateWithoutRelatedGatheringInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutRelatedGatheringInput | NotificationCreateOrConnectWithoutRelatedGatheringInput[]
@@ -12856,6 +14717,34 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type GatheringCreateNestedOneWithoutParticipantsInput = {
+    create?: XOR<GatheringCreateWithoutParticipantsInput, GatheringUncheckedCreateWithoutParticipantsInput>
+    connectOrCreate?: GatheringCreateOrConnectWithoutParticipantsInput
+    connect?: GatheringWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutGatheringParticipantsInput = {
+    create?: XOR<UserCreateWithoutGatheringParticipantsInput, UserUncheckedCreateWithoutGatheringParticipantsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGatheringParticipantsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GatheringUpdateOneRequiredWithoutParticipantsNestedInput = {
+    create?: XOR<GatheringCreateWithoutParticipantsInput, GatheringUncheckedCreateWithoutParticipantsInput>
+    connectOrCreate?: GatheringCreateOrConnectWithoutParticipantsInput
+    upsert?: GatheringUpsertWithoutParticipantsInput
+    connect?: GatheringWhereUniqueInput
+    update?: XOR<XOR<GatheringUpdateToOneWithWhereWithoutParticipantsInput, GatheringUpdateWithoutParticipantsInput>, GatheringUncheckedUpdateWithoutParticipantsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutGatheringParticipantsNestedInput = {
+    create?: XOR<UserCreateWithoutGatheringParticipantsInput, UserUncheckedCreateWithoutGatheringParticipantsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGatheringParticipantsInput
+    upsert?: UserUpsertWithoutGatheringParticipantsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGatheringParticipantsInput, UserUpdateWithoutGatheringParticipantsInput>, UserUncheckedUpdateWithoutGatheringParticipantsInput>
+  }
+
   export type GatheringCreateNestedOneWithoutExpensesInput = {
     create?: XOR<GatheringCreateWithoutExpensesInput, GatheringUncheckedCreateWithoutExpensesInput>
     connectOrCreate?: GatheringCreateOrConnectWithoutExpensesInput
@@ -12868,6 +14757,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutExpensesPaidInput = {
+    create?: XOR<UserCreateWithoutExpensesPaidInput, UserUncheckedCreateWithoutExpensesPaidInput>
+    connectOrCreate?: UserCreateOrConnectWithoutExpensesPaidInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type ExpenseParticipantCreateNestedManyWithoutExpenseInput = {
     create?: XOR<ExpenseParticipantCreateWithoutExpenseInput, ExpenseParticipantUncheckedCreateWithoutExpenseInput> | ExpenseParticipantCreateWithoutExpenseInput[] | ExpenseParticipantUncheckedCreateWithoutExpenseInput[]
     connectOrCreate?: ExpenseParticipantCreateOrConnectWithoutExpenseInput | ExpenseParticipantCreateOrConnectWithoutExpenseInput[]
@@ -12875,11 +14770,29 @@ export namespace Prisma {
     connect?: ExpenseParticipantWhereUniqueInput | ExpenseParticipantWhereUniqueInput[]
   }
 
+  export type TransactionCreateNestedManyWithoutExpenseInput = {
+    create?: XOR<TransactionCreateWithoutExpenseInput, TransactionUncheckedCreateWithoutExpenseInput> | TransactionCreateWithoutExpenseInput[] | TransactionUncheckedCreateWithoutExpenseInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutExpenseInput | TransactionCreateOrConnectWithoutExpenseInput[]
+    createMany?: TransactionCreateManyExpenseInputEnvelope
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
   export type ExpenseParticipantUncheckedCreateNestedManyWithoutExpenseInput = {
     create?: XOR<ExpenseParticipantCreateWithoutExpenseInput, ExpenseParticipantUncheckedCreateWithoutExpenseInput> | ExpenseParticipantCreateWithoutExpenseInput[] | ExpenseParticipantUncheckedCreateWithoutExpenseInput[]
     connectOrCreate?: ExpenseParticipantCreateOrConnectWithoutExpenseInput | ExpenseParticipantCreateOrConnectWithoutExpenseInput[]
     createMany?: ExpenseParticipantCreateManyExpenseInputEnvelope
     connect?: ExpenseParticipantWhereUniqueInput | ExpenseParticipantWhereUniqueInput[]
+  }
+
+  export type TransactionUncheckedCreateNestedManyWithoutExpenseInput = {
+    create?: XOR<TransactionCreateWithoutExpenseInput, TransactionUncheckedCreateWithoutExpenseInput> | TransactionCreateWithoutExpenseInput[] | TransactionUncheckedCreateWithoutExpenseInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutExpenseInput | TransactionCreateOrConnectWithoutExpenseInput[]
+    createMany?: TransactionCreateManyExpenseInputEnvelope
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type EnumExpenseSplitTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ExpenseSplitType
   }
 
   export type GatheringUpdateOneRequiredWithoutExpensesNestedInput = {
@@ -12898,6 +14811,14 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutExpensesCreatedInput, UserUpdateWithoutExpensesCreatedInput>, UserUncheckedUpdateWithoutExpensesCreatedInput>
   }
 
+  export type UserUpdateOneRequiredWithoutExpensesPaidNestedInput = {
+    create?: XOR<UserCreateWithoutExpensesPaidInput, UserUncheckedCreateWithoutExpensesPaidInput>
+    connectOrCreate?: UserCreateOrConnectWithoutExpensesPaidInput
+    upsert?: UserUpsertWithoutExpensesPaidInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutExpensesPaidInput, UserUpdateWithoutExpensesPaidInput>, UserUncheckedUpdateWithoutExpensesPaidInput>
+  }
+
   export type ExpenseParticipantUpdateManyWithoutExpenseNestedInput = {
     create?: XOR<ExpenseParticipantCreateWithoutExpenseInput, ExpenseParticipantUncheckedCreateWithoutExpenseInput> | ExpenseParticipantCreateWithoutExpenseInput[] | ExpenseParticipantUncheckedCreateWithoutExpenseInput[]
     connectOrCreate?: ExpenseParticipantCreateOrConnectWithoutExpenseInput | ExpenseParticipantCreateOrConnectWithoutExpenseInput[]
@@ -12912,6 +14833,20 @@ export namespace Prisma {
     deleteMany?: ExpenseParticipantScalarWhereInput | ExpenseParticipantScalarWhereInput[]
   }
 
+  export type TransactionUpdateManyWithoutExpenseNestedInput = {
+    create?: XOR<TransactionCreateWithoutExpenseInput, TransactionUncheckedCreateWithoutExpenseInput> | TransactionCreateWithoutExpenseInput[] | TransactionUncheckedCreateWithoutExpenseInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutExpenseInput | TransactionCreateOrConnectWithoutExpenseInput[]
+    upsert?: TransactionUpsertWithWhereUniqueWithoutExpenseInput | TransactionUpsertWithWhereUniqueWithoutExpenseInput[]
+    createMany?: TransactionCreateManyExpenseInputEnvelope
+    set?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    disconnect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    delete?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    update?: TransactionUpdateWithWhereUniqueWithoutExpenseInput | TransactionUpdateWithWhereUniqueWithoutExpenseInput[]
+    updateMany?: TransactionUpdateManyWithWhereWithoutExpenseInput | TransactionUpdateManyWithWhereWithoutExpenseInput[]
+    deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
   export type ExpenseParticipantUncheckedUpdateManyWithoutExpenseNestedInput = {
     create?: XOR<ExpenseParticipantCreateWithoutExpenseInput, ExpenseParticipantUncheckedCreateWithoutExpenseInput> | ExpenseParticipantCreateWithoutExpenseInput[] | ExpenseParticipantUncheckedCreateWithoutExpenseInput[]
     connectOrCreate?: ExpenseParticipantCreateOrConnectWithoutExpenseInput | ExpenseParticipantCreateOrConnectWithoutExpenseInput[]
@@ -12924,6 +14859,20 @@ export namespace Prisma {
     update?: ExpenseParticipantUpdateWithWhereUniqueWithoutExpenseInput | ExpenseParticipantUpdateWithWhereUniqueWithoutExpenseInput[]
     updateMany?: ExpenseParticipantUpdateManyWithWhereWithoutExpenseInput | ExpenseParticipantUpdateManyWithWhereWithoutExpenseInput[]
     deleteMany?: ExpenseParticipantScalarWhereInput | ExpenseParticipantScalarWhereInput[]
+  }
+
+  export type TransactionUncheckedUpdateManyWithoutExpenseNestedInput = {
+    create?: XOR<TransactionCreateWithoutExpenseInput, TransactionUncheckedCreateWithoutExpenseInput> | TransactionCreateWithoutExpenseInput[] | TransactionUncheckedCreateWithoutExpenseInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutExpenseInput | TransactionCreateOrConnectWithoutExpenseInput[]
+    upsert?: TransactionUpsertWithWhereUniqueWithoutExpenseInput | TransactionUpsertWithWhereUniqueWithoutExpenseInput[]
+    createMany?: TransactionCreateManyExpenseInputEnvelope
+    set?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    disconnect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    delete?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    update?: TransactionUpdateWithWhereUniqueWithoutExpenseInput | TransactionUpdateWithWhereUniqueWithoutExpenseInput[]
+    updateMany?: TransactionUpdateManyWithWhereWithoutExpenseInput | TransactionUpdateManyWithWhereWithoutExpenseInput[]
+    deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
   export type ExpenseCreateNestedOneWithoutParticipantsInput = {
@@ -13236,6 +15185,23 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumExpenseSplitTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ExpenseSplitType | EnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumExpenseSplitTypeFilter<$PrismaModel> | $Enums.ExpenseSplitType
+  }
+
+  export type NestedEnumExpenseSplitTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ExpenseSplitType | EnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumExpenseSplitTypeWithAggregatesFilter<$PrismaModel> | $Enums.ExpenseSplitType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumExpenseSplitTypeFilter<$PrismaModel>
+    _max?: NestedEnumExpenseSplitTypeFilter<$PrismaModel>
+  }
+
   export type NestedEnumNotificationTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.NotificationType | EnumNotificationTypeFieldRefInput<$PrismaModel>
     in?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
@@ -13341,6 +15307,7 @@ export namespace Prisma {
     debtor: UserCreateNestedOneWithoutTransactionsDebtorInput
     creditor: UserCreateNestedOneWithoutTransactionsCreditorInput
     confirmationFrom: UserCreateNestedOneWithoutTransactionsToConfirmInput
+    expense?: ExpenseCreateNestedOneWithoutTransactionsInput
     notifications?: NotificationCreateNestedManyWithoutRelatedTransactionInput
   }
 
@@ -13353,6 +15320,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -13387,6 +15355,7 @@ export namespace Prisma {
     creator: UserCreateNestedOneWithoutTransactionsCreatedInput
     creditor: UserCreateNestedOneWithoutTransactionsCreditorInput
     confirmationFrom: UserCreateNestedOneWithoutTransactionsToConfirmInput
+    expense?: ExpenseCreateNestedOneWithoutTransactionsInput
     notifications?: NotificationCreateNestedManyWithoutRelatedTransactionInput
   }
 
@@ -13399,6 +15368,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -13433,6 +15403,7 @@ export namespace Prisma {
     creator: UserCreateNestedOneWithoutTransactionsCreatedInput
     debtor: UserCreateNestedOneWithoutTransactionsDebtorInput
     confirmationFrom: UserCreateNestedOneWithoutTransactionsToConfirmInput
+    expense?: ExpenseCreateNestedOneWithoutTransactionsInput
     notifications?: NotificationCreateNestedManyWithoutRelatedTransactionInput
   }
 
@@ -13445,6 +15416,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -13479,6 +15451,7 @@ export namespace Prisma {
     creator: UserCreateNestedOneWithoutTransactionsCreatedInput
     debtor: UserCreateNestedOneWithoutTransactionsDebtorInput
     creditor: UserCreateNestedOneWithoutTransactionsCreditorInput
+    expense?: ExpenseCreateNestedOneWithoutTransactionsInput
     notifications?: NotificationCreateNestedManyWithoutRelatedTransactionInput
   }
 
@@ -13492,6 +15465,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
     rejectedAt?: Date | string | null
@@ -13518,6 +15492,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseCreateNestedManyWithoutGatheringInput
+    participants?: GatheringParticipantCreateNestedManyWithoutGatheringInput
     notifications?: NotificationCreateNestedManyWithoutRelatedGatheringInput
   }
 
@@ -13529,6 +15504,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
+    participants?: GatheringParticipantUncheckedCreateNestedManyWithoutGatheringInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutRelatedGatheringInput
   }
 
@@ -13542,26 +15518,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type GatheringParticipantCreateWithoutUserInput = {
+    id?: string
+    createdAt?: Date | string
+    gathering: GatheringCreateNestedOneWithoutParticipantsInput
+  }
+
+  export type GatheringParticipantUncheckedCreateWithoutUserInput = {
+    id?: string
+    gatheringId: string
+    createdAt?: Date | string
+  }
+
+  export type GatheringParticipantCreateOrConnectWithoutUserInput = {
+    where: GatheringParticipantWhereUniqueInput
+    create: XOR<GatheringParticipantCreateWithoutUserInput, GatheringParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type GatheringParticipantCreateManyUserInputEnvelope = {
+    data: GatheringParticipantCreateManyUserInput | GatheringParticipantCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ExpenseCreateWithoutCreatorInput = {
     id?: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     gathering: GatheringCreateNestedOneWithoutExpensesInput
+    payer: UserCreateNestedOneWithoutExpensesPaidInput
     participants?: ExpenseParticipantCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseUncheckedCreateWithoutCreatorInput = {
     id?: string
     gatheringId: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ExpenseParticipantUncheckedCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseCreateOrConnectWithoutCreatorInput = {
@@ -13574,8 +15578,47 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ExpenseCreateWithoutPayerInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    gathering: GatheringCreateNestedOneWithoutExpensesInput
+    creator: UserCreateNestedOneWithoutExpensesCreatedInput
+    participants?: ExpenseParticipantCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionCreateNestedManyWithoutExpenseInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutPayerInput = {
+    id?: string
+    gatheringId: string
+    createdById: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: ExpenseParticipantUncheckedCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutExpenseInput
+  }
+
+  export type ExpenseCreateOrConnectWithoutPayerInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutPayerInput, ExpenseUncheckedCreateWithoutPayerInput>
+  }
+
+  export type ExpenseCreateManyPayerInputEnvelope = {
+    data: ExpenseCreateManyPayerInput | ExpenseCreateManyPayerInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ExpenseParticipantCreateWithoutUserInput = {
     id?: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     expense: ExpenseCreateNestedOneWithoutParticipantsInput
   }
@@ -13583,6 +15626,7 @@ export namespace Prisma {
   export type ExpenseParticipantUncheckedCreateWithoutUserInput = {
     id?: string
     expenseId: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
   }
 
@@ -13704,6 +15748,7 @@ export namespace Prisma {
     description?: StringFilter<"Transaction"> | string
     type?: EnumTransactionTypeFilter<"Transaction"> | $Enums.TransactionType
     status?: EnumTransactionStatusFilter<"Transaction"> | $Enums.TransactionStatus
+    expenseId?: StringNullableFilter<"Transaction"> | string | null
     pendingConfirmationFromId?: StringFilter<"Transaction"> | string
     occurredAt?: DateTimeFilter<"Transaction"> | Date | string
     confirmedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
@@ -13789,6 +15834,32 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Gathering"> | Date | string
   }
 
+  export type GatheringParticipantUpsertWithWhereUniqueWithoutUserInput = {
+    where: GatheringParticipantWhereUniqueInput
+    update: XOR<GatheringParticipantUpdateWithoutUserInput, GatheringParticipantUncheckedUpdateWithoutUserInput>
+    create: XOR<GatheringParticipantCreateWithoutUserInput, GatheringParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type GatheringParticipantUpdateWithWhereUniqueWithoutUserInput = {
+    where: GatheringParticipantWhereUniqueInput
+    data: XOR<GatheringParticipantUpdateWithoutUserInput, GatheringParticipantUncheckedUpdateWithoutUserInput>
+  }
+
+  export type GatheringParticipantUpdateManyWithWhereWithoutUserInput = {
+    where: GatheringParticipantScalarWhereInput
+    data: XOR<GatheringParticipantUpdateManyMutationInput, GatheringParticipantUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type GatheringParticipantScalarWhereInput = {
+    AND?: GatheringParticipantScalarWhereInput | GatheringParticipantScalarWhereInput[]
+    OR?: GatheringParticipantScalarWhereInput[]
+    NOT?: GatheringParticipantScalarWhereInput | GatheringParticipantScalarWhereInput[]
+    id?: StringFilter<"GatheringParticipant"> | string
+    gatheringId?: StringFilter<"GatheringParticipant"> | string
+    userId?: StringFilter<"GatheringParticipant"> | string
+    createdAt?: DateTimeFilter<"GatheringParticipant"> | Date | string
+  }
+
   export type ExpenseUpsertWithWhereUniqueWithoutCreatorInput = {
     where: ExpenseWhereUniqueInput
     update: XOR<ExpenseUpdateWithoutCreatorInput, ExpenseUncheckedUpdateWithoutCreatorInput>
@@ -13812,11 +15883,29 @@ export namespace Prisma {
     id?: StringFilter<"Expense"> | string
     gatheringId?: StringFilter<"Expense"> | string
     createdById?: StringFilter<"Expense"> | string
+    payerId?: StringFilter<"Expense"> | string
     title?: StringFilter<"Expense"> | string
     amount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFilter<"Expense"> | $Enums.ExpenseSplitType
     currency?: StringFilter<"Expense"> | string
     createdAt?: DateTimeFilter<"Expense"> | Date | string
     updatedAt?: DateTimeFilter<"Expense"> | Date | string
+  }
+
+  export type ExpenseUpsertWithWhereUniqueWithoutPayerInput = {
+    where: ExpenseWhereUniqueInput
+    update: XOR<ExpenseUpdateWithoutPayerInput, ExpenseUncheckedUpdateWithoutPayerInput>
+    create: XOR<ExpenseCreateWithoutPayerInput, ExpenseUncheckedCreateWithoutPayerInput>
+  }
+
+  export type ExpenseUpdateWithWhereUniqueWithoutPayerInput = {
+    where: ExpenseWhereUniqueInput
+    data: XOR<ExpenseUpdateWithoutPayerInput, ExpenseUncheckedUpdateWithoutPayerInput>
+  }
+
+  export type ExpenseUpdateManyWithWhereWithoutPayerInput = {
+    where: ExpenseScalarWhereInput
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutPayerInput>
   }
 
   export type ExpenseParticipantUpsertWithWhereUniqueWithoutUserInput = {
@@ -13842,6 +15931,7 @@ export namespace Prisma {
     id?: StringFilter<"ExpenseParticipant"> | string
     expenseId?: StringFilter<"ExpenseParticipant"> | string
     userId?: StringFilter<"ExpenseParticipant"> | string
+    shareAmount?: DecimalFilter<"ExpenseParticipant"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFilter<"ExpenseParticipant"> | Date | string
   }
 
@@ -13892,7 +15982,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -13912,7 +16004,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -13937,7 +16031,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -13957,7 +16053,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14027,7 +16125,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14047,7 +16147,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14078,7 +16180,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14098,7 +16202,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14134,7 +16240,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -14154,7 +16262,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14179,7 +16289,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -14199,7 +16311,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14224,7 +16338,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionCreateNestedManyWithoutDebtorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -14244,7 +16360,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUncheckedCreateNestedManyWithoutDebtorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14269,7 +16387,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionCreateNestedManyWithoutDebtorInput
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -14289,7 +16409,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUncheckedCreateNestedManyWithoutDebtorInput
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14297,6 +16419,39 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutTransactionsToConfirmInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutTransactionsToConfirmInput, UserUncheckedCreateWithoutTransactionsToConfirmInput>
+  }
+
+  export type ExpenseCreateWithoutTransactionsInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    gathering: GatheringCreateNestedOneWithoutExpensesInput
+    creator: UserCreateNestedOneWithoutExpensesCreatedInput
+    payer: UserCreateNestedOneWithoutExpensesPaidInput
+    participants?: ExpenseParticipantCreateNestedManyWithoutExpenseInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutTransactionsInput = {
+    id?: string
+    gatheringId: string
+    createdById: string
+    payerId: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: ExpenseParticipantUncheckedCreateNestedManyWithoutExpenseInput
+  }
+
+  export type ExpenseCreateOrConnectWithoutTransactionsInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutTransactionsInput, ExpenseUncheckedCreateWithoutTransactionsInput>
   }
 
   export type NotificationCreateWithoutRelatedTransactionInput = {
@@ -14359,7 +16514,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14379,7 +16536,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14410,7 +16569,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14430,7 +16591,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14461,7 +16624,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUpdateManyWithoutDebtorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14481,7 +16646,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUncheckedUpdateManyWithoutDebtorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14512,7 +16679,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUpdateManyWithoutDebtorNestedInput
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14532,9 +16701,50 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUncheckedUpdateManyWithoutDebtorNestedInput
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ExpenseUpsertWithoutTransactionsInput = {
+    update: XOR<ExpenseUpdateWithoutTransactionsInput, ExpenseUncheckedUpdateWithoutTransactionsInput>
+    create: XOR<ExpenseCreateWithoutTransactionsInput, ExpenseUncheckedCreateWithoutTransactionsInput>
+    where?: ExpenseWhereInput
+  }
+
+  export type ExpenseUpdateToOneWithWhereWithoutTransactionsInput = {
+    where?: ExpenseWhereInput
+    data: XOR<ExpenseUpdateWithoutTransactionsInput, ExpenseUncheckedUpdateWithoutTransactionsInput>
+  }
+
+  export type ExpenseUpdateWithoutTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gathering?: GatheringUpdateOneRequiredWithoutExpensesNestedInput
+    creator?: UserUpdateOneRequiredWithoutExpensesCreatedNestedInput
+    payer?: UserUpdateOneRequiredWithoutExpensesPaidNestedInput
+    participants?: ExpenseParticipantUpdateManyWithoutExpenseNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: ExpenseParticipantUncheckedUpdateManyWithoutExpenseNestedInput
   }
 
   export type NotificationUpsertWithWhereUniqueWithoutRelatedTransactionInput = {
@@ -14568,7 +16778,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionCreateNestedManyWithoutDebtorInput
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -14588,7 +16800,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUncheckedCreateNestedManyWithoutDebtorInput
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14602,22 +16816,28 @@ export namespace Prisma {
     id?: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutExpensesCreatedInput
+    payer: UserCreateNestedOneWithoutExpensesPaidInput
     participants?: ExpenseParticipantCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseUncheckedCreateWithoutGatheringInput = {
     id?: string
     createdById: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ExpenseParticipantUncheckedCreateNestedManyWithoutExpenseInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseCreateOrConnectWithoutGatheringInput = {
@@ -14627,6 +16847,28 @@ export namespace Prisma {
 
   export type ExpenseCreateManyGatheringInputEnvelope = {
     data: ExpenseCreateManyGatheringInput | ExpenseCreateManyGatheringInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GatheringParticipantCreateWithoutGatheringInput = {
+    id?: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutGatheringParticipantsInput
+  }
+
+  export type GatheringParticipantUncheckedCreateWithoutGatheringInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type GatheringParticipantCreateOrConnectWithoutGatheringInput = {
+    where: GatheringParticipantWhereUniqueInput
+    create: XOR<GatheringParticipantCreateWithoutGatheringInput, GatheringParticipantUncheckedCreateWithoutGatheringInput>
+  }
+
+  export type GatheringParticipantCreateManyGatheringInputEnvelope = {
+    data: GatheringParticipantCreateManyGatheringInput | GatheringParticipantCreateManyGatheringInput[]
     skipDuplicates?: boolean
   }
 
@@ -14690,7 +16932,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUpdateManyWithoutDebtorNestedInput
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14710,7 +16954,9 @@ export namespace Prisma {
     transactionsDebtor?: TransactionUncheckedUpdateManyWithoutDebtorNestedInput
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14731,6 +16977,22 @@ export namespace Prisma {
     data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutGatheringInput>
   }
 
+  export type GatheringParticipantUpsertWithWhereUniqueWithoutGatheringInput = {
+    where: GatheringParticipantWhereUniqueInput
+    update: XOR<GatheringParticipantUpdateWithoutGatheringInput, GatheringParticipantUncheckedUpdateWithoutGatheringInput>
+    create: XOR<GatheringParticipantCreateWithoutGatheringInput, GatheringParticipantUncheckedCreateWithoutGatheringInput>
+  }
+
+  export type GatheringParticipantUpdateWithWhereUniqueWithoutGatheringInput = {
+    where: GatheringParticipantWhereUniqueInput
+    data: XOR<GatheringParticipantUpdateWithoutGatheringInput, GatheringParticipantUncheckedUpdateWithoutGatheringInput>
+  }
+
+  export type GatheringParticipantUpdateManyWithWhereWithoutGatheringInput = {
+    where: GatheringParticipantScalarWhereInput
+    data: XOR<GatheringParticipantUpdateManyMutationInput, GatheringParticipantUncheckedUpdateManyWithoutGatheringInput>
+  }
+
   export type NotificationUpsertWithWhereUniqueWithoutRelatedGatheringInput = {
     where: NotificationWhereUniqueInput
     update: XOR<NotificationUpdateWithoutRelatedGatheringInput, NotificationUncheckedUpdateWithoutRelatedGatheringInput>
@@ -14747,6 +17009,174 @@ export namespace Prisma {
     data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutRelatedGatheringInput>
   }
 
+  export type GatheringCreateWithoutParticipantsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutGatheringsInput
+    expenses?: ExpenseCreateNestedManyWithoutGatheringInput
+    notifications?: NotificationCreateNestedManyWithoutRelatedGatheringInput
+  }
+
+  export type GatheringUncheckedCreateWithoutParticipantsInput = {
+    id?: string
+    creatorId: string
+    name: string
+    description?: string | null
+    date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutRelatedGatheringInput
+  }
+
+  export type GatheringCreateOrConnectWithoutParticipantsInput = {
+    where: GatheringWhereUniqueInput
+    create: XOR<GatheringCreateWithoutParticipantsInput, GatheringUncheckedCreateWithoutParticipantsInput>
+  }
+
+  export type UserCreateWithoutGatheringParticipantsInput = {
+    id?: string
+    name: string
+    username: string
+    email: string
+    password: string
+    avatar?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    friendshipsSent?: FriendshipCreateNestedManyWithoutRequesterInput
+    friendshipsReceived?: FriendshipCreateNestedManyWithoutAddresseeInput
+    transactionsCreated?: TransactionCreateNestedManyWithoutCreatorInput
+    transactionsDebtor?: TransactionCreateNestedManyWithoutDebtorInput
+    transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
+    transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
+    gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
+    expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGatheringParticipantsInput = {
+    id?: string
+    name: string
+    username: string
+    email: string
+    password: string
+    avatar?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    friendshipsSent?: FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+    friendshipsReceived?: FriendshipUncheckedCreateNestedManyWithoutAddresseeInput
+    transactionsCreated?: TransactionUncheckedCreateNestedManyWithoutCreatorInput
+    transactionsDebtor?: TransactionUncheckedCreateNestedManyWithoutDebtorInput
+    transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
+    transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
+    gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
+    expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGatheringParticipantsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGatheringParticipantsInput, UserUncheckedCreateWithoutGatheringParticipantsInput>
+  }
+
+  export type GatheringUpsertWithoutParticipantsInput = {
+    update: XOR<GatheringUpdateWithoutParticipantsInput, GatheringUncheckedUpdateWithoutParticipantsInput>
+    create: XOR<GatheringCreateWithoutParticipantsInput, GatheringUncheckedCreateWithoutParticipantsInput>
+    where?: GatheringWhereInput
+  }
+
+  export type GatheringUpdateToOneWithWhereWithoutParticipantsInput = {
+    where?: GatheringWhereInput
+    data: XOR<GatheringUpdateWithoutParticipantsInput, GatheringUncheckedUpdateWithoutParticipantsInput>
+  }
+
+  export type GatheringUpdateWithoutParticipantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
+    expenses?: ExpenseUpdateManyWithoutGatheringNestedInput
+    notifications?: NotificationUpdateManyWithoutRelatedGatheringNestedInput
+  }
+
+  export type GatheringUncheckedUpdateWithoutParticipantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutRelatedGatheringNestedInput
+  }
+
+  export type UserUpsertWithoutGatheringParticipantsInput = {
+    update: XOR<UserUpdateWithoutGatheringParticipantsInput, UserUncheckedUpdateWithoutGatheringParticipantsInput>
+    create: XOR<UserCreateWithoutGatheringParticipantsInput, UserUncheckedCreateWithoutGatheringParticipantsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGatheringParticipantsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGatheringParticipantsInput, UserUncheckedUpdateWithoutGatheringParticipantsInput>
+  }
+
+  export type UserUpdateWithoutGatheringParticipantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    friendshipsSent?: FriendshipUpdateManyWithoutRequesterNestedInput
+    friendshipsReceived?: FriendshipUpdateManyWithoutAddresseeNestedInput
+    transactionsCreated?: TransactionUpdateManyWithoutCreatorNestedInput
+    transactionsDebtor?: TransactionUpdateManyWithoutDebtorNestedInput
+    transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
+    transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
+    gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
+    expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGatheringParticipantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    friendshipsSent?: FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+    friendshipsReceived?: FriendshipUncheckedUpdateManyWithoutAddresseeNestedInput
+    transactionsCreated?: TransactionUncheckedUpdateManyWithoutCreatorNestedInput
+    transactionsDebtor?: TransactionUncheckedUpdateManyWithoutDebtorNestedInput
+    transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
+    transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
+    gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
+    expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type GatheringCreateWithoutExpensesInput = {
     id?: string
     name: string
@@ -14755,6 +17185,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
+    participants?: GatheringParticipantCreateNestedManyWithoutGatheringInput
     notifications?: NotificationCreateNestedManyWithoutRelatedGatheringInput
   }
 
@@ -14766,6 +17197,7 @@ export namespace Prisma {
     date: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    participants?: GatheringParticipantUncheckedCreateNestedManyWithoutGatheringInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutRelatedGatheringInput
   }
 
@@ -14790,6 +17222,8 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
@@ -14810,6 +17244,8 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
@@ -14819,8 +17255,58 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutExpensesCreatedInput, UserUncheckedCreateWithoutExpensesCreatedInput>
   }
 
+  export type UserCreateWithoutExpensesPaidInput = {
+    id?: string
+    name: string
+    username: string
+    email: string
+    password: string
+    avatar?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    friendshipsSent?: FriendshipCreateNestedManyWithoutRequesterInput
+    friendshipsReceived?: FriendshipCreateNestedManyWithoutAddresseeInput
+    transactionsCreated?: TransactionCreateNestedManyWithoutCreatorInput
+    transactionsDebtor?: TransactionCreateNestedManyWithoutDebtorInput
+    transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
+    transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
+    gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
+    expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutExpensesPaidInput = {
+    id?: string
+    name: string
+    username: string
+    email: string
+    password: string
+    avatar?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    friendshipsSent?: FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+    friendshipsReceived?: FriendshipUncheckedCreateNestedManyWithoutAddresseeInput
+    transactionsCreated?: TransactionUncheckedCreateNestedManyWithoutCreatorInput
+    transactionsDebtor?: TransactionUncheckedCreateNestedManyWithoutDebtorInput
+    transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
+    transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
+    gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
+    expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutExpensesPaidInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutExpensesPaidInput, UserUncheckedCreateWithoutExpensesPaidInput>
+  }
+
   export type ExpenseParticipantCreateWithoutExpenseInput = {
     id?: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutExpenseParticipationsInput
   }
@@ -14828,6 +17314,7 @@ export namespace Prisma {
   export type ExpenseParticipantUncheckedCreateWithoutExpenseInput = {
     id?: string
     userId: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
   }
 
@@ -14838,6 +17325,54 @@ export namespace Prisma {
 
   export type ExpenseParticipantCreateManyExpenseInputEnvelope = {
     data: ExpenseParticipantCreateManyExpenseInput | ExpenseParticipantCreateManyExpenseInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TransactionCreateWithoutExpenseInput = {
+    id?: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency?: string
+    description: string
+    type: $Enums.TransactionType
+    status?: $Enums.TransactionStatus
+    occurredAt?: Date | string
+    confirmedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutTransactionsCreatedInput
+    debtor: UserCreateNestedOneWithoutTransactionsDebtorInput
+    creditor: UserCreateNestedOneWithoutTransactionsCreditorInput
+    confirmationFrom: UserCreateNestedOneWithoutTransactionsToConfirmInput
+    notifications?: NotificationCreateNestedManyWithoutRelatedTransactionInput
+  }
+
+  export type TransactionUncheckedCreateWithoutExpenseInput = {
+    id?: string
+    creatorId: string
+    debtorId: string
+    creditorId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency?: string
+    description: string
+    type: $Enums.TransactionType
+    status?: $Enums.TransactionStatus
+    pendingConfirmationFromId: string
+    occurredAt?: Date | string
+    confirmedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    notifications?: NotificationUncheckedCreateNestedManyWithoutRelatedTransactionInput
+  }
+
+  export type TransactionCreateOrConnectWithoutExpenseInput = {
+    where: TransactionWhereUniqueInput
+    create: XOR<TransactionCreateWithoutExpenseInput, TransactionUncheckedCreateWithoutExpenseInput>
+  }
+
+  export type TransactionCreateManyExpenseInputEnvelope = {
+    data: TransactionCreateManyExpenseInput | TransactionCreateManyExpenseInput[]
     skipDuplicates?: boolean
   }
 
@@ -14860,6 +17395,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
+    participants?: GatheringParticipantUpdateManyWithoutGatheringNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedGatheringNestedInput
   }
 
@@ -14871,6 +17407,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: GatheringParticipantUncheckedUpdateManyWithoutGatheringNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutRelatedGatheringNestedInput
   }
 
@@ -14901,6 +17438,8 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
@@ -14921,6 +17460,63 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
+    expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutExpensesPaidInput = {
+    update: XOR<UserUpdateWithoutExpensesPaidInput, UserUncheckedUpdateWithoutExpensesPaidInput>
+    create: XOR<UserCreateWithoutExpensesPaidInput, UserUncheckedCreateWithoutExpensesPaidInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutExpensesPaidInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutExpensesPaidInput, UserUncheckedUpdateWithoutExpensesPaidInput>
+  }
+
+  export type UserUpdateWithoutExpensesPaidInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    friendshipsSent?: FriendshipUpdateManyWithoutRequesterNestedInput
+    friendshipsReceived?: FriendshipUpdateManyWithoutAddresseeNestedInput
+    transactionsCreated?: TransactionUpdateManyWithoutCreatorNestedInput
+    transactionsDebtor?: TransactionUpdateManyWithoutDebtorNestedInput
+    transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
+    transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
+    gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
+    expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutExpensesPaidInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    friendshipsSent?: FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+    friendshipsReceived?: FriendshipUncheckedUpdateManyWithoutAddresseeNestedInput
+    transactionsCreated?: TransactionUncheckedUpdateManyWithoutCreatorNestedInput
+    transactionsDebtor?: TransactionUncheckedUpdateManyWithoutDebtorNestedInput
+    transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
+    transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
+    gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
+    expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -14941,26 +17537,48 @@ export namespace Prisma {
     data: XOR<ExpenseParticipantUpdateManyMutationInput, ExpenseParticipantUncheckedUpdateManyWithoutExpenseInput>
   }
 
+  export type TransactionUpsertWithWhereUniqueWithoutExpenseInput = {
+    where: TransactionWhereUniqueInput
+    update: XOR<TransactionUpdateWithoutExpenseInput, TransactionUncheckedUpdateWithoutExpenseInput>
+    create: XOR<TransactionCreateWithoutExpenseInput, TransactionUncheckedCreateWithoutExpenseInput>
+  }
+
+  export type TransactionUpdateWithWhereUniqueWithoutExpenseInput = {
+    where: TransactionWhereUniqueInput
+    data: XOR<TransactionUpdateWithoutExpenseInput, TransactionUncheckedUpdateWithoutExpenseInput>
+  }
+
+  export type TransactionUpdateManyWithWhereWithoutExpenseInput = {
+    where: TransactionScalarWhereInput
+    data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutExpenseInput>
+  }
+
   export type ExpenseCreateWithoutParticipantsInput = {
     id?: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     gathering: GatheringCreateNestedOneWithoutExpensesInput
     creator: UserCreateNestedOneWithoutExpensesCreatedInput
+    payer: UserCreateNestedOneWithoutExpensesPaidInput
+    transactions?: TransactionCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseUncheckedCreateWithoutParticipantsInput = {
     id?: string
     gatheringId: string
     createdById: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    transactions?: TransactionUncheckedCreateNestedManyWithoutExpenseInput
   }
 
   export type ExpenseCreateOrConnectWithoutParticipantsInput = {
@@ -14984,7 +17602,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
@@ -15004,7 +17624,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -15028,22 +17650,28 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gathering?: GatheringUpdateOneRequiredWithoutExpensesNestedInput
     creator?: UserUpdateOneRequiredWithoutExpensesCreatedNestedInput
+    payer?: UserUpdateOneRequiredWithoutExpensesPaidNestedInput
+    transactions?: TransactionUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseUncheckedUpdateWithoutParticipantsInput = {
     id?: StringFieldUpdateOperationsInput | string
     gatheringId?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transactions?: TransactionUncheckedUpdateManyWithoutExpenseNestedInput
   }
 
   export type UserUpsertWithoutExpenseParticipationsInput = {
@@ -15073,7 +17701,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
@@ -15093,7 +17723,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -15113,7 +17745,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantCreateNestedManyWithoutUserInput
   }
 
@@ -15133,7 +17767,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedCreateNestedManyWithoutCreditorInput
     transactionsToConfirm?: TransactionUncheckedCreateNestedManyWithoutConfirmationFromInput
     gatherings?: GatheringUncheckedCreateNestedManyWithoutCreatorInput
+    gatheringParticipants?: GatheringParticipantUncheckedCreateNestedManyWithoutUserInput
     expensesCreated?: ExpenseUncheckedCreateNestedManyWithoutCreatorInput
+    expensesPaid?: ExpenseUncheckedCreateNestedManyWithoutPayerInput
     expenseParticipations?: ExpenseParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -15158,6 +17794,7 @@ export namespace Prisma {
     debtor: UserCreateNestedOneWithoutTransactionsDebtorInput
     creditor: UserCreateNestedOneWithoutTransactionsCreditorInput
     confirmationFrom: UserCreateNestedOneWithoutTransactionsToConfirmInput
+    expense?: ExpenseCreateNestedOneWithoutTransactionsInput
   }
 
   export type TransactionUncheckedCreateWithoutNotificationsInput = {
@@ -15170,6 +17807,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -15217,6 +17855,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
     expenses?: ExpenseCreateNestedManyWithoutGatheringInput
+    participants?: GatheringParticipantCreateNestedManyWithoutGatheringInput
   }
 
   export type GatheringUncheckedCreateWithoutNotificationsInput = {
@@ -15228,6 +17867,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
+    participants?: GatheringParticipantUncheckedCreateNestedManyWithoutGatheringInput
   }
 
   export type GatheringCreateOrConnectWithoutNotificationsInput = {
@@ -15262,7 +17902,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUpdateManyWithoutUserNestedInput
   }
 
@@ -15282,7 +17924,9 @@ export namespace Prisma {
     transactionsCreditor?: TransactionUncheckedUpdateManyWithoutCreditorNestedInput
     transactionsToConfirm?: TransactionUncheckedUpdateManyWithoutConfirmationFromNestedInput
     gatherings?: GatheringUncheckedUpdateManyWithoutCreatorNestedInput
+    gatheringParticipants?: GatheringParticipantUncheckedUpdateManyWithoutUserNestedInput
     expensesCreated?: ExpenseUncheckedUpdateManyWithoutCreatorNestedInput
+    expensesPaid?: ExpenseUncheckedUpdateManyWithoutPayerNestedInput
     expenseParticipations?: ExpenseParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -15313,6 +17957,7 @@ export namespace Prisma {
     debtor?: UserUpdateOneRequiredWithoutTransactionsDebtorNestedInput
     creditor?: UserUpdateOneRequiredWithoutTransactionsCreditorNestedInput
     confirmationFrom?: UserUpdateOneRequiredWithoutTransactionsToConfirmNestedInput
+    expense?: ExpenseUpdateOneWithoutTransactionsNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutNotificationsInput = {
@@ -15325,6 +17970,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15384,6 +18030,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
     expenses?: ExpenseUpdateManyWithoutGatheringNestedInput
+    participants?: GatheringParticipantUpdateManyWithoutGatheringNestedInput
   }
 
   export type GatheringUncheckedUpdateWithoutNotificationsInput = {
@@ -15395,6 +18042,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
+    participants?: GatheringParticipantUncheckedUpdateManyWithoutGatheringNestedInput
   }
 
   export type FriendshipCreateManyRequesterInput = {
@@ -15424,6 +18072,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -15441,6 +18090,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -15458,6 +18108,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     pendingConfirmationFromId: string
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
@@ -15476,6 +18127,7 @@ export namespace Prisma {
     description: string
     type: $Enums.TransactionType
     status?: $Enums.TransactionStatus
+    expenseId?: string | null
     occurredAt?: Date | string
     confirmedAt?: Date | string | null
     rejectedAt?: Date | string | null
@@ -15492,11 +18144,31 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type GatheringParticipantCreateManyUserInput = {
+    id?: string
+    gatheringId: string
+    createdAt?: Date | string
+  }
+
   export type ExpenseCreateManyCreatorInput = {
     id?: string
     gatheringId: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCreateManyPayerInput = {
+    id?: string
+    gatheringId: string
+    createdById: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15505,6 +18177,7 @@ export namespace Prisma {
   export type ExpenseParticipantCreateManyUserInput = {
     id?: string
     expenseId: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
   }
 
@@ -15593,6 +18266,7 @@ export namespace Prisma {
     debtor?: UserUpdateOneRequiredWithoutTransactionsDebtorNestedInput
     creditor?: UserUpdateOneRequiredWithoutTransactionsCreditorNestedInput
     confirmationFrom?: UserUpdateOneRequiredWithoutTransactionsToConfirmNestedInput
+    expense?: ExpenseUpdateOneWithoutTransactionsNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedTransactionNestedInput
   }
 
@@ -15605,6 +18279,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15623,6 +18298,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15646,6 +18322,7 @@ export namespace Prisma {
     creator?: UserUpdateOneRequiredWithoutTransactionsCreatedNestedInput
     creditor?: UserUpdateOneRequiredWithoutTransactionsCreditorNestedInput
     confirmationFrom?: UserUpdateOneRequiredWithoutTransactionsToConfirmNestedInput
+    expense?: ExpenseUpdateOneWithoutTransactionsNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedTransactionNestedInput
   }
 
@@ -15658,6 +18335,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15676,6 +18354,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15699,6 +18378,7 @@ export namespace Prisma {
     creator?: UserUpdateOneRequiredWithoutTransactionsCreatedNestedInput
     debtor?: UserUpdateOneRequiredWithoutTransactionsDebtorNestedInput
     confirmationFrom?: UserUpdateOneRequiredWithoutTransactionsToConfirmNestedInput
+    expense?: ExpenseUpdateOneWithoutTransactionsNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedTransactionNestedInput
   }
 
@@ -15711,6 +18391,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15729,6 +18410,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15752,6 +18434,7 @@ export namespace Prisma {
     creator?: UserUpdateOneRequiredWithoutTransactionsCreatedNestedInput
     debtor?: UserUpdateOneRequiredWithoutTransactionsDebtorNestedInput
     creditor?: UserUpdateOneRequiredWithoutTransactionsCreditorNestedInput
+    expense?: ExpenseUpdateOneWithoutTransactionsNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedTransactionNestedInput
   }
 
@@ -15765,6 +18448,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15783,6 +18467,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
     status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    expenseId?: NullableStringFieldUpdateOperationsInput | string | null
     occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15798,6 +18483,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUpdateManyWithoutGatheringNestedInput
+    participants?: GatheringParticipantUpdateManyWithoutGatheringNestedInput
     notifications?: NotificationUpdateManyWithoutRelatedGatheringNestedInput
   }
 
@@ -15809,6 +18495,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
+    participants?: GatheringParticipantUncheckedUpdateManyWithoutGatheringNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutRelatedGatheringNestedInput
   }
 
@@ -15821,33 +18508,99 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GatheringParticipantUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gathering?: GatheringUpdateOneRequiredWithoutParticipantsNestedInput
+  }
+
+  export type GatheringParticipantUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GatheringParticipantUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ExpenseUpdateWithoutCreatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gathering?: GatheringUpdateOneRequiredWithoutExpensesNestedInput
+    payer?: UserUpdateOneRequiredWithoutExpensesPaidNestedInput
     participants?: ExpenseParticipantUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseUncheckedUpdateWithoutCreatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     gatheringId?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ExpenseParticipantUncheckedUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseUncheckedUpdateManyWithoutCreatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     gatheringId?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUpdateWithoutPayerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gathering?: GatheringUpdateOneRequiredWithoutExpensesNestedInput
+    creator?: UserUpdateOneRequiredWithoutExpensesCreatedNestedInput
+    participants?: ExpenseParticipantUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUpdateManyWithoutExpenseNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutPayerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: ExpenseParticipantUncheckedUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutExpenseNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutPayerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gatheringId?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15855,6 +18608,7 @@ export namespace Prisma {
 
   export type ExpenseParticipantUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expense?: ExpenseUpdateOneRequiredWithoutParticipantsNestedInput
   }
@@ -15862,12 +18616,14 @@ export namespace Prisma {
   export type ExpenseParticipantUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     expenseId?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ExpenseParticipantUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     expenseId?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16006,11 +18762,19 @@ export namespace Prisma {
   export type ExpenseCreateManyGatheringInput = {
     id?: string
     createdById: string
+    payerId: string
     title: string
     amount: Decimal | DecimalJsLike | number | string
+    splitType?: $Enums.ExpenseSplitType
     currency?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type GatheringParticipantCreateManyGatheringInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
   }
 
   export type NotificationCreateManyRelatedGatheringInput = {
@@ -16029,32 +18793,58 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutExpensesCreatedNestedInput
+    payer?: UserUpdateOneRequiredWithoutExpensesPaidNestedInput
     participants?: ExpenseParticipantUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseUncheckedUpdateWithoutGatheringInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ExpenseParticipantUncheckedUpdateManyWithoutExpenseNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutExpenseNestedInput
   }
 
   export type ExpenseUncheckedUpdateManyWithoutGatheringInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    payerId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    splitType?: EnumExpenseSplitTypeFieldUpdateOperationsInput | $Enums.ExpenseSplitType
     currency?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GatheringParticipantUpdateWithoutGatheringInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutGatheringParticipantsNestedInput
+  }
+
+  export type GatheringParticipantUncheckedUpdateWithoutGatheringInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GatheringParticipantUncheckedUpdateManyWithoutGatheringInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUpdateWithoutRelatedGatheringInput = {
@@ -16096,11 +18886,31 @@ export namespace Prisma {
   export type ExpenseParticipantCreateManyExpenseInput = {
     id?: string
     userId: string
+    shareAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
+  }
+
+  export type TransactionCreateManyExpenseInput = {
+    id?: string
+    creatorId: string
+    debtorId: string
+    creditorId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency?: string
+    description: string
+    type: $Enums.TransactionType
+    status?: $Enums.TransactionStatus
+    pendingConfirmationFromId: string
+    occurredAt?: Date | string
+    confirmedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ExpenseParticipantUpdateWithoutExpenseInput = {
     id?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutExpenseParticipationsNestedInput
   }
@@ -16108,13 +18918,71 @@ export namespace Prisma {
   export type ExpenseParticipantUncheckedUpdateWithoutExpenseInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ExpenseParticipantUncheckedUpdateManyWithoutExpenseInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TransactionUpdateWithoutExpenseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+    status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutTransactionsCreatedNestedInput
+    debtor?: UserUpdateOneRequiredWithoutTransactionsDebtorNestedInput
+    creditor?: UserUpdateOneRequiredWithoutTransactionsCreditorNestedInput
+    confirmationFrom?: UserUpdateOneRequiredWithoutTransactionsToConfirmNestedInput
+    notifications?: NotificationUpdateManyWithoutRelatedTransactionNestedInput
+  }
+
+  export type TransactionUncheckedUpdateWithoutExpenseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    debtorId?: StringFieldUpdateOperationsInput | string
+    creditorId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+    status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    notifications?: NotificationUncheckedUpdateManyWithoutRelatedTransactionNestedInput
+  }
+
+  export type TransactionUncheckedUpdateManyWithoutExpenseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    debtorId?: StringFieldUpdateOperationsInput | string
+    creditorId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    type?: EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+    status?: EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+    pendingConfirmationFromId?: StringFieldUpdateOperationsInput | string
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

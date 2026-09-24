@@ -88,6 +88,30 @@ export async function getFriends(userId: string): Promise<FriendWithBalance[]> {
   })
 }
 
+/**
+ * Amigos aceptados como DTO mínimo (id, name, username, avatar).
+ * Sin balance ni Prisma.Decimal para poder pasar a Client Components.
+ */
+export async function getFriendSummaries(userId: string): Promise<UserSummary[]> {
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      status: "ACCEPTED",
+      OR: [{ requesterId: userId }, { addresseeId: userId }],
+    },
+    include: {
+      requester: { select: userSummary },
+      addressee: { select: userSummary },
+    },
+    orderBy: { updatedAt: "desc" },
+  })
+
+  return friendships.map((friendship) =>
+    friendship.requester.id === userId
+      ? friendship.addressee
+      : friendship.requester,
+  )
+}
+
 export async function getIncomingRequests(userId: string): Promise<IncomingRequest[]> {
   const rows = await prisma.friendship.findMany({
     where: { addresseeId: userId, status: "PENDING" },

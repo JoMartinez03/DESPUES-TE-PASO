@@ -113,6 +113,10 @@ export type Movement = {
   creditorId: string
   occurredAt: Date
   createdAt: Date
+  expense: {
+    title: string
+    gathering: { name: string }
+  } | null
 }
 
 export async function getTransactionHistory(
@@ -137,6 +141,12 @@ export async function getTransactionHistory(
       creditorId: true,
       occurredAt: true,
       createdAt: true,
+      expense: {
+        select: {
+          title: true,
+          gathering: { select: { name: true } },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 200,

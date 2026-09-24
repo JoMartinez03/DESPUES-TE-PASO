@@ -7,6 +7,7 @@ export type NotificationItem = {
   body: string
   read: boolean
   relatedFriendshipId: string | null
+  relatedGatheringId: string | null
   href: string | null
   createdAt: Date
 }
@@ -24,6 +25,7 @@ export async function getRecentNotifications(
       body: true,
       read: true,
       relatedFriendshipId: true,
+      relatedGatheringId: true,
       relatedTransactionId: true,
       relatedTransaction: {
         select: { debtorId: true, creditorId: true },
@@ -49,7 +51,12 @@ export async function getRecentNotifications(
       body: row.body,
       read: row.read,
       relatedFriendshipId: row.relatedFriendshipId,
-      href: peerId ? `/personas/${peerId}` : null,
+      relatedGatheringId: row.relatedGatheringId,
+      href: row.relatedGatheringId
+        ? `/juntadas/${row.relatedGatheringId}`
+        : peerId
+          ? `/personas/${peerId}`
+          : null,
       createdAt: row.createdAt,
     }
   })

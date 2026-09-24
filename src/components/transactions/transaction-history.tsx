@@ -110,6 +110,14 @@ export function TransactionHistory({
                     </p>
                     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       {view.label}
+                      {movement.expense ? (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="truncate">
+                            En {movement.expense.gathering.name}
+                          </span>
+                        </>
+                      ) : null}
                       <span aria-hidden="true">·</span>
                       {formatShortDate(movement.createdAt)}
                       <StatusIcon status={movement.status} />

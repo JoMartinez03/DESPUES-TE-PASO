@@ -62,7 +62,7 @@ export function FabAction() {
           <Link
             href="/juntadas/nueva"
             onClick={() => setOpen(false)}
-            className="flex items-center justify-between gap-3 rounded-lg px-3 py-3 text-sm text-foreground transition-colors hover:bg-muted"
+            className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-sm text-foreground transition-colors hover:bg-muted"
           >
             <span className="flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -70,7 +70,6 @@ export function FabAction() {
               </span>
               Nueva juntada
             </span>
-            <Badge variant="secondary">Próximamente</Badge>
           </Link>
         </div>
       </SheetContent>

@@ -151,6 +151,7 @@ exports.Prisma.TransactionScalarFieldEnum = {
   description: 'description',
   type: 'type',
   status: 'status',
+  expenseId: 'expenseId',
   pendingConfirmationFromId: 'pendingConfirmationFromId',
   occurredAt: 'occurredAt',
   confirmedAt: 'confirmedAt',
@@ -169,12 +170,21 @@ exports.Prisma.GatheringScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.GatheringParticipantScalarFieldEnum = {
+  id: 'id',
+  gatheringId: 'gatheringId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.ExpenseScalarFieldEnum = {
   id: 'id',
   gatheringId: 'gatheringId',
   createdById: 'createdById',
+  payerId: 'payerId',
   title: 'title',
   amount: 'amount',
+  splitType: 'splitType',
   currency: 'currency',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -184,6 +194,7 @@ exports.Prisma.ExpenseParticipantScalarFieldEnum = {
   id: 'id',
   expenseId: 'expenseId',
   userId: 'userId',
+  shareAmount: 'shareAmount',
   createdAt: 'createdAt'
 };
 
@@ -231,6 +242,11 @@ exports.TransactionStatus = exports.$Enums.TransactionStatus = {
   REJECTED: 'REJECTED'
 };
 
+exports.ExpenseSplitType = exports.$Enums.ExpenseSplitType = {
+  EQUAL: 'EQUAL',
+  CUSTOM: 'CUSTOM'
+};
+
 exports.NotificationType = exports.$Enums.NotificationType = {
   FRIEND_REQUEST: 'FRIEND_REQUEST',
   TRANSACTION_PENDING: 'TRANSACTION_PENDING',
@@ -244,6 +260,7 @@ exports.Prisma.ModelName = {
   Friendship: 'Friendship',
   Transaction: 'Transaction',
   Gathering: 'Gathering',
+  GatheringParticipant: 'GatheringParticipant',
   Expense: 'Expense',
   ExpenseParticipant: 'ExpenseParticipant',
   Notification: 'Notification'
