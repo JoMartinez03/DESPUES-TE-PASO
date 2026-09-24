@@ -14,7 +14,7 @@ juntadas, sin romper amistades.
 ## Requisitos
 
 - Node.js ≥ 20 (probado con v25)
-- Docker Desktop (para la base local)
+- Una base **PostgreSQL** en [Neon](https://neon.tech) (o cualquier Postgres accesible por TCP)
 
 ## Puesta en marcha
 
@@ -26,17 +26,7 @@ npm run dev               # http://localhost:3000
 
 ### Base de datos
 
-**Opción A — Docker (desarrollo):**
-
-```bash
-docker compose up -d
-```
-
-Levanta `postgres:17-alpine` en `localhost:54322`
-(`despues` / `despues` / `despues`). Copiá `.env.example` a `.env`, que ya
-apunta a esta base local.
-
-**Opción B — Neon (producción/preview):**
+El proyecto usa **Neon** como base de datos:
 
 1. Creá un proyecto en [Neon](https://neon.tech) y copiá las dos cadenas de
    conexión: la **pooled** (con `-pooler`) y la **directa**.
@@ -48,10 +38,12 @@ apunta a esta base local.
    ```
 3. Aplicá el esquema: `npm run db:deploy`
 
+En **Vercel**, cargá esas mismas variables (más `AUTH_SECRET` y
+`AUTH_TRUST_HOST`) en Settings → Environment Variables.
+
 > El cliente de Prisma usa `DATABASE_URL_UNPOOLED` (conexión directa) porque el
 > adaptador `pg` es TCP; la pooler de Neon solo acepta conexiones TCP, no
-> WebSocket. Por eso no usamos `@prisma/adapter-neon` (WebSocket): no conecta
-> contra el Postgres local de Docker.
+> WebSocket. Por eso no usamos `@prisma/adapter-neon` (WebSocket).
 
 ### Variables de entorno
 
