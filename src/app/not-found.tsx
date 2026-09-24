@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { SearchX } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 export default function NotFoundPage() {
   return (
@@ -16,7 +16,9 @@ export default function NotFoundPage() {
           La página que buscás no existe o no la tenés disponible.
         </p>
       </div>
-      <Button render={<Link href="/dashboard" />}>Ir al inicio</Button>
+      <Link href="/dashboard" className={buttonVariants({})}>
+        Ir al inicio
+      </Link>
     </div>
   )
 }

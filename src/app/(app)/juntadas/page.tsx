@@ -2,7 +2,7 @@ import Link from "next/link"
 import { PartyPopper, Plus } from "lucide-react"
 import { EmptyState } from "@/components/shared/empty-state"
 import { PageHeader } from "@/components/shared/page-header"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 export default function JuntadasPage() {
   return (
@@ -11,10 +11,13 @@ export default function JuntadasPage() {
         title="Juntadas"
         description="Gastos y vueltos compartidos en grupo."
         action={
-          <Button size="sm" className="gap-1.5" render={<Link href="/juntadas/nueva" />}>
+          <Link
+            href="/juntadas/nueva"
+            className={buttonVariants({ size: "sm", className: "gap-1.5" })}
+          >
             <Plus className="size-4" />
             Nueva juntada
-          </Button>
+          </Link>
         }
       />
 
@@ -23,10 +26,10 @@ export default function JuntadasPage() {
         title="Todavía no participás de ninguna juntada"
         description="Organizá una para dividir gastos con tus amigos sin vueltas."
         action={
-          <Button render={<Link href="/juntadas/nueva" />}>
+          <Link href="/juntadas/nueva" className={buttonVariants({})}>
             <Plus className="size-4" />
             Nueva juntada
-          </Button>
+          </Link>
         }
       />
     </div>
