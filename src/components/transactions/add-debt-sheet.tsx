@@ -23,12 +23,21 @@ type Payer = "me" | "friend"
 export function AddDebtSheet({
   friendId,
   friendName,
+  open: controlledOpen,
+  onOpenChange,
+  onSuccess,
+  showTrigger = true,
 }: {
   friendId: string
   friendName: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSuccess?: () => void
+  showTrigger?: boolean
 }) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen ?? internalOpen
   const [description, setDescription] = useState("")
   const [amount, setAmount] = useState("")
   const [paidBy, setPaidBy] = useState<Payer>("me")
@@ -36,6 +45,11 @@ export function AddDebtSheet({
   const [isPending, startTransition] = useTransition()
 
   const firstName = friendName.split(" ")[0] ?? friendName
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (controlledOpen === undefined) setInternalOpen(nextOpen)
+    onOpenChange?.(nextOpen)
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -49,9 +63,10 @@ export function AddDebtSheet({
       })
       if (result.ok) {
         toast({ title: "Deuda registrada", description: result.message })
-        setOpen(false)
+        handleOpenChange(false)
         setDescription("")
         setAmount("")
+        onSuccess?.()
         router.refresh()
       } else {
         setError(result.message)
@@ -60,11 +75,13 @@ export function AddDebtSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={<Button className="gap-1.5" variant="outline" />}>
-        <Plus className="size-4" />
-        Agregar deuda
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      {showTrigger ? (
+        <SheetTrigger render={<Button className="gap-1.5" variant="outline" />}>
+          <Plus className="size-4" />
+          Agregar deuda
+        </SheetTrigger>
+      ) : null}
       <SheetContent
         side="bottom"
         className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"

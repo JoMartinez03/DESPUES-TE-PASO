@@ -59,6 +59,7 @@ export const expenseIdSchema = z.object({
 })
 
 export type CreateGatheringInput = z.infer<typeof createGatheringSchema>
+export type GatheringIdInput = z.infer<typeof gatheringIdSchema>
 export type UpdateGatheringParticipantsInput = z.infer<
   typeof updateGatheringParticipantsSchema
 >

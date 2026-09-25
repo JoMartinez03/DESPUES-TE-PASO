@@ -29,6 +29,11 @@ enum ExpenseSplitType {
   CUSTOM
 }
 
+enum GatheringStatus {
+  ACTIVE
+  CLOSED
+}
+
 enum NotificationType {
   FRIEND_REQUEST
   TRANSACTION_PENDING
@@ -118,13 +123,15 @@ model Transaction {
 }
 
 model Gathering {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   creatorId   String
   name        String
   description String?
   date        DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      GatheringStatus @default(ACTIVE)
+  closedAt    DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   creator       User                   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   expenses      Expense[]

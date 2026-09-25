@@ -1,9 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { toDecimal } from "@/lib/transactions"
+import { prisma } from "@/lib/prisma"
 import {
   buildExpenseShares,
   createExpenseDebts,
@@ -22,22 +23,24 @@ type ActionResult =
   | { ok: true; message: string }
   | { ok: false; code: string; message: string }
 
+type GatheringContext = {
+  id: string
+  name: string
+  creatorId: string
+  status: "ACTIVE" | "CLOSED"
+  memberIds: Set<string>
+}
+
+type LockedGathering =
+  | { kind: "active"; id: string; creatorId: string; memberIds: Set<string> }
+  | { kind: "missing" }
+  | { kind: "closed" }
+
 async function sessionUserId(): Promise<string | null> {
   const session = await auth()
   return session?.user?.id ?? null
 }
 
-type GatheringContext = {
-  id: string
-  name: string
-  creatorId: string
-  memberIds: Set<string>
-}
-
-/**
- * Carga el contexto mínimo de la juntada del gasto. Exige que `selfId` sea
- * participante (membresía es la llave de acceso a la juntada).
- */
 async function loadGatheringContext(
   gatheringId: string,
   selfId: string,
@@ -48,6 +51,7 @@ async function loadGatheringContext(
       id: true,
       name: true,
       creatorId: true,
+      status: true,
       participants: { select: { userId: true } },
     },
   })
@@ -60,8 +64,37 @@ async function loadGatheringContext(
     id: gathering.id,
     name: gathering.name,
     creatorId: gathering.creatorId,
+    status: gathering.status,
     memberIds,
   }
+}
+
+async function lockActiveGathering(
+  tx: Prisma.TransactionClient,
+  gatheringId: string,
+  selfId: string,
+): Promise<LockedGathering> {
+  const rows = await tx.$queryRaw<{ id: string }[]>`
+    SELECT "id" FROM "gatherings" WHERE "id" = ${gatheringId} FOR UPDATE
+  `
+  if (rows.length === 0) return { kind: "missing" }
+
+  const gathering = await tx.gathering.findUnique({
+    where: { id: gatheringId },
+    select: {
+      id: true,
+      creatorId: true,
+      status: true,
+      participants: { select: { userId: true } },
+    },
+  })
+  if (!gathering) return { kind: "missing" }
+  if (gathering.status === "CLOSED") return { kind: "closed" }
+
+  const memberIds = new Set(gathering.participants.map((participant) => participant.userId))
+  if (!memberIds.has(selfId)) return { kind: "missing" }
+
+  return { kind: "active", id: gathering.id, creatorId: gathering.creatorId, memberIds }
 }
 
 async function selfName(userId: string): Promise<string> {
@@ -75,7 +108,7 @@ async function selfName(userId: string): Promise<string> {
 function revalidateGatheringRoutes(
   gatheringId: string,
   participantIds: string[],
-) {
+): void {
   revalidatePath("/dashboard")
   revalidatePath("/juntadas")
   revalidatePath(`/juntadas/${gatheringId}`)
@@ -97,7 +130,6 @@ type ResolvedExpense =
       shares: ShareRow[]
     }
 
-/** Aplica validación común de creación/edición de gasto (permisos + payload). */
 async function resolveExpensePayload(
   input: ExpenseMutationInput,
   selfId: string,
@@ -112,6 +144,9 @@ async function resolveExpensePayload(
   if (!context) {
     return { ok: false, code: "not_found", message: "La juntada no existe o no participás" }
   }
+  if (context.status === "CLOSED") {
+    return { ok: false, code: "closed", message: "La juntada está cerrada" }
+  }
 
   const participantIds = [...new Set(data.participantIds)]
   if (!participantIds.every((userId) => context.memberIds.has(userId))) {
@@ -121,11 +156,20 @@ async function resolveExpensePayload(
     return { ok: false, code: "invalid_payer", message: "El pagador debe participar de la juntada" }
   }
 
-  const shares = buildExpenseShares(toDecimal(data.amount), {
-    type: data.splitType,
-    participantIds,
-    custom: data.shares ?? {},
-  })
+  let shares: ShareRow[]
+  try {
+    shares = buildExpenseShares(toDecimal(data.amount), {
+      type: data.splitType,
+      participantIds,
+      custom: data.shares ?? {},
+    })
+  } catch {
+    return {
+      ok: false,
+      code: "invalid_shares",
+      message: "Revisá la división del gasto",
+    }
+  }
 
   return {
     ok: true,
@@ -135,6 +179,20 @@ async function resolveExpensePayload(
     payerId: data.payerId,
     shares,
   }
+}
+
+function validateLockedParticipants(
+  locked: Extract<LockedGathering, { kind: "active" }>,
+  participantIds: string[],
+  payerId: string,
+): { ok: true } | { ok: false; code: string; message: string } {
+  if (!participantIds.every((userId) => locked.memberIds.has(userId))) {
+    return { ok: false, code: "invalid_participant", message: "Participante fuera de la juntada" }
+  }
+  if (!locked.memberIds.has(payerId)) {
+    return { ok: false, code: "invalid_payer", message: "El pagador debe participar de la juntada" }
+  }
+  return { ok: true }
 }
 
 export async function createExpense(
@@ -152,7 +210,17 @@ export async function createExpense(
   const amount = toDecimal(data.amount)
   const actorName = await selfName(selfId)
 
-  await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const locked = await lockActiveGathering(tx, context.id, selfId)
+    if (locked.kind === "missing") {
+      return { ok: false as const, code: "not_found", message: "La juntada no existe o no participás" }
+    }
+    if (locked.kind === "closed") {
+      return { ok: false as const, code: "closed", message: "La juntada está cerrada" }
+    }
+    const validParticipants = validateLockedParticipants(locked, participantIds, payerId)
+    if (!validParticipants.ok) return validParticipants
+
     const expense = await tx.expense.create({
       data: {
         gatheringId: context.id,
@@ -180,10 +248,9 @@ export async function createExpense(
       shares,
     })
 
-    // Snapshots históricos: el cuerpo embebe el apodo del actor al momento de
-    // crearse y no se reescribe si el usuario cambia su nombre después.
     const body = expenseNotificationBody(actorName, data.title, amount, context.name)
-    for (const userId of participantIds) {
+    const affectedIds = [...new Set([...participantIds, payerId])]
+    for (const userId of affectedIds) {
       if (userId === selfId) continue
       await tx.notification.create({
         data: {
@@ -195,10 +262,13 @@ export async function createExpense(
         },
       })
     }
+
+    return { ok: true as const, message: "Gasto agregado", affectedIds }
   })
 
-  revalidateGatheringRoutes(context.id, participantIds)
-  return { ok: true, message: "Gasto agregado" }
+  if (!result.ok) return result
+  revalidateGatheringRoutes(context.id, result.affectedIds)
+  return result
 }
 
 export async function updateExpense(
@@ -220,24 +290,41 @@ export async function updateExpense(
   const { data, context, participantIds, payerId, shares } = resolved
   const expenseId = idParsed.data.expenseId
 
-  const expense = await prisma.expense.findUnique({
-    where: { id: expenseId },
-    select: { id: true, gatheringId: true, createdById: true },
-  })
-  if (!expense || expense.gatheringId !== context.id) {
-    return { ok: false, code: "not_found", message: "El gasto no existe en esta juntada" }
-  }
-
-  const canManage = context.creatorId === selfId || expense.createdById === selfId
-  if (!canManage) {
-    return {
-      ok: false,
-      code: "forbidden",
-      message: "Solo el creador de la juntada o quien cargó el gasto puede editarlo",
+  const result = await prisma.$transaction(async (tx) => {
+    const locked = await lockActiveGathering(tx, context.id, selfId)
+    if (locked.kind === "missing") {
+      return { ok: false as const, code: "not_found", message: "La juntada no existe o no participás" }
     }
-  }
+    if (locked.kind === "closed") {
+      return { ok: false as const, code: "closed", message: "La juntada está cerrada" }
+    }
 
-  await prisma.$transaction(async (tx) => {
+    const expense = await tx.expense.findUnique({
+      where: { id: expenseId },
+      select: {
+        id: true,
+        gatheringId: true,
+        createdById: true,
+        payerId: true,
+        participants: { select: { userId: true } },
+      },
+    })
+    if (!expense || expense.gatheringId !== context.id) {
+      return { ok: false as const, code: "not_found", message: "El gasto no existe en esta juntada" }
+    }
+
+    const canManage = locked.creatorId === selfId || expense.createdById === selfId
+    if (!canManage) {
+      return {
+        ok: false as const,
+        code: "forbidden",
+        message: "Solo el creador de la juntada o quien cargó el gasto puede editarlo",
+      }
+    }
+
+    const validParticipants = validateLockedParticipants(locked, participantIds, payerId)
+    if (!validParticipants.ok) return validParticipants
+
     await deleteExpenseDebts(tx, expenseId)
     await tx.expenseParticipant.deleteMany({ where: { expenseId } })
     await tx.expense.update({
@@ -262,10 +349,21 @@ export async function updateExpense(
       title: data.title,
       shares,
     })
+
+    const affectedIds = [
+      ...new Set([
+        ...expense.participants.map((participant) => participant.userId),
+        expense.payerId,
+        ...participantIds,
+        payerId,
+      ]),
+    ]
+    return { ok: true as const, message: "Gasto actualizado", affectedIds }
   })
 
-  revalidateGatheringRoutes(context.id, participantIds)
-  return { ok: true, message: "Gasto actualizado" }
+  if (!result.ok) return result
+  revalidateGatheringRoutes(context.id, result.affectedIds)
+  return result
 }
 
 export async function deleteExpense(input: ExpenseIdInput): Promise<ActionResult> {
@@ -278,39 +376,47 @@ export async function deleteExpense(input: ExpenseIdInput): Promise<ActionResult
   if (!idParsed.success) {
     return { ok: false, code: "invalid", message: "Datos inválidos" }
   }
+  const expenseId = idParsed.data.expenseId
 
-  const expense = await prisma.expense.findUnique({
-    where: { id: idParsed.data.expenseId },
-    select: { id: true, gatheringId: true, createdById: true },
-  })
-  if (!expense) {
-    return { ok: false, code: "not_found", message: "El gasto no existe" }
-  }
-
-  const context = await loadGatheringContext(expense.gatheringId, selfId)
-  if (!context) {
-    return { ok: false, code: "not_found", message: "La juntada no existe o no participás" }
-  }
-
-  const canManage = context.creatorId === selfId || expense.createdById === selfId
-  if (!canManage) {
-    return {
-      ok: false,
-      code: "forbidden",
-      message: "Solo el creador de la juntada o quien cargó el gasto puede eliminarlo",
+  const result = await prisma.$transaction(async (tx) => {
+    const expense = await tx.expense.findUnique({
+      where: { id: expenseId },
+      select: { id: true, gatheringId: true, createdById: true },
+    })
+    if (!expense) {
+      return { ok: false as const, code: "not_found", message: "El gasto no existe" }
     }
-  }
 
-  await prisma.$transaction(async (tx) => {
+    const locked = await lockActiveGathering(tx, expense.gatheringId, selfId)
+    if (locked.kind === "missing") {
+      return { ok: false as const, code: "not_found", message: "La juntada no existe o no participás" }
+    }
+    if (locked.kind === "closed") {
+      return { ok: false as const, code: "closed", message: "La juntada está cerrada" }
+    }
+
+    const canManage = locked.creatorId === selfId || expense.createdById === selfId
+    if (!canManage) {
+      return {
+        ok: false as const,
+        code: "forbidden",
+        message: "Solo el creador de la juntada o quien cargó el gasto puede eliminarlo",
+      }
+    }
+
     await deleteExpenseDebts(tx, expense.id)
     await tx.expenseParticipant.deleteMany({ where: { expenseId: expense.id } })
     await tx.expense.delete({ where: { id: expense.id } })
+
+    return {
+      ok: true as const,
+      message: "El gasto y sus deudas se eliminaron de la juntada",
+      gatheringId: expense.gatheringId,
+      memberIds: [...locked.memberIds],
+    }
   })
 
-  const memberIds = [...context.memberIds]
-  revalidateGatheringRoutes(context.id, memberIds)
-  return {
-    ok: true,
-    message: "El gasto y sus deudas se eliminaron de la juntada",
-  }
+  if (!result.ok) return result
+  revalidateGatheringRoutes(result.gatheringId, result.memberIds)
+  return result
 }

@@ -36,6 +36,7 @@ export type ExpenseFormModel = {
   payerId: string
   splitType: "EQUAL" | "CUSTOM"
   participantIds: string[]
+  shares: Record<string, string>
 }
 
 type SplitType = "EQUAL" | "CUSTOM"
@@ -97,10 +98,7 @@ export function ExpenseForm({
       ),
   )
   const [shares, setShares] = useState<Record<string, string>>(
-    () =>
-      expense
-        ? splitToShares(expense.amount, expense.participantIds)
-        : {},
+    () => expense?.shares ?? {},
   )
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -142,12 +140,21 @@ export function ExpenseForm({
   })
 
   function resetForm() {
-    setTitle("")
-    setAmount("")
-    setPayerId(currentUserId)
-    setSplitType("EQUAL")
-    setParticipantIds(new Set(participants.map((participant) => participant.id)))
-    setShares({})
+    if (expense) {
+      setTitle(expense.title)
+      setAmount(expense.amount)
+      setPayerId(expense.payerId)
+      setSplitType(expense.splitType)
+      setParticipantIds(new Set(expense.participantIds))
+      setShares({ ...expense.shares })
+    } else {
+      setTitle("")
+      setAmount("")
+      setPayerId(currentUserId)
+      setSplitType("EQUAL")
+      setParticipantIds(new Set(participants.map((participant) => participant.id)))
+      setShares({})
+    }
     setError(null)
   }
 

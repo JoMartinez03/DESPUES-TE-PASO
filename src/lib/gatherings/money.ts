@@ -36,9 +36,11 @@ export function parseMoneyToCents(value: string): number {
 
 /** Convierte centavos a un texto con 2 decimales, listo para Prisma.Decimal. */
 export function centsToAmountString(cents: number): string {
-  const intPart = Math.floor(cents / 100)
-  const fracPart = cents % 100
-  return `${intPart}.${String(fracPart).padStart(2, "0")}`
+  const sign = cents < 0 ? "-" : ""
+  const absolute = Math.abs(cents)
+  const intPart = Math.floor(absolute / 100)
+  const fracPart = absolute % 100
+  return `${sign}${intPart}.${String(fracPart).padStart(2, "0")}`
 }
 
 /**

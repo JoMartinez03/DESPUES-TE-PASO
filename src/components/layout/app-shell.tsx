@@ -5,16 +5,19 @@ import { Header } from "@/components/layout/header"
 import { Sidebar } from "@/components/layout/sidebar"
 import type { CurrentUser } from "@/lib/user"
 import type { NotificationItem } from "@/queries/notifications"
+import type { QuickTransactionOptions } from "@/queries/friendships"
 
 export function AppShell({
   user,
   unreadCount,
   notifications,
+  quickTransactionOptions,
   children,
 }: {
   user: CurrentUser
   unreadCount: number
   notifications: NotificationItem[]
+  quickTransactionOptions: QuickTransactionOptions
   children: ReactNode
 }) {
   return (
@@ -29,7 +32,7 @@ export function AppShell({
         </main>
       </div>
       <BottomNav />
-      <FabAction />
+      <FabAction options={quickTransactionOptions} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { formatMoney } from "@/lib/format"
@@ -52,6 +53,25 @@ async function requireAcceptedFriend(
     select: { id: true, name: true },
   })
   return friend
+}
+
+async function lockFriendshipPair(
+  tx: Prisma.TransactionClient,
+  selfId: string,
+  friendId: string,
+): Promise<boolean> {
+  const rows = await tx.$queryRaw<{ id: string }[]>`
+    SELECT "id"
+    FROM "friendships"
+    WHERE "status" = 'ACCEPTED'
+      AND (
+        ("requesterId" = ${selfId} AND "addresseeId" = ${friendId})
+        OR ("requesterId" = ${friendId} AND "addresseeId" = ${selfId})
+      )
+    ORDER BY "id"
+    FOR UPDATE
+  `
+  return rows.length > 0
 }
 
 function firstName(name: string): string {
@@ -159,6 +179,11 @@ export async function registerPayment(
   const me = await selfName(selfId)
 
   const result = await prisma.$transaction(async (tx) => {
+    const friendshipLocked = await lockFriendshipPair(tx, selfId, friend.id)
+    if (!friendshipLocked) {
+      return { ok: false as const, code: "not_found", message: "El usuario no existe o no son amigos" }
+    }
+
     const [balance, pendingSum] = await Promise.all([
       primeBalanceBetween(tx, selfId, friend.id),
       primePendingOutgoingPaymentsSum(tx, selfId, friend.id),
@@ -225,6 +250,11 @@ async function resolvePayment(
   const txId = parsed.data.transactionId
 
   return prisma.$transaction(async (tx) => {
+    const lockedRows = await tx.$queryRaw<{ id: string }[]>`
+      SELECT "id" FROM "transactions" WHERE "id" = ${txId} FOR UPDATE
+    `
+    if (lockedRows.length === 0) return { status: "not_found" as const }
+
     const payment = await tx.transaction.findUnique({
       where: { id: txId },
       select: {
@@ -247,13 +277,19 @@ async function resolvePayment(
     if (payment.status !== "PENDING") return { status: "conflict" as const }
 
     const now = new Date()
-    await tx.transaction.update({
-      where: { id: txId },
+    const updated = await tx.transaction.updateMany({
+      where: {
+        id: txId,
+        type: "PAYMENT",
+        status: "PENDING",
+        pendingConfirmationFromId: selfId,
+      },
       data:
         target === "confirm"
           ? { status: "CONFIRMED", confirmedAt: now }
           : { status: "REJECTED", rejectedAt: now },
     })
+    if (updated.count !== 1) return { status: "conflict" as const }
 
     await tx.notification.updateMany({
       where: { userId: selfId, relatedTransactionId: txId, read: false },

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session"
 import type { CurrentUser } from "@/lib/user"
+import { getQuickTransactionOptions } from "@/queries/friendships"
 import { getRecentNotifications } from "@/queries/notifications"
 import { getProfileExcerpt } from "@/queries/profile"
 
@@ -23,9 +24,10 @@ export default async function AppLayout({
     avatar: user.avatar ?? null,
   }
 
-  const [unreadCount, notifications] = await Promise.all([
+  const [unreadCount, notifications, quickTransactionOptions] = await Promise.all([
     prisma.notification.count({ where: { userId: user.id, read: false } }),
     getRecentNotifications(user.id),
+    getQuickTransactionOptions(user.id),
   ])
 
   return (
@@ -33,6 +35,7 @@ export default async function AppLayout({
       user={currentUser}
       unreadCount={unreadCount}
       notifications={notifications}
+      quickTransactionOptions={quickTransactionOptions}
     >
       {children}
     </AppShell>

@@ -1,5 +1,10 @@
 import { Prisma } from "@/generated/prisma"
 import { prisma } from "@/lib/prisma"
+import {
+  calculateSuggestedTransfers,
+  type GatheringBalance as SettlementBalance,
+  type SuggestedTransfer,
+} from "@/lib/gatherings/settlement"
 import { sumSigned } from "@/lib/transactions"
 
 const ZERO = new Prisma.Decimal(0)
@@ -22,6 +27,8 @@ export type GatheringCard = {
   id: string
   name: string
   date: Date
+  status: "ACTIVE" | "CLOSED"
+  closedAt: Date | null
   participantCount: number
   expenseCount: number
   total: Prisma.Decimal
@@ -52,11 +59,26 @@ export type GatheringView = {
   name: string
   date: Date
   createdAt: Date
+  closedAt: Date | null
+  status: "ACTIVE" | "CLOSED"
   creatorId: string
   creator: UserSummary
   participants: Array<UserSummary & { joinedAt: Date }>
   expenses: ExpenseView[]
 }
+
+export type GatheringEconomics =
+  | {
+      ok: true
+      balances: SettlementBalance[]
+      transfers: SuggestedTransfer[]
+    }
+  | {
+      ok: false
+      code: "INCONSISTENT_BALANCE" | "INVALID_DATA"
+      message: string
+      totalBalanceCents: number
+    }
 
 /**
  * Juntadas en las que participa `userId`, ordenadas por fecha más reciente.
@@ -69,6 +91,8 @@ export async function getGatheringsForUser(userId: string): Promise<GatheringCar
       id: true,
       name: true,
       date: true,
+      status: true,
+      closedAt: true,
       participants: { select: { userId: true } },
       expenses: { select: { amount: true } },
     },
@@ -79,6 +103,8 @@ export async function getGatheringsForUser(userId: string): Promise<GatheringCar
     id: row.id,
     name: row.name,
     date: row.date,
+    status: row.status,
+    closedAt: row.closedAt,
     participantCount: row.participants.length,
     expenseCount: row.expenses.length,
     total: row.expenses.reduce((acc, expense) => acc.plus(expense.amount), ZERO),
@@ -100,6 +126,8 @@ export async function getGatheringView(
       name: true,
       date: true,
       createdAt: true,
+      closedAt: true,
+      status: true,
       creatorId: true,
       creator: { select: userSummary },
       participants: {
@@ -140,6 +168,8 @@ export async function getGatheringView(
     name: gathering.name,
     date: gathering.date,
     createdAt: gathering.createdAt,
+    closedAt: gathering.closedAt,
+    status: gathering.status,
     creatorId: gathering.creatorId,
     creator: gathering.creator,
     participants: gathering.participants.map((participant) => ({
@@ -183,6 +213,7 @@ export async function getGatheringBalanceForUser(
 
   const rows = await prisma.transaction.findMany({
     where: {
+      type: "DEBT",
       status: "CONFIRMED",
       expenseId: { in: expenses.map((expense) => expense.id) },
       OR: [{ debtorId: userId }, { creditorId: userId }],
@@ -194,6 +225,96 @@ export async function getGatheringBalanceForUser(
     rows.map((row) => ({ ...row, type: "DEBT" as const })),
     userId,
   )
+}
+
+function decimalToCents(value: Prisma.Decimal): number | null {
+  const scaled = value.mul(100)
+  const rounded = scaled.toDecimalPlaces(0)
+  if (!scaled.equals(rounded)) return null
+  const cents = rounded.toNumber()
+  return Number.isSafeInteger(cents) ? cents : null
+}
+
+export async function getGatheringEconomics(
+  gatheringId: string,
+): Promise<GatheringEconomics> {
+  const [participants, expenses] = await Promise.all([
+    prisma.gatheringParticipant.findMany({
+      where: { gatheringId },
+      select: { userId: true },
+    }),
+    prisma.expense.findMany({
+      where: { gatheringId },
+      select: { id: true },
+    }),
+  ])
+
+  const balancesByUser = new Map<string, number>(
+    participants.map((participant) => [participant.userId, 0]),
+  )
+  const balances: SettlementBalance[] = participants.map((participant) => ({
+    userId: participant.userId,
+    balanceCents: 0,
+  }))
+
+  if (expenses.length > 0) {
+    const grouped = await prisma.transaction.groupBy({
+      by: ["debtorId", "creditorId"],
+      where: {
+        type: "DEBT",
+        status: "CONFIRMED",
+        expenseId: { in: expenses.map((expense) => expense.id) },
+      },
+      _sum: { amount: true },
+    })
+
+    for (const row of grouped) {
+      const amountCents = row._sum.amount
+        ? decimalToCents(row._sum.amount)
+        : null
+      const debtorBalance = balancesByUser.get(row.debtorId)
+      const creditorBalance = balancesByUser.get(row.creditorId)
+      if (amountCents === null || debtorBalance === undefined || creditorBalance === undefined) {
+        return {
+          ok: false,
+          code: "INVALID_DATA",
+          message: "La juntada contiene datos de balance inconsistentes",
+          totalBalanceCents: 0,
+        }
+      }
+      const nextDebtorBalance = debtorBalance - amountCents
+      const nextCreditorBalance = creditorBalance + amountCents
+      if (
+        !Number.isSafeInteger(nextDebtorBalance) ||
+        !Number.isSafeInteger(nextCreditorBalance)
+      ) {
+        return {
+          ok: false,
+          code: "INVALID_DATA",
+          message: "La juntada contiene datos de balance inconsistentes",
+          totalBalanceCents: 0,
+        }
+      }
+      balancesByUser.set(row.debtorId, nextDebtorBalance)
+      balancesByUser.set(row.creditorId, nextCreditorBalance)
+    }
+
+    for (const balance of balances) {
+      balance.balanceCents = balancesByUser.get(balance.userId) ?? 0
+    }
+  }
+
+  const settlement = calculateSuggestedTransfers(balances)
+  if (!settlement.ok) {
+    return {
+      ok: false,
+      code: settlement.code === "UNBALANCED" ? "INCONSISTENT_BALANCE" : "INVALID_DATA",
+      message: settlement.message,
+      totalBalanceCents: settlement.totalBalanceCents,
+    }
+  }
+
+  return { ok: true, balances, transfers: settlement.transfers }
 }
 
 /**

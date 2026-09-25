@@ -92,6 +92,14 @@ export const ExpenseSplitType: {
 export type ExpenseSplitType = (typeof ExpenseSplitType)[keyof typeof ExpenseSplitType]
 
 
+export const GatheringStatus: {
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED'
+};
+
+export type GatheringStatus = (typeof GatheringStatus)[keyof typeof GatheringStatus]
+
+
 export const NotificationType: {
   FRIEND_REQUEST: 'FRIEND_REQUEST',
   TRANSACTION_PENDING: 'TRANSACTION_PENDING',
@@ -119,6 +127,10 @@ export const TransactionStatus: typeof $Enums.TransactionStatus
 export type ExpenseSplitType = $Enums.ExpenseSplitType
 
 export const ExpenseSplitType: typeof $Enums.ExpenseSplitType
+
+export type GatheringStatus = $Enums.GatheringStatus
+
+export const GatheringStatus: typeof $Enums.GatheringStatus
 
 export type NotificationType = $Enums.NotificationType
 
@@ -5767,6 +5779,8 @@ export namespace Prisma {
     name: string | null
     description: string | null
     date: Date | null
+    status: $Enums.GatheringStatus | null
+    closedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5777,6 +5791,8 @@ export namespace Prisma {
     name: string | null
     description: string | null
     date: Date | null
+    status: $Enums.GatheringStatus | null
+    closedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5787,6 +5803,8 @@ export namespace Prisma {
     name: number
     description: number
     date: number
+    status: number
+    closedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5799,6 +5817,8 @@ export namespace Prisma {
     name?: true
     description?: true
     date?: true
+    status?: true
+    closedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5809,6 +5829,8 @@ export namespace Prisma {
     name?: true
     description?: true
     date?: true
+    status?: true
+    closedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5819,6 +5841,8 @@ export namespace Prisma {
     name?: true
     description?: true
     date?: true
+    status?: true
+    closedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5902,6 +5926,8 @@ export namespace Prisma {
     name: string
     description: string | null
     date: Date
+    status: $Enums.GatheringStatus
+    closedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: GatheringCountAggregateOutputType | null
@@ -5929,6 +5955,8 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     date?: boolean
+    status?: boolean
+    closedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -5944,6 +5972,8 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     date?: boolean
+    status?: boolean
+    closedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -5955,6 +5985,8 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     date?: boolean
+    status?: boolean
+    closedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -5966,11 +5998,13 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     date?: boolean
+    status?: boolean
+    closedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type GatheringOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "creatorId" | "name" | "description" | "date" | "createdAt" | "updatedAt", ExtArgs["result"]["gathering"]>
+  export type GatheringOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "creatorId" | "name" | "description" | "date" | "status" | "closedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["gathering"]>
   export type GatheringInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     expenses?: boolean | Gathering$expensesArgs<ExtArgs>
@@ -5999,6 +6033,8 @@ export namespace Prisma {
       name: string
       description: string | null
       date: Date
+      status: $Enums.GatheringStatus
+      closedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["gathering"]>
@@ -6433,6 +6469,8 @@ export namespace Prisma {
     readonly name: FieldRef<"Gathering", 'String'>
     readonly description: FieldRef<"Gathering", 'String'>
     readonly date: FieldRef<"Gathering", 'DateTime'>
+    readonly status: FieldRef<"Gathering", 'GatheringStatus'>
+    readonly closedAt: FieldRef<"Gathering", 'DateTime'>
     readonly createdAt: FieldRef<"Gathering", 'DateTime'>
     readonly updatedAt: FieldRef<"Gathering", 'DateTime'>
   }
@@ -11603,6 +11641,8 @@ export namespace Prisma {
     name: 'name',
     description: 'description',
     date: 'date',
+    status: 'status',
+    closedAt: 'closedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11773,6 +11813,20 @@ export namespace Prisma {
    * Reference to a field of type 'TransactionStatus[]'
    */
   export type ListEnumTransactionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TransactionStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'GatheringStatus'
+   */
+  export type EnumGatheringStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GatheringStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'GatheringStatus[]'
+   */
+  export type ListEnumGatheringStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GatheringStatus[]'>
     
 
 
@@ -12138,6 +12192,8 @@ export namespace Prisma {
     name?: StringFilter<"Gathering"> | string
     description?: StringNullableFilter<"Gathering"> | string | null
     date?: DateTimeFilter<"Gathering"> | Date | string
+    status?: EnumGatheringStatusFilter<"Gathering"> | $Enums.GatheringStatus
+    closedAt?: DateTimeNullableFilter<"Gathering"> | Date | string | null
     createdAt?: DateTimeFilter<"Gathering"> | Date | string
     updatedAt?: DateTimeFilter<"Gathering"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -12152,6 +12208,8 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     date?: SortOrder
+    status?: SortOrder
+    closedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     creator?: UserOrderByWithRelationInput
@@ -12169,6 +12227,8 @@ export namespace Prisma {
     name?: StringFilter<"Gathering"> | string
     description?: StringNullableFilter<"Gathering"> | string | null
     date?: DateTimeFilter<"Gathering"> | Date | string
+    status?: EnumGatheringStatusFilter<"Gathering"> | $Enums.GatheringStatus
+    closedAt?: DateTimeNullableFilter<"Gathering"> | Date | string | null
     createdAt?: DateTimeFilter<"Gathering"> | Date | string
     updatedAt?: DateTimeFilter<"Gathering"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -12183,6 +12243,8 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     date?: SortOrder
+    status?: SortOrder
+    closedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GatheringCountOrderByAggregateInput
@@ -12199,6 +12261,8 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Gathering"> | string
     description?: StringNullableWithAggregatesFilter<"Gathering"> | string | null
     date?: DateTimeWithAggregatesFilter<"Gathering"> | Date | string
+    status?: EnumGatheringStatusWithAggregatesFilter<"Gathering"> | $Enums.GatheringStatus
+    closedAt?: DateTimeNullableWithAggregatesFilter<"Gathering"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Gathering"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Gathering"> | Date | string
   }
@@ -12835,6 +12899,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
@@ -12849,6 +12915,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
@@ -12861,6 +12929,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
@@ -12875,6 +12945,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
@@ -12888,6 +12960,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12897,6 +12971,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12907,6 +12983,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13602,12 +13680,21 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type EnumGatheringStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.GatheringStatus | EnumGatheringStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGatheringStatusFilter<$PrismaModel> | $Enums.GatheringStatus
+  }
+
   export type GatheringCountOrderByAggregateInput = {
     id?: SortOrder
     creatorId?: SortOrder
     name?: SortOrder
     description?: SortOrder
     date?: SortOrder
+    status?: SortOrder
+    closedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13618,6 +13705,8 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     date?: SortOrder
+    status?: SortOrder
+    closedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13628,8 +13717,20 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     date?: SortOrder
+    status?: SortOrder
+    closedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumGatheringStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GatheringStatus | EnumGatheringStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGatheringStatusWithAggregatesFilter<$PrismaModel> | $Enums.GatheringStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGatheringStatusFilter<$PrismaModel>
+    _max?: NestedEnumGatheringStatusFilter<$PrismaModel>
   }
 
   export type GatheringScalarRelationFilter = {
@@ -14625,6 +14726,10 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type EnumGatheringStatusFieldUpdateOperationsInput = {
+    set?: $Enums.GatheringStatus
+  }
+
   export type UserUpdateOneRequiredWithoutGatheringsNestedInput = {
     create?: XOR<UserCreateWithoutGatheringsInput, UserUncheckedCreateWithoutGatheringsInput>
     connectOrCreate?: UserCreateOrConnectWithoutGatheringsInput
@@ -15185,6 +15290,23 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumGatheringStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.GatheringStatus | EnumGatheringStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGatheringStatusFilter<$PrismaModel> | $Enums.GatheringStatus
+  }
+
+  export type NestedEnumGatheringStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GatheringStatus | EnumGatheringStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GatheringStatus[] | ListEnumGatheringStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGatheringStatusWithAggregatesFilter<$PrismaModel> | $Enums.GatheringStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGatheringStatusFilter<$PrismaModel>
+    _max?: NestedEnumGatheringStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumExpenseSplitTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.ExpenseSplitType | EnumExpenseSplitTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ExpenseSplitType[] | ListEnumExpenseSplitTypeFieldRefInput<$PrismaModel>
@@ -15489,6 +15611,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseCreateNestedManyWithoutGatheringInput
@@ -15501,6 +15625,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
@@ -15830,6 +15956,8 @@ export namespace Prisma {
     name?: StringFilter<"Gathering"> | string
     description?: StringNullableFilter<"Gathering"> | string | null
     date?: DateTimeFilter<"Gathering"> | Date | string
+    status?: EnumGatheringStatusFilter<"Gathering"> | $Enums.GatheringStatus
+    closedAt?: DateTimeNullableFilter<"Gathering"> | Date | string | null
     createdAt?: DateTimeFilter<"Gathering"> | Date | string
     updatedAt?: DateTimeFilter<"Gathering"> | Date | string
   }
@@ -17014,6 +17142,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
@@ -17027,6 +17157,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
@@ -17103,6 +17235,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
@@ -17116,6 +17250,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
@@ -17182,6 +17318,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
@@ -17195,6 +17333,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: GatheringParticipantUncheckedCreateNestedManyWithoutGatheringInput
@@ -17392,6 +17532,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
@@ -17405,6 +17547,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: GatheringParticipantUncheckedUpdateManyWithoutGatheringNestedInput
@@ -17851,6 +17995,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutGatheringsInput
@@ -17864,6 +18010,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     expenses?: ExpenseUncheckedCreateNestedManyWithoutGatheringInput
@@ -18026,6 +18174,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutGatheringsNestedInput
@@ -18039,6 +18189,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
@@ -18140,6 +18292,8 @@ export namespace Prisma {
     name: string
     description?: string | null
     date: Date | string
+    status?: $Enums.GatheringStatus
+    closedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -18480,6 +18634,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUpdateManyWithoutGatheringNestedInput
@@ -18492,6 +18648,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expenses?: ExpenseUncheckedUpdateManyWithoutGatheringNestedInput
@@ -18504,6 +18662,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumGatheringStatusFieldUpdateOperationsInput | $Enums.GatheringStatus
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

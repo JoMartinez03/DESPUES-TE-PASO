@@ -46,6 +46,12 @@ export function ExpenseItem({
     payerId: expense.payer.id,
     splitType: expense.splitType,
     participantIds: expense.participants.map((participant) => participant.userId),
+    shares: Object.fromEntries(
+      expense.participants.map((participant) => [
+        participant.userId,
+        participant.shareAmount,
+      ]),
+    ),
   }
 
   function handleDelete() {

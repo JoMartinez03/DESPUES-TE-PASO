@@ -18,9 +18,20 @@ export function GatheringCard({ gathering }: { gathering: GatheringCardData }) {
                 {formatShortDate(gathering.date)}
               </p>
             </div>
-            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-              {formatMoney(gathering.total)}
-            </span>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                {formatMoney(gathering.total)}
+              </span>
+              <span
+                className={
+                  gathering.status === "ACTIVE"
+                    ? "rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-700 dark:text-emerald-300"
+                    : "rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold text-muted-foreground"
+                }
+              >
+                {gathering.status === "ACTIVE" ? "Activa" : "Cerrada"}
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">

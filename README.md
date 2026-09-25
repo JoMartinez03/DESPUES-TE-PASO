@@ -58,6 +58,8 @@ Ver `.env.example`. `AUTH_SECRET` se genera con `openssl rand -base64 32`.
 | `npm run start`      | Sirve el build                             |
 | `npm run lint`       | ESLint                                    |
 | `npm run typecheck`  | `tsc --noEmit`                             |
+| `npm test`           | Tests (Vitest)                              |
+| `npm run test:watch` | Tests en modo watch                        |
 | `npm run db:migrate` | `prisma migrate dev` (desarrollo)          |
 | `npm run db:deploy`  | `prisma migrate deploy` (producción)       |
 | `npm run db:generate`| Regenera el cliente Prisma                 |
@@ -71,14 +73,15 @@ src/
     (app)/            # áreas con sesión: dashboard, personas, juntadas, perfil
     (public)/         # login y registro
     api/auth/         # handlers de Auth.js
-  actions/            # server actions (auth)
+  actions/            # server actions (auth, friends, transactions, gatherings)
   components/
     auth/             # formularios de login/registro, add-friend
+    gatherings/       # juntadas, gastos, reparto y estado
     layout/           # app-shell, sidebar, header, bottom-nav, FAB, campana
     shared/           # empty-state, stat-card, user-avatar, page-header
     ui/               # componentes shadcn/ui
-  lib/                # prisma, auth, session, format, validaciones
-  queries/            # consultas de datos (dashboard)
+  lib/                # prisma, auth, session, format, validaciones, gatherings
+  queries/            # consultas de datos (dashboard, personas, juntadas)
   generated/prisma/   # cliente generado (no editar)
 proxy.ts              # protección de rutas (Next 16 renombró middleware a proxy)
 prisma/schema.prisma  # modelo de datos
@@ -92,8 +95,15 @@ prisma/schema.prisma  # modelo de datos
 - Los movimientos `PENDING` **no** afectan los saldos; recién cuando se
   confirman (`CONFIRMED`). Los **saldos no se almacenan**: se derivan de las
   transacciones confirmadas.
-- Los gastos de juntadas viven en `Expense` / `ExpenseParticipant` (no
-  generan transacciones automáticamente por ahora).
+- Los gastos de juntadas viven en `Expense` / `ExpenseParticipant`; cada
+  reparto genera `Transaction` `DEBT` `CONFIRMED` con `expenseId`, y esos pagos
+  derivados se borran junto con el gasto. Los pagos registrados manualmente no
+  se vinculan a la juntada.
+- El balance de una juntada se deriva solo de esas `DEBT` `CONFIRMED`; los pagos
+  sugeridos son un snapshot histórico y no modifican los gastos.
+- Una `Gathering` es `ACTIVE` mientras admite gastos y cambios de participantes,
+  y `CLOSED` con `closedAt` una vez que su creador la cierra. Cerrar no borra
+  gastos ni genera un settlement persistido.
 
 ## Seguridad
 
@@ -115,8 +125,21 @@ prisma/schema.prisma  # modelo de datos
 4. Login inválido muestra error; login válido muestra el dashboard con los
    tres resúmenes en `$0`.
 5. `/personas` vacío muestra empty-state y CTA "Agregar amigo".
-6. FAB móvil abre la hoja con acciones (deuda/pago "Próximamente",
-   "Nueva juntada" navega).
+6. FAB móvil abre la hoja con acciones (deuda, pago y "Nueva juntada").
 7. Campana de notificaciones muestra "Todavía no recibís notificaciones".
 8. `/perfil` muestra datos y "Cerrar sesión" vuelve a `/login`.
 9. Rutas inexistentes o amigos/juntadas ajenos → 404 en español.
+
+## Checklist manual (Issue 5)
+
+1. FAB con amigos aceptados: "Agregar deuda" y "Registrar pago"; los pagos
+   solo se ofrecen cuando hay saldo a favor del amigo.
+2. Crear juntada con 2+ amigos aceptados, agregar gasto y ver el balance
+   colectivo con pagos sugeridos que cuadran a cero.
+3. Un gasto custom conserva sus partes al reabrirlo para editar o eliminarlo.
+4. Editar o borrar un gasto recalcula las deudas derivadas sin tocar pagos
+   manuales.
+5. El creador cierra la juntada; después no se pueden agregar/editar/borrar
+   gastos ni participantes, y el resto recibe una notificación.
+6. Un cierre concurrente con un gasto no deja un gasto escrito sobre una
+   juntada cerrada.

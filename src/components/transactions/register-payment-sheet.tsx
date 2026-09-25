@@ -21,18 +21,34 @@ export function RegisterPaymentSheet({
   friendId,
   friendName,
   maxPayableText,
+  initialAmount = "",
+  open: controlledOpen,
+  onOpenChange,
+  onSuccess,
+  showTrigger = true,
 }: {
   friendId: string
   friendName: string
   maxPayableText: string
+  initialAmount?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSuccess?: () => void
+  showTrigger?: boolean
 }) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [amount, setAmount] = useState("")
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen ?? internalOpen
+  const [amount, setAmount] = useState(initialAmount)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const firstName = friendName.split(" ")[0] ?? friendName
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (controlledOpen === undefined) setInternalOpen(nextOpen)
+    onOpenChange?.(nextOpen)
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -41,8 +57,9 @@ export function RegisterPaymentSheet({
       const result = await registerPayment({ userId: friendId, amount })
       if (result.ok) {
         toast({ title: "Pago registrado", description: result.message })
-        setOpen(false)
+        handleOpenChange(false)
         setAmount("")
+        onSuccess?.()
         router.refresh()
       } else {
         setError(result.message)
@@ -51,13 +68,15 @@ export function RegisterPaymentSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={<Button className="gap-1.5" variant="outline" />}
-      >
-        <CircleDollarSign className="size-4" />
-        Registrar pago
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      {showTrigger ? (
+        <SheetTrigger
+          render={<Button className="gap-1.5" variant="outline" />}
+        >
+          <CircleDollarSign className="size-4" />
+          Registrar pago
+        </SheetTrigger>
+      ) : null}
       <SheetContent
         side="bottom"
         className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"

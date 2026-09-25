@@ -5,7 +5,7 @@ import {
   relativeStatus,
   type RelativeFriendshipStatus,
 } from "@/lib/friendship"
-import { netBalancesForUser } from "@/queries/transactions"
+import { maxPayableBetween, netBalancesForUser } from "@/queries/transactions"
 
 const ZERO = new Prisma.Decimal(0)
 
@@ -110,6 +110,31 @@ export async function getFriendSummaries(userId: string): Promise<UserSummary[]>
       ? friendship.addressee
       : friendship.requester,
   )
+}
+
+export type QuickPaymentOption = UserSummary & {
+  maxPayable: string
+}
+
+export type QuickTransactionOptions = {
+  friends: UserSummary[]
+  payments: QuickPaymentOption[]
+}
+
+export async function getQuickTransactionOptions(
+  userId: string,
+): Promise<QuickTransactionOptions> {
+  const friends = await getFriendSummaries(userId)
+  const payments = (
+    await Promise.all(
+      friends.map(async (friend) => {
+        const maxPayable = await maxPayableBetween(userId, friend.id)
+        return { ...friend, maxPayable: maxPayable.toFixed(2) }
+      }),
+    )
+  ).filter((option) => Number(option.maxPayable) > 0)
+
+  return { friends, payments }
 }
 
 export async function getIncomingRequests(userId: string): Promise<IncomingRequest[]> {

@@ -166,6 +166,8 @@ exports.Prisma.GatheringScalarFieldEnum = {
   name: 'name',
   description: 'description',
   date: 'date',
+  status: 'status',
+  closedAt: 'closedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -240,6 +242,11 @@ exports.TransactionStatus = exports.$Enums.TransactionStatus = {
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
   REJECTED: 'REJECTED'
+};
+
+exports.GatheringStatus = exports.$Enums.GatheringStatus = {
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED'
 };
 
 exports.ExpenseSplitType = exports.$Enums.ExpenseSplitType = {
