@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import {
+  avatarTypeFromBytes,
   avatarValidationError,
   extensionFor,
   type AllowedAvatarType,
@@ -57,7 +58,9 @@ export async function updateAvatar(
   const validationError = avatarValidationError(file, buffer)
   if (validationError) return { ok: false, error: validationError }
 
-  const type = file.type as AllowedAvatarType
+  // El contentType sale de los magic bytes, no del `Content-Type` declarado.
+  const type = avatarTypeFromBytes(buffer) as AllowedAvatarType | null
+  if (!type) return { ok: false, error: "El archivo no parece una imagen válida." }
 
   const current = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -76,10 +79,23 @@ export async function updateAvatar(
     return { ok: false, error: "No pudimos subir la imagen. Intentá de nuevo." }
   }
 
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { avatar: uploaded.url },
-  })
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { avatar: uploaded.url },
+    })
+  } catch (error) {
+    console.error("updateAvatar: no se pudo guardar la URL", error)
+    try {
+      await del(uploaded.url)
+    } catch (cleanupError) {
+      console.error(
+        "updateAvatar: no se pudo limpiar la imagen huérfana",
+        cleanupError,
+      )
+    }
+    return { ok: false, error: "No pudimos guardar la foto. Intentá de nuevo." }
+  }
 
   if (current?.avatar && current.avatar !== uploaded.url) {
     try {

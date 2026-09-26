@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
-    setupFiles: ["tests/setup/database.ts"],
+    setupFiles: ["tests/setup/browser-polyfills.ts", "tests/setup/database.ts"],
     testTimeout: 20_000,
     hookTimeout: 30_000,
     fileParallelism: process.env.TEST_DATABASE_URL ? false : true,

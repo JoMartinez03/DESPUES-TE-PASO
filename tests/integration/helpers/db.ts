@@ -37,14 +37,31 @@ export async function acceptFriendship(
   requesterId: string,
   addresseeId: string,
 ): Promise<void> {
+  await createFriendship(requesterId, addresseeId, "ACCEPTED")
+}
+
+/** Friendship PENDING: `requesterId` le envió la solicitud a `addresseeId`. */
+export async function createPendingFriendship(
+  requesterId: string,
+  addresseeId: string,
+): Promise<{ id: string }> {
+  return createFriendship(requesterId, addresseeId, "PENDING")
+}
+
+export async function createFriendship(
+  requesterId: string,
+  addresseeId: string,
+  status: "PENDING" | "ACCEPTED" | "REJECTED",
+): Promise<{ id: string }> {
   const [a, b] = [requesterId, addresseeId].sort()
-  await prisma.friendship.create({
+  return prisma.friendship.create({
     data: {
       requesterId: a,
       addresseeId: b,
       pairKey: `${a}:${b}`,
-      status: "ACCEPTED",
+      status,
     },
+    select: { id: true },
   })
 }
 

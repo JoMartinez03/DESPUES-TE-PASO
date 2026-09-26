@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 import { friendshipPairKey } from "@/lib/friendship"
+import { firstName } from "@/lib/names"
 import { prisma } from "@/lib/prisma"
 import {
   friendshipIdSchema,
@@ -40,6 +41,15 @@ async function sessionUserId(): Promise<string | null> {
   return session?.user?.id ?? null
 }
 
+/** Nombre del actor, para los cuerpos de notificación. */
+async function selfName(userId: string): Promise<string> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true },
+  })
+  return user?.name ?? "Alguien"
+}
+
 export async function sendFriendRequest(
   input: UserIdInput,
 ): Promise<SendRequestResult> {
@@ -63,6 +73,9 @@ export async function sendFriendRequest(
     return { ok: false, code: "not_found", message: "Ese usuario no existe" }
   }
 
+  // El body de la notificación lleva el nombre del ACTOR (quien envía),
+  // nunca el del recipient.
+  const actorName = await selfName(selfId)
   const pairKey = friendshipPairKey(selfId, targetId)
 
   try {
@@ -76,7 +89,7 @@ export async function sendFriendRequest(
         return {
           ok: false,
           code: "already_friends" as const,
-          message: `Ya sos amigo de ${target.name.split(" ")[0]}`,
+          message: `Ya sos amigo de ${firstName(target.name)}`,
         }
       }
 
@@ -84,17 +97,19 @@ export async function sendFriendRequest(
         return {
           ok: false,
           code: "incoming_exists" as const,
-          message: `${target.name.split(" ")[0]} ya te envió una solicitud`,
+          message: `${firstName(target.name)} ya te envió una solicitud`,
         }
       }
 
       let friendshipId = existing?.id
+      let reopened = false
       if (existing) {
         if (existing.requesterId !== selfId || existing.status !== "PENDING") {
           await tx.friendship.update({
             where: { id: existing.id },
             data: { requesterId: selfId, addresseeId: targetId, status: "PENDING" },
           })
+          reopened = true
         }
       } else {
         const created = await tx.friendship.create({
@@ -109,12 +124,23 @@ export async function sendFriendRequest(
       }
 
       if (friendshipId) {
+        // Al reabrir una amistad (REJECTED -> PENDING) se borran las
+        // notificaciones del ciclo anterior para que el dedupe de abajo no
+        // dependa del `read` y el recipient sí vea la solicitud nueva.
+        if (reopened) {
+          await tx.notification.deleteMany({
+            where: {
+              relatedFriendshipId: friendshipId,
+              type: "FRIEND_REQUEST",
+            },
+          })
+        }
+
         const duplicateNotification = await tx.notification.findFirst({
           where: {
             userId: targetId,
             relatedFriendshipId: friendshipId,
             type: "FRIEND_REQUEST",
-            read: false,
           },
           select: { id: true },
         })
@@ -125,7 +151,7 @@ export async function sendFriendRequest(
               userId: targetId,
               type: "FRIEND_REQUEST",
               title: "Solicitud de amistad",
-              body: `${target.name.split(" ")[0] ?? target.name} quiere agregarte como amigo`,
+              body: `${firstName(actorName)} quiere agregarte como amigo`,
               relatedFriendshipId: friendshipId,
             },
           })
@@ -134,7 +160,7 @@ export async function sendFriendRequest(
 
       return {
         ok: true,
-        message: `Solicitud enviada a ${target.name.split(" ")[0] ?? target.name}`,
+        message: `Solicitud enviada a ${firstName(target.name)}`,
       }
     })
   } catch (error) {
@@ -187,10 +213,13 @@ export async function acceptFriendRequest(
     return { ok: false, code: "not_found", message: "Solicitud inválida" }
   }
 
+  // El actor es quien acepta; el recipient es quien envió la solicitud.
+  const actorName = await selfName(selfId)
+
   const result = await prisma.$transaction(async (tx) => {
     const friendship = await tx.friendship.findUnique({
       where: { id: parsed.data.friendshipId },
-      include: { requester: { select: { id: true, name: true } } },
+      select: { id: true, addresseeId: true, requesterId: true, status: true },
     })
 
     if (!friendship || friendship.addresseeId !== selfId) {
@@ -203,27 +232,48 @@ export async function acceptFriendRequest(
       return "conflict" as const
     }
 
-    await tx.friendship.update({
-      where: { id: friendship.id },
+    // CAS: el update por id solo deja pasar a dos clicks simultáneos que leen
+    // PENDING antes de que ninguno escriba. Con la guarda de status, gana una
+    // sola transacción y la otra cae en already/conflict sin notificar.
+    const claimed = await tx.friendship.updateMany({
+      where: { id: friendship.id, addresseeId: selfId, status: "PENDING" },
       data: { status: "ACCEPTED" },
     })
+    if (claimed.count !== 1) {
+      const current = await tx.friendship.findUnique({
+        where: { id: friendship.id },
+        select: { status: true },
+      })
+      return current?.status === "ACCEPTED"
+        ? ("already" as const)
+        : ("conflict" as const)
+    }
 
     await tx.notification.updateMany({
       where: { userId: selfId, relatedFriendshipId: friendship.id, read: false },
       data: { read: true },
     })
 
-    const requesterFirstName =
-      friendship.requester.name.split(" ")[0] ?? friendship.requester.name
-    await tx.notification.create({
-      data: {
+    // Defensa extra por si quedara una notificación unread de una corrida previa.
+    const existingNotice = await tx.notification.findFirst({
+      where: {
         userId: friendship.requesterId,
-        type: "GENERAL",
-        title: "Solicitud aceptada",
-        body: `Ahora vos y ${requesterFirstName} son amigos 🎉`,
         relatedFriendshipId: friendship.id,
+        read: false,
       },
+      select: { id: true },
     })
+    if (!existingNotice) {
+      await tx.notification.create({
+        data: {
+          userId: friendship.requesterId,
+          type: "GENERAL",
+          title: "Solicitud aceptada",
+          body: `Ahora vos y ${firstName(actorName)} son amigos 🎉`,
+          relatedFriendshipId: friendship.id,
+        },
+      })
+    }
 
     return "accepted" as const
   })
@@ -272,10 +322,21 @@ export async function rejectFriendRequest(
       return "conflict" as const
     }
 
-    await tx.friendship.update({
-      where: { id: friendship.id },
+    // Mismo CAS que acceptFriendRequest: sin la guarda de status, un reject
+    // concurrente con un accept pisa el resultado del otro.
+    const claimed = await tx.friendship.updateMany({
+      where: { id: friendship.id, addresseeId: selfId, status: "PENDING" },
       data: { status: "REJECTED" },
     })
+    if (claimed.count !== 1) {
+      const current = await tx.friendship.findUnique({
+        where: { id: friendship.id },
+        select: { status: true },
+      })
+      return current?.status === "REJECTED"
+        ? ("already" as const)
+        : ("conflict" as const)
+    }
 
     await tx.notification.updateMany({
       where: { userId: selfId, relatedFriendshipId: friendship.id, read: false },

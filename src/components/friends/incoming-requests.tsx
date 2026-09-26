@@ -1,19 +1,24 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { Loader2, UserPlus } from "lucide-react"
 import { acceptFriendRequest, rejectFriendRequest } from "@/actions/friendships"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
+import { firstName } from "@/lib/names"
 import type { IncomingRequest } from "@/queries/friendships"
 
 export function IncomingRequests({ requests }: { requests: IncomingRequest[] }) {
   const [items, setItems] = useState(requests)
   const [pendingId, setPendingId] = useState<string | null>(null)
+  // El ref cierra la ventana entre dos clicks del mismo tick, que el estado
+  // de React todavía no refleja. El backend igual es idempotente.
+  const lockedRef = useRef(false)
   const [, startTransition] = useTransition()
 
   function resolve(requestId: string, action: "accept" | "reject") {
-    if (pendingId) return
+    if (lockedRef.current) return
+    lockedRef.current = true
     setPendingId(requestId)
     startTransition(async () => {
       try {
@@ -28,7 +33,7 @@ export function IncomingRequests({ requests }: { requests: IncomingRequest[] }) 
             toast({
               title: "¡Listo!",
               description: request
-                ? `Ahora vos y ${request.from.name.split(" ")[0] ?? request.from.name} son amigos 🎉`
+                ? `Ahora vos y ${firstName(request.from.name)} son amigos 🎉`
                 : "Ahora son amigos 🎉",
             })
           } else {
@@ -42,6 +47,7 @@ export function IncomingRequests({ requests }: { requests: IncomingRequest[] }) 
       } catch {
         toast({ description: "Algo salió mal. Intentá de nuevo." })
       } finally {
+        lockedRef.current = false
         setPendingId(null)
       }
     })

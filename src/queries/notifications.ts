@@ -26,7 +26,6 @@ export async function getRecentNotifications(
       read: true,
       relatedFriendshipId: true,
       relatedGatheringId: true,
-      relatedTransactionId: true,
       relatedTransaction: {
         select: { debtorId: true, creditorId: true },
       },
@@ -44,6 +43,16 @@ export async function getRecentNotifications(
         : related.debtorId
       : null
 
+    // Las notificaciones de amistad no tienen una entidad propia a la que
+    // apuntar: su destino es la lista de solicitudes.
+    const href = row.relatedGatheringId
+      ? `/juntadas/${row.relatedGatheringId}`
+      : row.relatedFriendshipId
+        ? "/personas"
+        : peerId
+          ? `/personas/${peerId}`
+          : null
+
     return {
       id: row.id,
       type: row.type,
@@ -52,11 +61,7 @@ export async function getRecentNotifications(
       read: row.read,
       relatedFriendshipId: row.relatedFriendshipId,
       relatedGatheringId: row.relatedGatheringId,
-      href: row.relatedGatheringId
-        ? `/juntadas/${row.relatedGatheringId}`
-        : peerId
-          ? `/personas/${peerId}`
-          : null,
+      href,
       createdAt: row.createdAt,
     }
   })

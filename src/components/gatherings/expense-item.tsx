@@ -18,11 +18,8 @@ import { UserAvatar } from "@/components/shared/user-avatar"
 import { ExpenseForm, type ExpenseFormModel } from "@/components/gatherings/expense-form"
 import { formatMoney, formatShortDate } from "@/lib/format"
 import type { ExpenseItemDto } from "@/lib/gatherings/serializable"
+import { firstName } from "@/lib/names"
 import type { UserSummary } from "@/queries/friendships"
-
-function firstName(name: string): string {
-  return name.split(" ")[0] ?? name
-}
 
 export function ExpenseItem({
   expense,

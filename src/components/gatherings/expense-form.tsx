@@ -27,6 +27,7 @@ import {
 } from "@/lib/gatherings/money"
 import { cn } from "@/lib/utils"
 import { formatMoney } from "@/lib/format"
+import { firstName } from "@/lib/names"
 import type { UserSummary } from "@/queries/friendships"
 
 export type ExpenseFormModel = {
@@ -40,10 +41,6 @@ export type ExpenseFormModel = {
 }
 
 type SplitType = "EQUAL" | "CUSTOM"
-
-function firstName(name: string): string {
-  return name.split(" ")[0] ?? name
-}
 
 function parseSafeCents(value: string): number {
   if (!/^\d+(\.\d{1,2})?$/.test(value)) return 0

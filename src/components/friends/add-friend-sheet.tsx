@@ -38,6 +38,9 @@ export function AddFriendSheet() {
   const [error, setError] = useState<string | null>(null)
   const [pendingId, setPendingId] = useState<string | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Cierra la ventana entre dos clicks del mismo tick, que el estado todavía
+  // no refleja. El backend igual deduplica la notificación.
+  const lockedRef = useRef(false)
   const [, startTransition] = useTransition()
 
   useEffect(
@@ -83,7 +86,8 @@ export function AddFriendSheet() {
   }
 
   async function handleAdd(user: SearchResult) {
-    if (pendingId) return
+    if (lockedRef.current) return
+    lockedRef.current = true
     setPendingId(user.id)
     try {
       const result = await sendFriendRequest({ userId: user.id })
@@ -101,6 +105,7 @@ export function AddFriendSheet() {
     } catch {
       toast({ description: "No pudimos enviar la solicitud. Intentá de nuevo." })
     } finally {
+      lockedRef.current = false
       setPendingId(null)
     }
   }

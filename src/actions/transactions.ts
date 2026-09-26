@@ -5,6 +5,7 @@ import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { formatMoney } from "@/lib/format"
+import { firstName } from "@/lib/names"
 import { maxPayableFrom, toDecimal } from "@/lib/transactions"
 import { userIdSchema, type UserIdInput } from "@/lib/validations/friendship"
 import {
@@ -72,10 +73,6 @@ async function lockFriendshipPair(
     FOR UPDATE
   `
   return rows.length > 0
-}
-
-function firstName(name: string): string {
-  return name.split(" ")[0] ?? name
 }
 
 function revalidateEconomicRoutes(friendId: string) {
