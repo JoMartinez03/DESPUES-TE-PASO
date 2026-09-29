@@ -227,6 +227,102 @@ export async function getGatheringBalanceForUser(
   )
 }
 
+/**
+ * Balance histórico de una juntada CERRADA, reconstruido desde
+ * `Expense` + `ExpenseParticipant` en lugar de `Transaction`.
+ *
+ * Al cerrar, las DEBT derivadas se saldan y se borran para que dejen de
+ * afectar los balances generales (regla de producto). Si reconstruyéramos la
+ * juntada cerrada desde `Transaction`, el balance quedaría en cero para todos y
+ * se perdería la información de quién pagó qué. Los gastos son la fuente
+ * histórica, así que el panel sigue mostrando la posición real de cada
+ * participante, sin efecto sobre los balances.
+ *
+ * Reproduce exactamente la misma aritmética que genera las DEBT: el pagador
+ * suma lo que adelantó, y cada otro participante descuenta su `shareAmount`.
+ */
+export async function getHistoricalGatheringEconomics(
+  gatheringId: string,
+): Promise<GatheringEconomics> {
+  const [participants, expenses] = await Promise.all([
+    prisma.gatheringParticipant.findMany({
+      where: { gatheringId },
+      select: { userId: true },
+    }),
+    prisma.expense.findMany({
+      where: { gatheringId },
+      select: {
+        payerId: true,
+        amount: true,
+        participants: { select: { userId: true, shareAmount: true } },
+      },
+    }),
+  ])
+
+  const centsByUser = new Map<string, number>(
+    participants.map((participant) => [participant.userId, 0]),
+  )
+
+  for (const expense of expenses) {
+    const totalCents = decimalToCents(expense.amount)
+    if (totalCents === null) {
+      return {
+        ok: false,
+        code: "INVALID_DATA",
+        message: "La juntada contiene datos de balance inconsistentes",
+        totalBalanceCents: 0,
+      }
+    }
+
+    for (const share of expense.participants) {
+      const shareCents = decimalToCents(share.shareAmount)
+      if (shareCents === null) {
+        return {
+          ok: false,
+          code: "INVALID_DATA",
+          message: "La juntada contiene datos de balance inconsistentes",
+          totalBalanceCents: 0,
+        }
+      }
+      // El pagador recupera su parte y cobra el resto.
+      if (share.userId === expense.payerId) continue
+
+      const nextPayer = (centsByUser.get(expense.payerId) ?? 0) + shareCents
+      const nextShare = (centsByUser.get(share.userId) ?? 0) - shareCents
+      if (
+        !Number.isSafeInteger(nextPayer) ||
+        !Number.isSafeInteger(nextShare)
+      ) {
+        return {
+          ok: false,
+          code: "INVALID_DATA",
+          message: "La juntada contiene datos de balance inconsistentes",
+          totalBalanceCents: 0,
+        }
+      }
+      centsByUser.set(expense.payerId, nextPayer)
+      centsByUser.set(share.userId, nextShare)
+    }
+  }
+
+  const balances: SettlementBalance[] = participants.map((participant) => ({
+    userId: participant.userId,
+    balanceCents: centsByUser.get(participant.userId) ?? 0,
+  }))
+
+  const settlement = calculateSuggestedTransfers(balances)
+  if (!settlement.ok) {
+    return {
+      ok: false,
+      code: settlement.code === "UNBALANCED" ? "INCONSISTENT_BALANCE" : "INVALID_DATA",
+      message: settlement.message,
+      totalBalanceCents: settlement.totalBalanceCents,
+    }
+  }
+
+  return { ok: true, balances, transfers: [] }
+}
+
 function decimalToCents(value: Prisma.Decimal): number | null {
   const scaled = value.mul(100)
   const rounded = scaled.toDecimalPlaces(0)
@@ -235,6 +331,12 @@ function decimalToCents(value: Prisma.Decimal): number | null {
   return Number.isSafeInteger(cents) ? cents : null
 }
 
+/**
+ * Balance de una juntada ACTIVA, derivado de las DEBT CONFIRMED de sus gastos.
+ *
+ * `balanceCents` es la posición del ESE participante dentro de la juntada:
+ * > 0 le deben a ese participante · < 0 ese participante debe.
+ */
 export async function getGatheringEconomics(
   gatheringId: string,
 ): Promise<GatheringEconomics> {

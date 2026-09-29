@@ -117,6 +117,41 @@ export async function deleteExpenseDebts(
   })
 }
 
+/**
+ * Salda TODAS las DEBT derivadas de los gastos de una gathering.
+ *
+ * Es la operación que hace cumplir la regla de producto: cerrar una juntada
+ * significa que sus cuentas se resolvieron por fuera de la app, así que las
+ * deudas que generaron dejan de afectar los balances generales.
+ *
+ * El filtro es doble e inequívoco:
+ *   - `expenseId` dentro de los gastos de ESTA gathering;
+ *   - `type = DEBT`.
+ *
+ * Por lo tanto NO toca: DEBT manuales (`expenseId` nulo), DEBT de otras
+ * juntadas, ni ningún PAYMENT en ningún estado.
+ *
+ * No borra `Expense` ni `ExpenseParticipant`: el historial de la juntada se
+ * reconstruye desde ahí.
+ *
+ * Devuelve cuántas DEBT fueron saldadas.
+ */
+export async function deleteGatheringDebts(
+  db: Db,
+  gatheringId: string,
+): Promise<number> {
+  const expenses = await db.expense.findMany({
+    where: { gatheringId },
+    select: { id: true },
+  })
+  if (expenses.length === 0) return 0
+
+  const deleted = await db.transaction.deleteMany({
+    where: { type: "DEBT", expenseId: { in: expenses.map((expense) => expense.id) } },
+  })
+  return deleted.count
+}
+
 /** Cuerpo de la notificación a nivel Expense (una por participante, sin spam). */
 export function expenseNotificationBody(
   actorName: string,

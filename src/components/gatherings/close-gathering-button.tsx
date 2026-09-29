@@ -54,24 +54,35 @@ export function CloseGatheringButton({ gatheringId }: { gatheringId: string }) {
         <SheetHeader className="p-5 pb-2">
           <SheetTitle>Cerrar juntada</SheetTitle>
           <SheetDescription>
-            No se podrán agregar gastos ni cambiar participantes después de cerrarla.
+            Al cerrar la juntada, las deudas generadas por estos gastos se
+            considerarán saldadas y dejarán de aparecer en los balances.
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 p-5 pt-2">
           <p className="text-sm text-muted-foreground">
-            Se notificará a los demás participantes. Los pagos y balances no se modifican.
+            Los gastos y el historial de la juntada se conservarán. Se notificará
+            a los demás participantes.
           </p>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <Button
-            type="button"
-            variant="destructive"
-            className="w-full"
-            disabled={isPending}
-            onClick={handleClose}
-          >
-            {isPending ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
-            Confirmar cierre
-          </Button>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isPending}
+              onClick={() => handleOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isPending}
+              onClick={handleClose}
+            >
+              {isPending ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
+              Cerrar juntada
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

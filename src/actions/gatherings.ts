@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { deleteGatheringDebts } from "@/lib/gatherings/debts"
 import {
   createGatheringSchema,
   gatheringIdSchema,
@@ -14,7 +15,13 @@ import {
 } from "@/lib/validations/gatherings"
 
 type ActionResult =
-  | { ok: true; message: string; gatheringId?: string }
+  | {
+      ok: true
+      message: string
+      code?: "already_closed"
+      settledDebts?: number
+      gatheringId?: string
+    }
   | { ok: false; code: string; message: string }
 
 type LockedGathering = {
@@ -265,9 +272,12 @@ export async function closeGathering(
       }
     }
     if (gathering.status === "CLOSED") {
-      return { ok: true as const, message: "La juntada ya estaba cerrada" }
+      return { ok: true as const, code: "already_closed" as const, message: "La juntada ya estaba cerrada" }
     }
 
+    // El CAS va PRIMERO: hace de mutex y garantiza que, si llegamos a borrar,
+    // la gathering es nuestra y Active. Cualquier fallo posterior lanza y
+    // Prisma revierte toda la transacción (deudas incluidas).
     const claimed = await tx.gathering.updateMany({
       where: { id: gatheringId, creatorId: selfId, status: "ACTIVE" },
       data: { status: "CLOSED", closedAt: new Date() },
@@ -280,6 +290,11 @@ export async function closeGathering(
       }
     }
 
+    // Regla de producto: cerrar salda las deudas generadas por ESTA juntada.
+    // Solo DEBT derivadas de sus gastos; ni DEBT manuales, ni DEBT de otras
+    // juntadas, ni PAYMENT.
+    const settledDebts = await deleteGatheringDebts(tx, gatheringId)
+
     const participantIds = gathering.participants
       .map((participant) => participant.userId)
       .filter((userId) => userId !== selfId)
@@ -290,13 +305,13 @@ export async function closeGathering(
           userId,
           type: "GENERAL" as const,
           title: "Juntada cerrada",
-          body: `${creatorName} cerró la juntada.`,
+          body: `${creatorName} cerró la juntada. Las deudas de sus gastos quedaron saldadas.`,
           relatedGatheringId: gatheringId,
         })),
       })
     }
 
-    return { ok: true as const, message: "Juntada cerrada" }
+    return { ok: true as const, message: "Juntada cerrada", settledDebts }
   })
 
   if (!result.ok) return result

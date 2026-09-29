@@ -19,6 +19,7 @@ import {
   getGatheringEconomics,
   getGatheringTotal,
   getGatheringView,
+  getHistoricalGatheringEconomics,
 } from "@/queries/gatherings"
 import { getFriendSummaries } from "@/queries/friendships"
 import { maxPayableBetween } from "@/queries/transactions"
@@ -40,10 +41,15 @@ export default async function JuntadaPage({
 
   const isCreator = gathering.creatorId === user.id
   const isActive = gathering.status === "ACTIVE"
+  // Una juntada ACTIVA se balancea desde las DEBT derivadas. Una CERRADA las tiene
+  // saldadas (se borraron al cerrar), así que su balance histórico se reconstruye
+  // desde Expense + ExpenseParticipant para no perder quién pagó qué.
   const [total, balance, economics, friends] = await Promise.all([
     getGatheringTotal(gathering.id),
     getGatheringBalanceForUser(gathering.id, user.id),
-    getGatheringEconomics(gathering.id),
+    isActive
+      ? getGatheringEconomics(gathering.id)
+      : getHistoricalGatheringEconomics(gathering.id),
     isCreator && isActive ? getFriendSummaries(user.id) : Promise.resolve([]),
   ])
 
@@ -104,8 +110,8 @@ export default async function JuntadaPage({
           icon={Wallet}
         />
         <StatCard
-          label="Tu balance"
-          amount={`${signed.symbol} ${signed.text}`}
+          label={isActive ? "Tu balance" : "Tu saldo actual"}
+          amount={signed.settled ? signed.text : `${signed.symbol} ${signed.text}`}
           icon={Scale}
           tone={balanceTone}
         />
@@ -119,7 +125,9 @@ export default async function JuntadaPage({
                 Balance de la juntada
               </h2>
               <p className="text-xs text-muted-foreground">
-                Solo deudas confirmadas de los gastos de esta juntada.
+                {isActive
+                  ? "Solo deudas confirmadas de los gastos de esta juntada."
+                  : "Cómo terminó la juntada. Sus deudas quedaron saldadas al cerrarla."}
               </p>
             </div>
             <span
@@ -138,8 +146,23 @@ export default async function JuntadaPage({
               {economics.balances.map((balanceRow) => {
                 const participant = participantById.get(balanceRow.userId)
                 if (!participant) return null
+                const isSelf = balanceRow.userId === user.id
                 const isSettled = balanceRow.balanceCents === 0
                 const isReceiving = balanceRow.balanceCents > 0
+                // `balanceCents` es la posición de ESE participante dentro de la
+                // juntada, no la del que mira. El rótulo tiene que acompañar a
+                // cada fila en su propia persona o se lee al revés.
+                const stance = isSettled
+                  ? isSelf
+                    ? "Estás al día"
+                    : `${participant.name} está al día`
+                  : isReceiving
+                    ? isSelf
+                      ? "Te deben"
+                      : `${participant.name} te debe`
+                    : isSelf
+                      ? "Debés"
+                      : `Le debés a ${participant.name}`
                 return (
                   <li
                     key={balanceRow.userId}
@@ -155,13 +178,7 @@ export default async function JuntadaPage({
                         {participant.name}
                         {participant.id === user.id ? " (vos)" : ""}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {isSettled
-                          ? "Estás al día"
-                          : isReceiving
-                            ? "Te deben"
-                            : "Debés"}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{stance}</p>
                     </div>
                     <span
                       className={
@@ -172,7 +189,7 @@ export default async function JuntadaPage({
                             : "text-sm font-semibold text-destructive"
                       }
                     >
-                      {isSettled ? "$0" : centsMoney(Math.abs(balanceRow.balanceCents))}
+                      {centsMoney(Math.abs(balanceRow.balanceCents))}
                     </span>
                   </li>
                 )
@@ -187,7 +204,7 @@ export default async function JuntadaPage({
         </CardContent>
       </Card>
 
-      {economics.ok ? (
+      {economics.ok && isActive ? (
         <Card className="rounded-2xl">
           <CardContent className="space-y-4">
             <div>

@@ -38,13 +38,18 @@ export function formatShortDate(date: Date | string): string {
 }
 
 export type SignedMoney = {
-  symbol: "+" | "−"
+  /** `+` te deben · `−` debés · `""` estás al día. */
+  symbol: "+" | "−" | ""
+  /** Monto absoluto, sin signo. */
   text: string
+  /** `true` cuando el balance es cero: no lleva signo. */
+  settled: boolean
 }
 
 /**
  * Formatea un valor en dinero con el signo ya resuelto para balances.
- * `+` indica que te deben, `−` que debés; cero devuelve "Estás al día".
+ * `+` indica que te deben, `−` que debés; cero devuelve `settled: true` con
+ * símbolo vacío para que las vistas muestren `$0` y no `+$0`.
  */
 export function formatSignedMoney(
   amount: number | string | { toString(): string },
@@ -54,7 +59,7 @@ export function formatSignedMoney(
     typeof amount === "object" ? Number(amount.toString()) : Number(amount)
   const safe = Number.isFinite(value) ? value : 0
   const absolute = formatMoney(Math.abs(safe), currency)
-  if (safe > 0) return { symbol: "+", text: absolute }
-  if (safe < 0) return { symbol: "−", text: absolute }
-  return { symbol: "+", text: formatMoney(0, currency) }
+  if (safe > 0) return { symbol: "+", text: absolute, settled: false }
+  if (safe < 0) return { symbol: "−", text: absolute, settled: false }
+  return { symbol: "", text: formatMoney(0, currency), settled: true }
 }
