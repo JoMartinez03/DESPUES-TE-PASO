@@ -1,45 +1,62 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-const VIOLET = "#7c3aed";
-const INK = "#f5f3ff";
-const LAVENDER = "#c4b5fd";
+// Colores del theme (src/app/globals.css): --primary y --primary-foreground.
+const VIOLET = "#7f22fe";
+const INK = "#fcfbfe";
 
 /**
- * Glifo de la marca, sin fondo, para poder medirlo y centrarlo por medicion.
- * Es el logo original: los 6 elementos con su composicion y sus dos tonos.
+ * Geometria del logo, compartida con src/components/layout/brand.tsx a traves de
+ * handshake-mark.json. Es fija a proposito: el handshake es parte de la
+ * identidad, no se regenera desde lucide-react, para que una actualizacion de la
+ * libreria no cambie el logo sin que se pida explicitamente.
  */
-const FULL = (left) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path d="M14 38a10 10 0 0 1 20 0" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
-  <path d="M28 24h8" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="14" cy="22" r="6" fill="${left}" opacity="0.95"/>
-  <circle cx="50" cy="22" r="6" fill="${INK}"/>
-  <path d="M44 38a10 10 0 0 1 6-9" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
-  <path d="M34 48h-4" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+const MARK = JSON.parse(
+  await readFile(path.join(ROOT, "src/components/layout/handshake-mark.json"), "utf8"),
+);
+
+const GLYPH = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${MARK.viewBox}">
+  <g fill="${MARK.fill}" stroke="${INK}" stroke-width="${MARK.strokeWidth}" stroke-linecap="${MARK.strokeLinecap}" stroke-linejoin="${MARK.strokeLinejoin}">
+${MARK.paths.map((d) => `    <path d="${d}"/>`).join("\n")}
+  </g>
 </svg>`;
 
 const SVG_DENSITY = 1536;
 
-/** Glifo recortado a su bbox real y escalado a la dimension objetivo. */
-async function glyphLayer(markup, targetPx) {
-  const trimmed = await sharp(Buffer.from(markup), { density: SVG_DENSITY }).trim().png().toBuffer();
-  const { width, height } = await sharp(trimmed).metadata();
+/**
+ * Glifo recortado a su bbox real y escalado a la dimension objetivo. Se dibuja
+ * con los mismos parametros de trazo que usa lucide en la interfaz, para que la
+ * forma sea identica; el color se aplica al componer.
+ */
+async function glyphLayer(targetPx) {
+  const traced = await sharp(Buffer.from(GLYPH), { density: SVG_DENSITY })
+    .trim({ background: "#000000", threshold: 1 })
+    .png()
+    .toBuffer();
+  const { width, height } = await sharp(traced).metadata();
   const scale = targetPx / Math.max(width, height);
-  const w = Math.max(1, Math.round(width * scale));
-  const h = Math.max(1, Math.round(height * scale));
-  return sharp(trimmed).resize(w, h, { kernel: "lanczos3" }).png().toBuffer();
+  return sharp(traced)
+    .resize(
+      Math.max(1, Math.round(width * scale)),
+      Math.max(1, Math.round(height * scale)),
+      { kernel: "lanczos3" },
+    )
+    .ensureAlpha()
+    .png()
+    .toBuffer();
 }
 
 /** Compone glifo centrado sobre el fondo, con esquinas redondeadas o a sangre completa. */
-async function icon(size, { markup, glyph, corner }) {
+async function icon(size, { glyph, corner }) {
+  const rx = corner === null ? 0 : Math.round(size * corner);
   const background = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}"${corner ? ` rx="${corner}"` : ""} fill="${VIOLET}"/>
+    <rect width="${size}" height="${size}"${rx ? ` rx="${rx}"` : ""} fill="${VIOLET}"/>
   </svg>`;
-  const layer = await glyphLayer(markup, Math.round(size * glyph));
+  const layer = await glyphLayer(Math.round(size * glyph));
   return sharp(Buffer.from(background)).composite([{ input: layer, gravity: "center" }]).png().toBuffer();
 }
 
@@ -115,25 +132,25 @@ async function buildIco(pngs) {
 const ICO_SIZES = [16, 32, 48, 256];
 
 /**
- * Todas las entradas usan el logo original completo, con los 6 elementos y los
- * dos tonos, en todos los tamanos. A 16px el trazo queda cerca de 1,5px y el
- * guion central se toca con el arco, pero los elementos siguen distinguibles.
+ * El glifo se mide y se centra por su bbox real, asi que "glyph" es la fraccion
+ * del lienzo que ocupa la dimension mayor. El trazo se mantiene en el del theme
+ * (2 sobre viewBox 24); en 16px eso da lineas de ~0.7px, que es el limite de
+ * legibilidad sin engrosar el logo.
  */
-const full = () => ({ markup: FULL(LAVENDER), glyph: 0.86, corner: 14 });
+const CORNER = 0.14;
 
 const ICO_VARIANTS = {
-  16: full(),
-  32: full(),
-  48: full(),
-  256: full(),
+  16: { glyph: 0.88, corner: CORNER },
+  32: { glyph: 0.82, corner: CORNER },
+  48: { glyph: 0.8, corner: CORNER },
+  256: { glyph: 0.78, corner: CORNER },
 };
 
-// Desde 180px hay resolucion de sobra para los 6 elementos y los dos tonos,
-// asi que se usa el logo original sin simplificar.
-const APPLE = { markup: FULL(LAVENDER), glyph: 0.72, corner: 0 };
-const ANY = { markup: FULL(LAVENDER), glyph: 0.78, corner: 14 };
+// iOS y Android aplican su propio recorte de esquinas: van a sangre completa.
+const APPLE = { glyph: 0.72, corner: null };
+const ANY = { glyph: 0.78, corner: CORNER };
 // Android recorta al 80% central; el glifo tiene que caber con margen.
-const MASKABLE = { markup: FULL(LAVENDER), glyph: 0.6, corner: 0 };
+const MASKABLE = { glyph: 0.6, corner: null };
 
 const icoPngs = await Promise.all(
   ICO_SIZES.map(async (size) => ({ size, data: await icon(size, ICO_VARIANTS[size]) })),
