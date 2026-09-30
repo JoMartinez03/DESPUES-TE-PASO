@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
@@ -15,12 +15,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "DespuésTePaso",
   title: {
     default: "DespuésTePaso",
     template: "%s · DespuésTePaso",
   },
   description:
     "Llevá las cuentas con tus amigos: deudas, pagos y juntadas, sin rollos.",
+  appleWebApp: {
+    capable: true,
+    title: "DespuésTePaso",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#7c3aed",
 };
 
 export default function RootLayout({
