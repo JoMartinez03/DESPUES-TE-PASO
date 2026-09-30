@@ -146,23 +146,8 @@ export default async function JuntadaPage({
               {economics.balances.map((balanceRow) => {
                 const participant = participantById.get(balanceRow.userId)
                 if (!participant) return null
-                const isSelf = balanceRow.userId === user.id
                 const isSettled = balanceRow.balanceCents === 0
                 const isReceiving = balanceRow.balanceCents > 0
-                // `balanceCents` es la posición de ESE participante dentro de la
-                // juntada, no la del que mira. El rótulo tiene que acompañar a
-                // cada fila en su propia persona o se lee al revés.
-                const stance = isSettled
-                  ? isSelf
-                    ? "Estás al día"
-                    : `${participant.name} está al día`
-                  : isReceiving
-                    ? isSelf
-                      ? "Te deben"
-                      : `${participant.name} te debe`
-                    : isSelf
-                      ? "Debés"
-                      : `Le debés a ${participant.name}`
                 return (
                   <li
                     key={balanceRow.userId}
@@ -173,20 +158,17 @@ export default async function JuntadaPage({
                       avatar={participant.avatar}
                       size="sm"
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {participant.name}
-                        {participant.id === user.id ? " (vos)" : ""}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{stance}</p>
-                    </div>
+                    <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                      {participant.name}
+                      {participant.id === user.id ? " (vos)" : ""}
+                    </p>
                     <span
                       className={
                         isSettled
-                          ? "text-sm font-semibold text-muted-foreground"
+                          ? "shrink-0 whitespace-nowrap text-sm font-semibold text-muted-foreground"
                           : isReceiving
-                            ? "text-sm font-semibold text-emerald-600 dark:text-emerald-400"
-                            : "text-sm font-semibold text-destructive"
+                            ? "shrink-0 whitespace-nowrap text-sm font-semibold text-emerald-600 dark:text-emerald-400"
+                            : "shrink-0 whitespace-nowrap text-sm font-semibold text-destructive"
                       }
                     >
                       {centsMoney(Math.abs(balanceRow.balanceCents))}

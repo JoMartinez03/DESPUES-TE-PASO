@@ -150,11 +150,6 @@ export function AddDebtSheet({
                 {firstName}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {paidBy === "me"
-                ? `Le debés a ${firstName}.`
-                : `${firstName} te debe a vos.`}
-            </p>
           </div>
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
