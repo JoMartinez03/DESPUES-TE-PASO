@@ -44,7 +44,7 @@ export function CloseGatheringButton({ gatheringId }: { gatheringId: string }) {
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-1.5" />
+          <Button variant="destructive" size="sm" className="gap-1.5" />
         }
       >
         <LockKeyhole className="size-4" />
