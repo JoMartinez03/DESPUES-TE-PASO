@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { AlertTriangle, ArrowRight, Receipt, Scale, Wallet } from "lucide-react"
+import { AlertTriangle, Receipt, Scale, Wallet } from "lucide-react"
 import { EmptyState } from "@/components/shared/empty-state"
 import { PageHeader } from "@/components/shared/page-header"
 import { StatCard } from "@/components/shared/stat-card"
@@ -8,11 +8,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AddExpenseSheet } from "@/components/gatherings/add-expense-sheet"
 import { CloseGatheringButton } from "@/components/gatherings/close-gathering-button"
 import { ExpenseItem } from "@/components/gatherings/expense-item"
+import { MyPaymentsCard } from "@/components/gatherings/my-payments-card"
 import { ParticipantsManager } from "@/components/gatherings/participants-manager"
-import { RegisterPaymentSheet } from "@/components/transactions/register-payment-sheet"
 import { requireUser } from "@/lib/session"
 import { formatDate, formatMoney, formatSignedMoney } from "@/lib/format"
 import { centsToAmountString } from "@/lib/gatherings/money"
+import { netPairDebtsFor } from "@/lib/gatherings/pair-debts"
 import { toExpenseItemDto } from "@/lib/gatherings/serializable"
 import {
   getGatheringBalanceForUser,
@@ -57,18 +58,17 @@ export default async function JuntadaPage({
     gathering.participants.map((participant) => [participant.id, participant]),
   )
   const paymentMaxByTransfer = new Map<string, string>()
-  if (economics.ok) {
-    const outgoing = economics.transfers.filter(
-      (transfer) => transfer.fromUserId === user.id,
-    )
+  const myBalanceCents = economics.ok
+    ? (economics.balances.find((row) => row.userId === user.id)?.balanceCents ??
+      0)
+    : 0
+  if (economics.ok && isActive) {
+    const myPayments = netPairDebtsFor(economics.pairDebts, user.id)
     const values = await Promise.all(
-      outgoing.map(async (transfer) => {
-        const max = await maxPayableBetween(
-          transfer.fromUserId,
-          transfer.toUserId,
-        )
+      myPayments.map(async (payment) => {
+        const max = await maxPayableBetween(user.id, payment.creditorId)
         return {
-          key: `${transfer.fromUserId}:${transfer.toUserId}`,
+          key: `${user.id}:${payment.creditorId}`,
           value: max.toString(),
         }
       }),
@@ -186,61 +186,19 @@ export default async function JuntadaPage({
         </CardContent>
       </Card>
 
-      {economics.ok && isActive ? (
-        <Card className="rounded-2xl">
-          <CardContent className="space-y-4">
-            <div>
-              <h2 className="font-heading text-sm font-semibold text-foreground">
-                Pagos sugeridos
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Transferencias para saldar el balance. No modifican la juntada.
-              </p>
-            </div>
-            {economics.transfers.length === 0 ? (
-              <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                No hay pagos sugeridos: todos están al día.
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-2">
-                {economics.transfers.map((transfer) => {
-                  const from = participantById.get(transfer.fromUserId)
-                  const to = participantById.get(transfer.toUserId)
-                  if (!from || !to) return null
-                  const key = `${transfer.fromUserId}:${transfer.toUserId}`
-                  const maxPayable = paymentMaxByTransfer.get(key)
-                  return (
-                    <li
-                      key={key}
-                      className="flex flex-wrap items-center gap-3 rounded-xl border border-input/70 px-3 py-2.5"
-                    >
-                      <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
-                        <UserAvatar name={from.name} avatar={from.avatar} size="sm" />
-                        <span className="truncate font-medium text-foreground">{from.name}</span>
-                        <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-                        <UserAvatar name={to.name} avatar={to.avatar} size="sm" />
-                        <span className="truncate font-medium text-foreground">{to.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">
-                          {centsMoney(transfer.amountCents)}
-                        </span>
-                        {transfer.fromUserId === user.id && maxPayable && Number(maxPayable) > 0 ? (
-                          <RegisterPaymentSheet
-                            friendId={to.id}
-                            friendName={to.name}
-                            maxPayableText={formatMoney(maxPayable)}
-                            initialAmount={centsToAmountString(transfer.amountCents)}
-                          />
-                        ) : null}
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+      {economics.ok ? (
+        <MyPaymentsCard
+          pairDebts={economics.pairDebts}
+          viewerId={user.id}
+          balanceCents={myBalanceCents}
+          isActive={isActive}
+          participants={gathering.participants.map((participant) => ({
+            id: participant.id,
+            name: participant.name,
+            avatar: participant.avatar,
+          }))}
+          maxPayableByPair={paymentMaxByTransfer}
+        />
       ) : null}
 
       <Card className="rounded-2xl">

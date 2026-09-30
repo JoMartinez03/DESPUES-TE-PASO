@@ -74,7 +74,7 @@ export function RegisterPaymentSheet({
           render={<Button className="gap-1.5" variant="outline" />}
         >
           <CircleDollarSign className="size-4" />
-          Registrar pago
+          Realizar pago
         </SheetTrigger>
       ) : null}
       <SheetContent
@@ -82,7 +82,7 @@ export function RegisterPaymentSheet({
         className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
       >
         <SheetHeader className="p-5 pb-2">
-          <SheetTitle>Registrar pago</SheetTitle>
+          <SheetTitle>Realizar pago</SheetTitle>
           <SheetDescription>
             {firstName} va a tener que confirmarlo.
           </SheetDescription>
@@ -117,7 +117,7 @@ export function RegisterPaymentSheet({
             ) : (
               <CircleDollarSign className="size-4" />
             )}
-            Registrar pago
+            Realizar pago
           </Button>
         </form>
       </SheetContent>

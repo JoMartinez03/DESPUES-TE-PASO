@@ -5,6 +5,7 @@ import {
   type GatheringBalance as SettlementBalance,
   type SuggestedTransfer,
 } from "@/lib/gatherings/settlement"
+import type { PairDebtRow } from "@/lib/gatherings/pair-debts"
 import { sumSigned } from "@/lib/transactions"
 
 const ZERO = new Prisma.Decimal(0)
@@ -72,6 +73,11 @@ export type GatheringEconomics =
       ok: true
       balances: SettlementBalance[]
       transfers: SuggestedTransfer[]
+      /**
+       * DEBT de esta juntada agrupadas por par dirigido, sin netear. El panel
+       * "Tus pagos" las netea por par con `netPairDebtsFor`.
+       */
+      pairDebts: PairDebtRow[]
     }
   | {
       ok: false
@@ -320,7 +326,7 @@ export async function getHistoricalGatheringEconomics(
     }
   }
 
-  return { ok: true, balances, transfers: [] }
+  return { ok: true, balances, transfers: [], pairDebts: [] }
 }
 
 function decimalToCents(value: Prisma.Decimal): number | null {
@@ -358,6 +364,7 @@ export async function getGatheringEconomics(
     userId: participant.userId,
     balanceCents: 0,
   }))
+  const pairDebts: PairDebtRow[] = []
 
   if (expenses.length > 0) {
     const grouped = await prisma.transaction.groupBy({
@@ -399,6 +406,11 @@ export async function getGatheringEconomics(
       }
       balancesByUser.set(row.debtorId, nextDebtorBalance)
       balancesByUser.set(row.creditorId, nextCreditorBalance)
+      pairDebts.push({
+        debtorId: row.debtorId,
+        creditorId: row.creditorId,
+        amountCents,
+      })
     }
 
     for (const balance of balances) {
@@ -416,7 +428,7 @@ export async function getGatheringEconomics(
     }
   }
 
-  return { ok: true, balances, transfers: settlement.transfers }
+  return { ok: true, balances, transfers: settlement.transfers, pairDebts }
 }
 
 /**

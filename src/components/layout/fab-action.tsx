@@ -58,7 +58,7 @@ export function FabAction({ options }: { options: QuickTransactionOptions }) {
     mode === "debt"
       ? "Agregar deuda"
       : mode === "payment"
-        ? "Registrar pago"
+        ? "Realizar pago"
         : "¿Qué querés cargar?"
   const description =
     mode === "debt"
@@ -110,7 +110,7 @@ export function FabAction({ options }: { options: QuickTransactionOptions }) {
                 onClick={() => setMode("debt")}
               />
               <QuickActionButton
-                label="Registrar pago"
+                label="Realizar pago"
                 icon={Receipt}
                 onClick={() => setMode("payment")}
               />

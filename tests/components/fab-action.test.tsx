@@ -59,13 +59,13 @@ it("abre el menú con las tres acciones", async () => {
   await openMenu()
 
   expect(await screen.findByText("Agregar deuda")).toBeDefined()
-  expect(screen.getByText("Registrar pago")).toBeDefined()
+  expect(screen.getByText("Realizar pago")).toBeDefined()
   expect(screen.getByText("Nueva juntada")).toBeDefined()
 })
 
-it("Registrar pago solo lista amigos con maxPayable mayor a 0", async () => {
+it("Realizar pago solo lista amigos con maxPayable mayor a 0", async () => {
   const user = await openMenu()
-  await user.click(screen.getByText("Registrar pago"))
+  await user.click(screen.getByText("Realizar pago"))
 
   expect(await screen.findByText("Beto")).toBeDefined()
   expect(screen.queryByText("Caro")).toBeNull()
@@ -74,7 +74,7 @@ it("Registrar pago solo lista amigos con maxPayable mayor a 0", async () => {
 
 it("elegir un amigo monta el formulario de pago controlado con el monto inicial", async () => {
   const user = await openMenu()
-  await user.click(screen.getByText("Registrar pago"))
+  await user.click(screen.getByText("Realizar pago"))
   await user.click(await screen.findByText("Beto"))
 
   const form = await screen.findByTestId("register-payment")
