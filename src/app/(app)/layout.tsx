@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { AppShell } from "@/components/layout/app-shell"
+import { PushNavigationListener } from "@/components/push/push-navigation-listener"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session"
@@ -38,6 +39,7 @@ export default async function AppLayout({
       quickTransactionOptions={quickTransactionOptions}
     >
       {children}
+      <PushNavigationListener />
     </AppShell>
   )
 }

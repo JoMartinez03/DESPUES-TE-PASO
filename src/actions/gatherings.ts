@@ -5,6 +5,8 @@ import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { deleteGatheringDebts } from "@/lib/gatherings/debts"
+import { gatheringClosedPushMessage } from "@/lib/push/messages"
+import { sendPushToUsers } from "@/lib/push/send"
 import {
   createGatheringSchema,
   gatheringIdSchema,
@@ -21,6 +23,9 @@ type ActionResult =
       code?: "already_closed"
       settledDebts?: number
       gatheringId?: string
+      /** Solo en el cierre efectivo: a quién se le avisó por push. */
+      notifiedIds?: string[]
+      notifiedByName?: string
     }
   | { ok: false; code: string; message: string }
 
@@ -311,10 +316,22 @@ export async function closeGathering(
       })
     }
 
-    return { ok: true as const, message: "Juntada cerrada", settledDebts }
-  })
+    return {
+        ok: true as const,
+        message: "Juntada cerrada",
+        settledDebts,
+        notifiedIds: participantIds,
+        notifiedByName: gathering.creator.name,
+      }
+    })
 
   if (!result.ok) return result
   revalidateGatheringRoutes(gatheringId)
+  // La juntada ya quedó cerrada y las deudas saldadas: el aviso a los
+  // participantes es un efecto secundario.
+  await sendPushToUsers(
+    result.notifiedIds ?? [],
+    gatheringClosedPushMessage(gatheringId, result.notifiedByName ?? ""),
+  )
   return result
 }

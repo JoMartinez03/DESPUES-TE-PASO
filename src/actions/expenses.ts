@@ -12,6 +12,8 @@ import {
   expenseNotificationBody,
   type ShareRow,
 } from "@/lib/gatherings/debts"
+import { newExpensePushMessage } from "@/lib/push/messages"
+import { sendPushToUsers } from "@/lib/push/send"
 import {
   expenseIdSchema,
   expenseMutationSchema,
@@ -209,6 +211,7 @@ export async function createExpense(
   const { data, context, participantIds, payerId, shares } = resolved
   const amount = toDecimal(data.amount)
   const actorName = await selfName(selfId)
+  const body = expenseNotificationBody(actorName, data.title, amount, context.name)
 
   const result = await prisma.$transaction(async (tx) => {
     const locked = await lockActiveGathering(tx, context.id, selfId)
@@ -248,7 +251,6 @@ export async function createExpense(
       shares,
     })
 
-    const body = expenseNotificationBody(actorName, data.title, amount, context.name)
     const affectedIds = [...new Set([...participantIds, payerId])]
     for (const userId of affectedIds) {
       if (userId === selfId) continue
@@ -268,6 +270,12 @@ export async function createExpense(
 
   if (!result.ok) return result
   revalidateGatheringRoutes(context.id, result.affectedIds)
+  // El gasto y sus deudas ya están commiteados: el aviso es un efecto
+  // secundario. Mismo cuerpo que la notificación interna.
+  await sendPushToUsers(
+    result.affectedIds.filter((userId) => userId !== selfId),
+    newExpensePushMessage(context.id, body),
+  )
   return result
 }
 

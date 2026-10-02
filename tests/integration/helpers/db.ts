@@ -14,7 +14,7 @@ export async function signInAs(userId: string | null): Promise<void> {
 
 export async function resetDatabase(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "users", "friendships", "transactions", "gatherings", "expenses", "expense_participants", "notifications" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "users", "friendships", "transactions", "gatherings", "expenses", "expense_participants", "notifications", "push_subscriptions" RESTART IDENTITY CASCADE',
   )
 }
 

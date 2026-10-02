@@ -6,6 +6,14 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { formatMoney } from "@/lib/format"
 import { firstName } from "@/lib/names"
+import {
+  confirmedPaymentPushMessage,
+  debtPushMessage,
+  pendingPaymentPushMessage,
+  rejectedPaymentPushMessage,
+  type PushMessage,
+} from "@/lib/push/messages"
+import { sendPushToUser } from "@/lib/push/send"
 import { maxPayableFrom, toDecimal } from "@/lib/transactions"
 import { userIdSchema, type UserIdInput } from "@/lib/validations/friendship"
 import {
@@ -146,6 +154,13 @@ export async function createDebt(
 
   void result
   revalidateEconomicRoutes(friend.id)
+  // Efecto secundario: la deuda ya está commiteada, así que un push fallido no
+  // la revierte. El actor es quien registra (la sesión), no el deudor ni el
+  // acreedor: los dos pueden ser el amigo.
+  await sendPushToUser(
+    friend.id,
+    debtPushMessage({ actorId: selfId, actorName: me }, amount),
+  )
   return {
     ok: true,
     message:
@@ -227,6 +242,13 @@ export async function registerPayment(
   })
 
   revalidateEconomicRoutes(friend.id)
+  if (!result.ok) return result
+  // El pago ya quedó registrado: el push es solo el aviso de que hay algo que
+  // confirmar.
+  await sendPushToUser(
+    friend.id,
+    pendingPaymentPushMessage({ actorId: selfId, actorName: me }, amount),
+  )
   return result
 }
 
@@ -234,7 +256,7 @@ async function resolvePayment(
   input: TransactionIdInput,
   target: "confirm" | "reject",
 ): Promise<
-  | { status: "done"; peerId: string }
+  | { status: "done"; peerId: string; push: PushMessage }
   | { status: "not_found" | "forbidden" | "already" | "conflict" }
 > {
   const selfId = await sessionUserId()
@@ -306,13 +328,25 @@ async function resolvePayment(
       },
     })
 
-    return { status: "done" as const, peerId: payment.debtorId }
+    // Quien confirma o rechaza es el acreedor (pendingConfirmationFromId), y
+    // avisa al deudor. El mensaje usa SIEMPRE el nombre del actor (`me`), que
+    // puede no coincidir con debtor/creditor.
+    const actor = { actorId: selfId, actorName: me }
+    const push =
+      target === "confirm"
+        ? confirmedPaymentPushMessage(actor, payment.amount)
+        : rejectedPaymentPushMessage(actor, payment.amount)
+
+    return { status: "done" as const, peerId: payment.debtorId, push }
   })
 }
 
 export async function confirmPayment(input: TransactionIdInput): Promise<ActionResult> {
   const result = await resolvePayment(input, "confirm")
-  if (result.status === "done") revalidateEconomicRoutes(result.peerId)
+  if (result.status === "done") {
+    revalidateEconomicRoutes(result.peerId)
+    await sendPushToUser(result.peerId, result.push)
+  }
   if (result.status === "already") {
     return { ok: true, message: "El pago ya estaba confirmado" }
   }
@@ -330,7 +364,10 @@ export async function confirmPayment(input: TransactionIdInput): Promise<ActionR
 
 export async function rejectPayment(input: TransactionIdInput): Promise<ActionResult> {
   const result = await resolvePayment(input, "reject")
-  if (result.status === "done") revalidateEconomicRoutes(result.peerId)
+  if (result.status === "done") {
+    revalidateEconomicRoutes(result.peerId)
+    await sendPushToUser(result.peerId, result.push)
+  }
   if (result.status === "already") {
     return { ok: true, message: "El pago ya estaba rechazado" }
   }

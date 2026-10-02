@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth"
 import { friendshipPairKey } from "@/lib/friendship"
 import { firstName } from "@/lib/names"
 import { prisma } from "@/lib/prisma"
+import { friendRequestPushMessage } from "@/lib/push/messages"
+import { sendPushToUser } from "@/lib/push/send"
 import {
   friendshipIdSchema,
   searchUsersSchema,
@@ -78,8 +80,13 @@ export async function sendFriendRequest(
   const actorName = await selfName(selfId)
   const pairKey = friendshipPairKey(selfId, targetId)
 
+  // Resultado de la transacción, por fuera del try: el push va después del
+  // catch para que un fallo de envío NUNCA caiga en el mensaje de error de la
+  // amistad, que ya está confirmada en la base.
+  let createdRequest = false
+
   try {
-    return await prisma.$transaction(async (tx) => {
+    const outcome = await prisma.$transaction(async (tx) => {
       const existing = await tx.friendship.findUnique({
         where: { pairKey },
         select: { id: true, requesterId: true, status: true },
@@ -87,7 +94,7 @@ export async function sendFriendRequest(
 
       if (existing?.status === "ACCEPTED") {
         return {
-          ok: false,
+          ok: false as const,
           code: "already_friends" as const,
           message: `Ya sos amigo de ${firstName(target.name)}`,
         }
@@ -95,7 +102,7 @@ export async function sendFriendRequest(
 
       if (existing?.status === "PENDING" && existing.requesterId !== selfId) {
         return {
-          ok: false,
+          ok: false as const,
           code: "incoming_exists" as const,
           message: `${firstName(target.name)} ya te envió una solicitud`,
         }
@@ -155,14 +162,21 @@ export async function sendFriendRequest(
               relatedFriendshipId: friendshipId,
             },
           })
+          createdRequest = true
         }
       }
 
       return {
-        ok: true,
+        ok: true as const,
         message: `Solicitud enviada a ${firstName(target.name)}`,
+        createdRequest,
       }
     })
+
+    if (!outcome.ok) {
+      return { ok: false, code: outcome.code, message: outcome.message }
+    }
+    createdRequest = outcome.createdRequest
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       const existing = await prisma.friendship.findUnique({
@@ -185,6 +199,14 @@ export async function sendFriendRequest(
       message: "No pudimos enviar la solicitud. Intentá de nuevo.",
     }
   }
+
+  // Solo se avisa si la transacción creó una solicitud nueva: reenviar la misma
+  // no debe generar un segundo push del mismo evento. Y el nombre del push es
+  // el del solicitante (el actor), nunca el del destinatario.
+  if (createdRequest) {
+    await sendPushToUser(targetId, friendRequestPushMessage(actorName))
+  }
+  return { ok: true, message: `Solicitud enviada a ${firstName(target.name)}` }
 }
 
 export async function searchUsersAction(

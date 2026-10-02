@@ -4,11 +4,13 @@ import { logout } from "@/actions/auth"
 import { PageHeader } from "@/components/shared/page-header"
 import { NicknameForm } from "@/components/profile/nickname-form"
 import { ProfilePhoto } from "@/components/profile/profile-photo"
+import { PushNotificationsCard } from "@/components/profile/push-notifications"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { auth } from "@/lib/auth"
 import { formatDate } from "@/lib/format"
+import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session"
 import { getProfileUser } from "@/queries/profile"
 
@@ -19,6 +21,12 @@ export default async function PerfilPage() {
 
   const profile = await getProfileUser(user.id)
   if (!profile) notFound()
+
+  // Estado inicial de la tarjeta de notificaciones push. El detalle de si ESTE
+  // dispositivo está suscrito lo responde el navegador en el cliente.
+  const pushDevices = await prisma.pushSubscription.count({
+    where: { userId: user.id },
+  })
 
   return (
     <div className="space-y-6">
@@ -35,6 +43,20 @@ export default async function PerfilPage() {
           <ProfilePhoto hasAvatar={Boolean(profile.avatar)} />
           <NicknameForm name={profile.name} />
           <p className="text-sm text-muted-foreground">{profile.email}</p>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-2xl">
+        <CardContent className="flex flex-col items-start gap-3 py-6">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">
+              Notificaciones
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Recibí avisos cuando tus amigos registren deudas o pagos.
+            </p>
+          </div>
+          <PushNotificationsCard subscribedDevices={pushDevices} />
         </CardContent>
       </Card>
 
