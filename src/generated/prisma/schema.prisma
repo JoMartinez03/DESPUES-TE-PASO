@@ -43,14 +43,18 @@ enum NotificationType {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  username  String   @unique
-  email     String   @unique
-  password  String
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  username      String   @unique
+  email         String   @unique
+  password      String
+  avatar        String?
+  /// Alias declarado por el usuario para recibir transferencias (tino.mp,
+  /// padre.mp, montana.uala). Es información opcional y NO verificada: la app
+  /// no sabe a qué banco o billetera pertenece ni si existe.
+  transferAlias String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   friendshipsSent       Friendship[]           @relation("FriendshipRequester")
   friendshipsReceived   Friendship[]           @relation("FriendshipAddressee")

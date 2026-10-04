@@ -6,6 +6,7 @@ export type ProfileUser = {
   username: string | null
   email: string
   avatar: string | null
+  transferAlias: string | null
   createdAt: Date
 }
 
@@ -15,6 +16,7 @@ const profileSelect = {
   username: true,
   email: true,
   avatar: true,
+  transferAlias: true,
   createdAt: true,
 } as const
 

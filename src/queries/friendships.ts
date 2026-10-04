@@ -19,6 +19,8 @@ export type FriendWithBalance = {
   name: string
   username: string
   avatar: string | null
+  /** Alias declarado por el amigo para transferencias; `null` si no lo cargó. */
+  transferAlias: string | null
   friendshipId: string
   friendsSince: Date
   // TODO (Issue 3): calcular el balance real entre los dos usuarios.
@@ -31,6 +33,13 @@ const userSummary = {
   username: true,
   avatar: true,
 } as const
+
+/**
+ * El alias viaja en la MISMA query de amistades (sin N+1) y sólo para los amigos
+ * aceptados. No se suma a `userSummary` para que la búsqueda de personas y los
+ * demás listados ni filtren ni puedan filtrar por alias.
+ */
+const friendSummary = { ...userSummary, transferAlias: true } as const
 
 export type UserSummary = {
   id: string
@@ -63,8 +72,8 @@ export async function getFriends(userId: string): Promise<FriendWithBalance[]> {
       OR: [{ requesterId: userId }, { addresseeId: userId }],
     },
     include: {
-      requester: { select: userSummary },
-      addressee: { select: userSummary },
+      requester: { select: friendSummary },
+      addressee: { select: friendSummary },
     },
     orderBy: { updatedAt: "desc" },
   })

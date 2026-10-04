@@ -10,7 +10,7 @@ import {
   extensionFor,
   type AllowedAvatarType,
 } from "@/lib/avatar"
-import { updateNicknameSchema } from "@/lib/validations/profile"
+import { transferAliasSchema, updateNicknameSchema } from "@/lib/validations/profile"
 
 export type ProfileActionResult =
   | { ok: true }
@@ -35,6 +35,36 @@ export async function updateNickname(input: {
   await prisma.user.update({
     where: { id: session.user.id },
     data: { name: parsed.data.name },
+  })
+
+  revalidatePath("/", "layout")
+  return { ok: true }
+}
+
+/**
+ * Guarda el alias de transferencias del usuario de la SESIÓN. El `userId` nunca
+ * viene del cliente: cualquier campo `userId` del input se descarta al validar.
+ * Un string vacío o sólo espacios se persiste como `null` (borrar el alias).
+ */
+export async function updateTransferAlias(input: {
+  transferAlias: string
+}): Promise<ProfileActionResult> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { ok: false, error: "No hay sesión activa." }
+  }
+
+  const parsed = transferAliasSchema.safeParse(input)
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Alias inválido.",
+    }
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { transferAlias: parsed.data.transferAlias },
   })
 
   revalidatePath("/", "layout")

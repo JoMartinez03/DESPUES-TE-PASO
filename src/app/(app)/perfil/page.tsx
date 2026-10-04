@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shared/page-header"
 import { NicknameForm } from "@/components/profile/nickname-form"
 import { ProfilePhoto } from "@/components/profile/profile-photo"
 import { PushNotificationsCard } from "@/components/profile/push-notifications"
+import { TransferAliasForm } from "@/components/profile/transfer-alias-form"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -43,6 +44,21 @@ export default async function PerfilPage() {
           <ProfilePhoto hasAvatar={Boolean(profile.avatar)} />
           <NicknameForm name={profile.name} />
           <p className="text-sm text-muted-foreground">{profile.email}</p>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-2xl">
+        <CardContent className="flex flex-col items-start gap-3 py-6">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">
+              Alias para transferencias
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Este alias será visible para tus amigos para facilitar
+              transferencias. Dejalo vacío si no querés mostrarlo.
+            </p>
+          </div>
+          <TransferAliasForm alias={profile.transferAlias} />
         </CardContent>
       </Card>
 

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowDownLeft, ArrowUpRight, CheckCircle2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { TransferAlias } from "@/components/shared/transfer-alias"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { formatMoney } from "@/lib/format"
 import type { Prisma } from "@/generated/prisma"
@@ -9,6 +10,8 @@ export type PendingBalanceItem = {
   friendId: string
   name: string
   avatar: string | null
+  /** Alias del amigo para transferencias; `null` si no lo tiene. */
+  transferAlias: string | null
   balance: Prisma.Decimal
 }
 
@@ -85,6 +88,12 @@ export function PendingBalances({ items }: PendingBalancesProps) {
                       <p className="truncate text-sm font-medium">
                         {item.name}
                       </p>
+                      {/* Alias debajo del nombre: copiar se destaca sólo si le
+                          debés, porque ahí hace falta para transferirle. */}
+                      <TransferAlias
+                        alias={item.transferAlias}
+                        copyable={!isToMe}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">

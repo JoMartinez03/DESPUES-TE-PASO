@@ -104,6 +104,13 @@ prisma/schema.prisma  # modelo de datos
 - Una `Gathering` es `ACTIVE` mientras admite gastos y cambios de participantes,
   y `CLOSED` con `closedAt` una vez que su creador la cierra. Cerrar no borra
   gastos ni genera un settlement persistido.
+- `User.transferAlias` es el alias para transferencias (`tino.mp`, `padre.mp`,
+  `montana.uala`). Es **opcional**, **no único** y **no verificado**: la app no
+  consulta a ningún banco, billetera ni API externa, y no sabe si el alias
+  existe o a qué proveedor pertenece. Cada usuario edita sólo el propio (el
+  `userId` sale de la sesión) y lo ven sus amigos en `/personas/[id]` y en
+  "Cuentas pendientes", siempre debajo de `User.name`, que sigue siendo la
+  identidad principal.
 
 ## Seguridad
 
@@ -143,3 +150,25 @@ prisma/schema.prisma  # modelo de datos
    gastos ni participantes, y el resto recibe una notificación.
 6. Un cierre concurrente con un gasto no deja un gasto escrito sobre una
    juntada cerrada.
+
+## Checklist manual (Issue 7)
+
+1. `/perfil` → "Alias para transferencias": guardar `padre.mp` y ver el toast
+   "Alias actualizado".
+2. Volver a abrir `/perfil`: el campo muestra el alias guardado.
+3. Cambiar `padre.mp` por `padre.uala`: se actualiza.
+4. Borrar el contenido y guardar: toast "Alias eliminado" y el alias deja de
+   estar visible en `/perfil`.
+5. Validación: un alias con espacio (`tino mp`) muestra el error y no se
+   guarda; "Guardar" está deshabilitado si no cambió nada.
+6. Usuario B entra al detalle de A: ve el apodo de A y, debajo, el alias con
+   botón de copiar; si A no tiene alias, no se muestra nada.
+7. Con una deuda donde B le debe a A, el dashboard de B muestra el alias de A
+   con botón de copiar y "Le debés $X"; con la deuda invertida, el alias de A
+   sin botón de copiar y "Te debe $X".
+8. Tocar "copiar" en el dashboard escribe el alias en el portapapeles, avisa
+   "Alias copiado" y **no** navega a `/personas/[id]`.
+9. Tocar cualquier otra parte de la fila sí abre `/personas/[id]`.
+10. Un alias largo se trunca visualmente sin alterar el valor que se copia.
+11. En un celular la fila no desborda: avatar, apodo, alias, estado y monto se
+    leen sin cortarse y el botón de copiar se puede tocar cómodo.

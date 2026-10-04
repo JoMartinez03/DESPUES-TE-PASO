@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { CheckCheck, TrendingDown, TrendingUp } from "lucide-react"
 import { PageHeader } from "@/components/shared/page-header"
+import { TransferAlias } from "@/components/shared/transfer-alias"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { AddDebtSheet } from "@/components/transactions/add-debt-sheet"
@@ -41,6 +42,7 @@ export default async function PersonaPage({
           name: true,
           username: true,
           avatar: true,
+          transferAlias: true,
           createdAt: true,
         },
       }),
@@ -73,6 +75,8 @@ export default async function PersonaPage({
             <p className="font-heading text-lg font-semibold text-foreground">
               {target.name}
             </p>
+            {/* El alias es opcional y no se muestra si el amigo no lo cargó. */}
+            <TransferAlias alias={target.transferAlias} copyable />
             <p className="truncate text-sm text-muted-foreground">
               @{target.username}
             </p>

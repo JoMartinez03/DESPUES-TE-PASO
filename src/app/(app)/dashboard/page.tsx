@@ -55,6 +55,7 @@ export default async function DashboardPage() {
           friendId: friend.id,
           name: friend.name,
           avatar: friend.avatar,
+          transferAlias: friend.transferAlias,
           balance: friend.balance.amount,
         }))}
       />
