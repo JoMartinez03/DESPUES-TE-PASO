@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@/generated/prisma"
 import {
@@ -15,30 +16,36 @@ export type NetBalances = Map<string, Prisma.Decimal>
 /**
  * Balance neto de `userId` con cada uno de sus contactos.
  * Solo considera movimientos CONFIRMED. Ver convención en src/lib/transactions.ts.
+ *
+ * Va envuelto en `cache()` de React: dentro de un mismo render el layout, el
+ * dashboard y la lista de amigos piden los mismos balances y comparten una sola
+ * lectura. `cache()` es por request, así que cada render nuevo vuelve a leer.
  */
-export async function netBalancesForUser(userId: string): Promise<NetBalances> {
-  const rows = await prisma.transaction.findMany({
-    where: {
-      status: "CONFIRMED",
-      OR: [{ debtorId: userId }, { creditorId: userId }],
-    },
-    select: { type: true, debtorId: true, creditorId: true, amount: true },
-  })
+export const netBalancesForUser = cache(
+  async (userId: string): Promise<NetBalances> => {
+    const rows = await prisma.transaction.findMany({
+      where: {
+        status: "CONFIRMED",
+        OR: [{ debtorId: userId }, { creditorId: userId }],
+      },
+      select: { type: true, debtorId: true, creditorId: true, amount: true },
+    })
 
-  const grouped = new Map<string, BalanceRow[]>()
-  for (const row of rows) {
-    const friendId = row.debtorId === userId ? row.creditorId : row.debtorId
-    const list = grouped.get(friendId)
-    if (list) list.push(row)
-    else grouped.set(friendId, [row])
-  }
+    const grouped = new Map<string, BalanceRow[]>()
+    for (const row of rows) {
+      const friendId = row.debtorId === userId ? row.creditorId : row.debtorId
+      const list = grouped.get(friendId)
+      if (list) list.push(row)
+      else grouped.set(friendId, [row])
+    }
 
-  const result: NetBalances = new Map()
-  for (const [friendId, list] of grouped) {
-    result.set(friendId, sumSigned(list, userId))
-  }
-  return result
-}
+    const result: NetBalances = new Map()
+    for (const [friendId, list] of grouped) {
+      result.set(friendId, sumSigned(list, userId))
+    }
+    return result
+  },
+)
 
 export async function primeBalanceBetween(
   db: DB,
@@ -88,6 +95,32 @@ export async function pendingOutgoingPaymentsSum(
 ): Promise<Prisma.Decimal> {
   return primePendingOutgoingPaymentsSum(prisma, userId, friendId)
 }
+
+/**
+ * Pagos PENDING salientes de `userId` agrupados por acreedor, en UNA consulta.
+ *
+ * Es el lote de `primePendingOutgoingPaymentsSum`: misma fuente (PAYMENT/PENDING
+ * con `debtorId = userId`) y mismo `SUM(amount)`, sin una consulta por amigo.
+ */
+export const pendingOutgoingPaymentsForUser = cache(
+  async (userId: string): Promise<Map<string, Prisma.Decimal>> => {
+    const rows = await prisma.transaction.groupBy({
+      by: ["creditorId"],
+      where: {
+        type: "PAYMENT",
+        status: "PENDING",
+        debtorId: userId,
+      },
+      _sum: { amount: true },
+    })
+
+    const result = new Map<string, Prisma.Decimal>()
+    for (const row of rows) {
+      result.set(row.creditorId, row._sum.amount ?? ZERO)
+    }
+    return result
+  },
+)
 
 export async function maxPayableBetween(
   userId: string,

@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@/generated/prisma"
 import {
@@ -5,7 +6,11 @@ import {
   relativeStatus,
   type RelativeFriendshipStatus,
 } from "@/lib/friendship"
-import { maxPayableBetween, netBalancesForUser } from "@/queries/transactions"
+import { maxPayableFrom } from "@/lib/transactions"
+import {
+  netBalancesForUser,
+  pendingOutgoingPaymentsForUser,
+} from "@/queries/transactions"
 
 const ZERO = new Prisma.Decimal(0)
 
@@ -100,26 +105,32 @@ export async function getFriends(userId: string): Promise<FriendWithBalance[]> {
 /**
  * Amigos aceptados como DTO mínimo (id, name, username, avatar).
  * Sin balance ni Prisma.Decimal para poder pasar a Client Components.
+ *
+ * Va envuelto en `cache()` de React porque layout, dashboard, personas y juntadas
+ * lo piden en el mismo render. La deduplicación es por request: cada render
+ * nuevo vuelve a leer, no hay caché entre usuarios.
  */
-export async function getFriendSummaries(userId: string): Promise<UserSummary[]> {
-  const friendships = await prisma.friendship.findMany({
-    where: {
-      status: "ACCEPTED",
-      OR: [{ requesterId: userId }, { addresseeId: userId }],
-    },
-    include: {
-      requester: { select: userSummary },
-      addressee: { select: userSummary },
-    },
-    orderBy: { updatedAt: "desc" },
-  })
+export const getFriendSummaries = cache(
+  async (userId: string): Promise<UserSummary[]> => {
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        status: "ACCEPTED",
+        OR: [{ requesterId: userId }, { addresseeId: userId }],
+      },
+      include: {
+        requester: { select: userSummary },
+        addressee: { select: userSummary },
+      },
+      orderBy: { updatedAt: "desc" },
+    })
 
-  return friendships.map((friendship) =>
-    friendship.requester.id === userId
-      ? friendship.addressee
-      : friendship.requester,
-  )
-}
+    return friendships.map((friendship) =>
+      friendship.requester.id === userId
+        ? friendship.addressee
+        : friendship.requester,
+    )
+  },
+)
 
 export type QuickPaymentOption = UserSummary & {
   maxPayable: string
@@ -130,18 +141,37 @@ export type QuickTransactionOptions = {
   payments: QuickPaymentOption[]
 }
 
+/**
+ * Opciones del FAB: amigos para cargar deuda y amigos con pago pendiente.
+ *
+ * Son 3 consultas fijas, independientes de la cantidad de amigos:
+ *   1. los amigos aceptados,
+ *   2. los balances netos (`netBalancesForUser`, la MISMA lectura que usan el
+ *      dashboard y la lista de amigos),
+ *   3. los pagos PENDING salientes agrupados por acreedor.
+ *
+ * Antes esto era un N+1: una consulta por amigo para el balance y otra por los
+ * pendientes. `maxPayableFrom` sigue siendo la única fuente de la regla, así
+ * que el resultado es idéntico amigo por amigo.
+ */
 export async function getQuickTransactionOptions(
   userId: string,
 ): Promise<QuickTransactionOptions> {
-  const friends = await getFriendSummaries(userId)
-  const payments = (
-    await Promise.all(
-      friends.map(async (friend) => {
-        const maxPayable = await maxPayableBetween(userId, friend.id)
-        return { ...friend, maxPayable: maxPayable.toFixed(2) }
-      }),
-    )
-  ).filter((option) => Number(option.maxPayable) > 0)
+  const [friends, balances, pendingOutgoing] = await Promise.all([
+    getFriendSummaries(userId),
+    netBalancesForUser(userId),
+    pendingOutgoingPaymentsForUser(userId),
+  ])
+
+  const payments = friends
+    .map((friend) => {
+      const maxPayable = maxPayableFrom(
+        balances.get(friend.id) ?? ZERO,
+        pendingOutgoing.get(friend.id) ?? ZERO,
+      )
+      return { ...friend, maxPayable: maxPayable.toFixed(2) }
+    })
+    .filter((option) => Number(option.maxPayable) > 0)
 
   return { friends, payments }
 }

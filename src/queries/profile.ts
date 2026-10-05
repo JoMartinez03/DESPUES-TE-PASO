@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { prisma } from "@/lib/prisma"
 
 export type ProfileUser = {
@@ -35,11 +36,16 @@ export async function getProfileUser(
   })
 }
 
-export async function getProfileExcerpt(
-  userId: string,
-): Promise<ProfileExcerpt | null> {
-  return prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, name: true, avatar: true },
-  })
-}
+/**
+ * DTO mínimo del usuario para el header y el saludo del dashboard.
+ *
+ * `cache()` de React deduplica dentro del render: el layout lo pide y la página
+ * del dashboard también, así que es una sola lectura por request.
+ */
+export const getProfileExcerpt = cache(
+  async (userId: string): Promise<ProfileExcerpt | null> =>
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, avatar: true },
+    }),
+)

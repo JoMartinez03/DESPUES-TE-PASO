@@ -10,6 +10,7 @@ import { RegisterPaymentSheet } from "@/components/transactions/register-payment
 import { TransactionHistory } from "@/components/transactions/transaction-history"
 import { auth } from "@/lib/auth"
 import { formatDate, formatMoney } from "@/lib/format"
+import { maxPayableFrom, sumPendingOutgoing } from "@/lib/transactions"
 import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session"
 import { cn } from "@/lib/utils"
@@ -18,7 +19,6 @@ import {
   balanceBetween,
   getPendingPaymentsBetween,
   getTransactionHistory,
-  maxPayableBetween,
 } from "@/queries/transactions"
 
 export default async function PersonaPage({
@@ -33,7 +33,10 @@ export default async function PersonaPage({
 
   if (id === user.id) notFound()
 
-  const [target, friendship, balance, maxPayable, pendingPayments, history] =
+  // Una sola lectura de cada cosa: `maxPayable` se DERIVA del balance y de los
+  // pagos pendientes que ya trajo la lista, en vez de volver a consultar las
+  // mismas transacciones. `maxPayableFrom` es la misma regla de siempre.
+  const [target, friendship, balance, pendingPayments, history] =
     await Promise.all([
       prisma.user.findUnique({
         where: { id },
@@ -48,12 +51,13 @@ export default async function PersonaPage({
       }),
       getFriendshipBetween(user.id, id),
       balanceBetween(user.id, id),
-      maxPayableBetween(user.id, id),
       getPendingPaymentsBetween(user.id, id),
       getTransactionHistory(user.id, id),
     ])
 
   if (!target || !friendship) notFound()
+
+  const maxPayable = maxPayableFrom(balance, sumPendingOutgoing(pendingPayments))
 
   const balanceNumber = Number(balance.toString())
   const owesYou = balanceNumber > 0

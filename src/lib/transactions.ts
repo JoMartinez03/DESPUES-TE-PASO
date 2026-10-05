@@ -63,3 +63,31 @@ export function maxPayableFrom(
   const max = owed.minus(pendingOutgoingSum)
   return max.gt(0) ? max : new Prisma.Decimal(0)
 }
+
+/**
+ * Forma mínima de un pago PENDING para poder sumar los salientes sin volver a
+ * consultar la base. La dirección ya viene resuelta desde la perspectiva de
+ * quien mira la lista.
+ */
+export type PendingPaymentLike = {
+  direction: "incoming" | "outgoing"
+  amount: Prisma.Decimal
+}
+
+/**
+ * Suma de los pagos PENDING **salientes** de una lista ya traída.
+ *
+ * Es el mismo total que agrega `primePendingOutgoingPaymentsSum` en SQL
+ * (`SUM(amount)` de los PAYMENT/PENDING con `debtorId = userId`), pero derivado
+ * de los rows que la página ya tiene en memoria. La aritmética es decimal
+ * exacta en ambos casos, así que el resultado es idéntico.
+ */
+export function sumPendingOutgoing(
+  payments: PendingPaymentLike[],
+): Prisma.Decimal {
+  let total = new Prisma.Decimal(0)
+  for (const payment of payments) {
+    if (payment.direction === "outgoing") total = total.plus(payment.amount)
+  }
+  return total
+}
