@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2, Pencil, Receipt, Trash2 } from "lucide-react"
 import { deleteExpense } from "@/actions/expenses"
 import { Button } from "@/components/ui/button"
@@ -32,7 +31,6 @@ export function ExpenseItem({
   currentUserId: string
   canManage: boolean
 }) {
-  const router = useRouter()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
@@ -57,7 +55,6 @@ export function ExpenseItem({
       if (result.ok) {
         toast({ title: "Gasto eliminado", description: result.message })
         setConfirmOpen(false)
-        router.refresh()
       } else {
         toast({ title: "No se pudo eliminar", description: result.message })
         setConfirmOpen(false)

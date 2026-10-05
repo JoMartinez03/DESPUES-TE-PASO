@@ -7,7 +7,7 @@ import { ProfilePhoto } from "@/components/profile/profile-photo"
 import { toast } from "@/components/ui/toast"
 import { AVATAR_MAX_BYTES, AVATAR_TARGET_MAX_EDGE } from "@/lib/avatar"
 
-const refresh = vi.fn()
+const routerRefresh = vi.fn()
 
 vi.mock("@/actions/profile", () => ({
   updateAvatar: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock("@/actions/profile", () => ({
 }))
 vi.mock("@/components/ui/toast", () => ({ toast: vi.fn() }))
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: () => refresh() }),
+  useRouter: () => ({ refresh: () => routerRefresh() }),
 }))
 
 const JPEG_HEADER = [0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]
@@ -65,7 +65,7 @@ function lastToast() {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  refresh.mockClear()
+  routerRefresh.mockClear()
   // jsdom no implementa object URLs; se definen sobre la URL real para no
   // romper el resto del runtime.
   Object.defineProperty(URL, "createObjectURL", {
@@ -202,10 +202,10 @@ describe("ProfilePhoto", () => {
       ),
     )
     expect(screen.queryByAltText("Selección previa")).not.toBeInTheDocument()
-    expect(refresh).toHaveBeenCalled()
+    expect(routerRefresh).not.toHaveBeenCalled()
   })
 
-  it("confirma y refresca cuando la subida funciona", async () => {
+  it("confirma cuando la subida funciona", async () => {
     vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
     const { container } = render(<ProfilePhoto hasAvatar={false} />)
     await userEvent.upload(fileInput(container), jpegFile(2048), {
@@ -217,7 +217,7 @@ describe("ProfilePhoto", () => {
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith({ title: "Foto actualizada" }),
     )
-    expect(refresh).toHaveBeenCalled()
+    expect(routerRefresh).not.toHaveBeenCalled()
   })
 
   it("envía el FormData con el archivo comprimido y avisa que lo optimizó", async () => {
@@ -271,7 +271,7 @@ describe("ProfilePhoto", () => {
     expect(file.size).toBe(30_000)
   })
 
-  it("elimina la foto y refresca", async () => {
+  it("elimina la foto", async () => {
     vi.mocked(removeAvatar).mockResolvedValue({ ok: true })
     render(<ProfilePhoto hasAvatar />)
 
@@ -280,7 +280,7 @@ describe("ProfilePhoto", () => {
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith({ title: "Foto eliminada" }),
     )
-    expect(refresh).toHaveBeenCalled()
+    expect(routerRefresh).not.toHaveBeenCalled()
   })
 
   it("avisa también si eliminar la foto falla", async () => {
@@ -294,6 +294,6 @@ describe("ProfilePhoto", () => {
         expect.objectContaining({ title: "No se pudo eliminar la foto" }),
       ),
     )
-    expect(refresh).toHaveBeenCalled()
+    expect(routerRefresh).not.toHaveBeenCalled()
   })
 })

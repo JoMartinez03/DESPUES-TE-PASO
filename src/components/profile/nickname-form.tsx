@@ -1,14 +1,12 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { Pencil, X, Check } from "lucide-react"
 import { updateNickname } from "@/actions/profile"
 import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
 
 export function NicknameForm({ name }: { name: string }) {
-  const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(name)
   const [error, setError] = useState<string | null>(null)
@@ -22,7 +20,6 @@ export function NicknameForm({ name }: { name: string }) {
       if (result.ok) {
         setEditing(false)
         setValue(value.trim())
-        router.refresh()
         toast({ title: "Apodo actualizado" })
       } else {
         setError(result.error)

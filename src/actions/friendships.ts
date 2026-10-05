@@ -300,8 +300,8 @@ export async function acceptFriendRequest(
     return "accepted" as const
   })
 
+  revalidatePath("/dashboard")
   revalidatePath("/personas")
-  revalidatePath("/", "layout")
 
   if (result === null) {
     return { ok: false, code: "not_found", message: "La solicitud no existe" }
@@ -369,7 +369,6 @@ export async function rejectFriendRequest(
   })
 
   revalidatePath("/personas")
-  revalidatePath("/", "layout")
 
   if (result === null) {
     return { ok: false, code: "not_found", message: "La solicitud no existe" }

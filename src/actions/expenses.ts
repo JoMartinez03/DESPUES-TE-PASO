@@ -118,7 +118,6 @@ function revalidateGatheringRoutes(
   for (const userId of participantIds) {
     revalidatePath(`/personas/${userId}`)
   }
-  revalidatePath("/", "layout")
 }
 
 type ResolvedExpense =

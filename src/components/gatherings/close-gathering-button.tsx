@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2, LockKeyhole } from "lucide-react"
 import { closeGathering } from "@/actions/gatherings"
 import { Button } from "@/components/ui/button"
@@ -16,7 +15,6 @@ import {
 import { toast } from "@/components/ui/toast"
 
 export function CloseGatheringButton({ gatheringId }: { gatheringId: string }) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -33,7 +31,6 @@ export function CloseGatheringButton({ gatheringId }: { gatheringId: string }) {
       if (result.ok) {
         toast({ title: "Juntada cerrada", description: result.message })
         setOpen(false)
-        router.refresh()
       } else {
         setError(result.message)
       }

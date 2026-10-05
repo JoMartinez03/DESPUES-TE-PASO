@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { updateTransferAlias } from "@/actions/profile"
 import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
@@ -13,7 +12,6 @@ import { MAX_TRANSFER_ALIAS_LENGTH } from "@/lib/validations/profile"
  * guarda `null`. Nunca se manda un `userId`: la action lo toma de la sesión.
  */
 export function TransferAliasForm({ alias }: { alias: string | null }) {
-  const router = useRouter()
   const [value, setValue] = useState(alias ?? "")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -30,7 +28,6 @@ export function TransferAliasForm({ alias }: { alias: string | null }) {
         return
       }
       setValue(value.trim())
-      router.refresh()
       toast({
         title: value.trim() ? "Alias actualizado" : "Alias eliminado",
       })

@@ -58,7 +58,6 @@ export function CreateGatheringSheet({
         reset()
         setOpen(false)
         router.push(`/juntadas/${result.gatheringId}`)
-        router.refresh()
       } else {
         setError(result.message)
       }

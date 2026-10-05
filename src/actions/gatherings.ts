@@ -95,7 +95,6 @@ async function lockGathering(
 function revalidateGatheringRoutes(gatheringId?: string): void {
   revalidatePath("/juntadas")
   if (gatheringId) revalidatePath(`/juntadas/${gatheringId}`)
-  revalidatePath("/", "layout")
 }
 
 export async function createGathering(
@@ -326,7 +325,13 @@ export async function closeGathering(
     })
 
   if (!result.ok) return result
-  revalidateGatheringRoutes(gatheringId)
+  revalidatePath("/dashboard")
+  revalidatePath("/juntadas")
+  revalidatePath(`/juntadas/${gatheringId}`)
+  revalidatePath("/personas")
+  for (const participantId of result.notifiedIds ?? []) {
+    revalidatePath(`/personas/${participantId}`)
+  }
   // La juntada ya quedó cerrada y las deudas saldadas: el aviso a los
   // participantes es un efecto secundario.
   await sendPushToUsers(

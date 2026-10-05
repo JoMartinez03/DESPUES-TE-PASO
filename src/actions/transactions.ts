@@ -87,7 +87,6 @@ function revalidateEconomicRoutes(friendId: string) {
   revalidatePath("/dashboard")
   revalidatePath("/personas")
   revalidatePath(`/personas/${friendId}`)
-  revalidatePath("/", "layout")
 }
 
 export async function createDebt(

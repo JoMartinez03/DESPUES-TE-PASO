@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { CircleDollarSign, Loader2 } from "lucide-react"
 import { registerPayment } from "@/actions/transactions"
 import { Button } from "@/components/ui/button"
@@ -36,7 +35,6 @@ export function RegisterPaymentSheet({
   onSuccess?: () => void
   showTrigger?: boolean
 }) {
-  const router = useRouter()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen ?? internalOpen
   const [amount, setAmount] = useState(initialAmount)
@@ -60,7 +58,6 @@ export function RegisterPaymentSheet({
         handleOpenChange(false)
         setAmount("")
         onSuccess?.()
-        router.refresh()
       } else {
         setError(result.message)
       }

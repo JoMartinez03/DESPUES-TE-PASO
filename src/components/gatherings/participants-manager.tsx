@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2, Lock, Users } from "lucide-react"
 import { updateGatheringParticipants } from "@/actions/gatherings"
 import { Button } from "@/components/ui/button"
@@ -31,7 +30,6 @@ export function ParticipantsManager({
   members: UserSummary[]
   friends: UserSummary[]
 }) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(members.map((member) => member.id)),
@@ -66,7 +64,6 @@ export function ParticipantsManager({
       if (result.ok) {
         toast({ title: "Participantes actualizados", description: result.message })
         setOpen(false)
-        router.refresh()
       } else {
         setError(result.message)
       }

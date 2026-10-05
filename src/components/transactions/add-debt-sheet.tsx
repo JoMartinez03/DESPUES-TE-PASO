@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2, Plus } from "lucide-react"
 import { createDebt } from "@/actions/transactions"
 import { Button } from "@/components/ui/button"
@@ -35,7 +34,6 @@ export function AddDebtSheet({
   onSuccess?: () => void
   showTrigger?: boolean
 }) {
-  const router = useRouter()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen ?? internalOpen
   const [description, setDescription] = useState("")
@@ -67,7 +65,6 @@ export function AddDebtSheet({
         setDescription("")
         setAmount("")
         onSuccess?.()
-        router.refresh()
       } else {
         setError(result.message)
       }

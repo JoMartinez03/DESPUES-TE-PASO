@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { BellOff, BellRing, Loader2 } from "lucide-react"
 import {
   disablePushNotifications,
@@ -41,7 +40,6 @@ export function PushNotificationsCard({
 }: {
   subscribedDevices: number
 }) {
-  const router = useRouter()
   const [status, setStatus] = useState<Status>("checking")
   const [devices, setDevices] = useState(subscribedDevices)
   const [isPending, startTransition] = useTransition()
@@ -137,7 +135,6 @@ export function PushNotificationsCard({
 
         setStatus("on")
         setDevices((current) => Math.max(current, 1))
-        router.refresh()
       } catch {
         setStatus("unsupported")
         toast({
@@ -166,7 +163,6 @@ export function PushNotificationsCard({
 
         setStatus(currentPermission() === "denied" ? "denied" : "off")
         setDevices((current) => Math.max(0, current - 1))
-        router.refresh()
       } catch {
         toast({ title: "No pudimos desactivar", description: "Intentá de nuevo." })
       }

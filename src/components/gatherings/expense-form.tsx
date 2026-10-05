@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react"
 import type { ReactElement } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2, Plus, Save } from "lucide-react"
 import { createExpense, updateExpense } from "@/actions/expenses"
 import { Button } from "@/components/ui/button"
@@ -77,7 +76,6 @@ export function ExpenseForm({
   currentUserId: string
   expense?: ExpenseFormModel
 }) {
-  const router = useRouter()
   const editing = Boolean(expense)
 
   const [open, setOpen] = useState(false)
@@ -200,7 +198,6 @@ export function ExpenseForm({
         })
         setOpen(false)
         resetForm()
-        router.refresh()
       } else {
         setError(result.message)
       }

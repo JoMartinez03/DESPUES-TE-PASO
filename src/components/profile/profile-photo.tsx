@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { Camera, Loader2, Trash2 } from "lucide-react"
 import { removeAvatar, updateAvatar } from "@/actions/profile"
 import { buttonVariants } from "@/components/ui/button"
@@ -18,7 +17,6 @@ const UPLOAD_FAILED_ERROR =
   "Falló la subida. Si la foto es muy pesada, probá con una versión más chica."
 
 export function ProfilePhoto({ hasAvatar }: { hasAvatar: boolean }) {
-  const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -104,7 +102,6 @@ export function ProfilePhoto({ hasAvatar }: { hasAvatar: boolean }) {
         toast({ title: "No se pudo cambiar la foto", description: UPLOAD_FAILED_ERROR })
       } finally {
         cancelSelection()
-        router.refresh()
       }
     })
   }
@@ -126,8 +123,6 @@ export function ProfilePhoto({ hasAvatar }: { hasAvatar: boolean }) {
           title: "No se pudo eliminar la foto",
           description: "Intentá de nuevo.",
         })
-      } finally {
-        router.refresh()
       }
     })
   }

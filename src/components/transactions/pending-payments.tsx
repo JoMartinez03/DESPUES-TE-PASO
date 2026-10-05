@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { ArrowDownLeft, Clock, Loader2 } from "lucide-react"
 import { confirmPayment, rejectPayment } from "@/actions/transactions"
 import { Button } from "@/components/ui/button"
@@ -17,7 +16,6 @@ export function PendingPaymentsList({
   friendName: string
   items: PendingPayment[]
 }) {
-  const router = useRouter()
   const [busyId, setBusyId] = useState<string | null>(null)
 
   const firstName = friendName.split(" ")[0] ?? friendName
@@ -37,7 +35,6 @@ export function PendingPaymentsList({
         title: action === "confirm" ? "Pago confirmado" : "Pago rechazado",
         description: result.message,
       })
-      router.refresh()
     } catch {
       toast({ description: "No pudimos procesar el pago. Intentá de nuevo." })
     } finally {
