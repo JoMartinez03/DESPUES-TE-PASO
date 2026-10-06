@@ -1,7 +1,6 @@
 import {
+  AVATAR_CROP_SIZE,
   AVATAR_HEIF_ERROR,
-  AVATAR_SIZE_ERROR,
-  AVATAR_TARGET_MAX_EDGE,
   AVATAR_TARGET_QUALITY,
   avatarQuickError,
   avatarSizeError,
@@ -10,21 +9,27 @@ import {
   normalizeAvatarType,
   type AllowedAvatarType,
 } from "@/lib/avatar"
-
-/**
- * Por debajo de este tamaño el archivo se sube tal cual. Re-encodear de más
- * sólo suma pérdida de calidad y latencia.
- */
-export const AVATAR_RECOMPRESS_THRESHOLD_BYTES = 512 * 1024
+import {
+  clampCropArea,
+  scaleArea,
+  type CropArea,
+  type CropSize,
+} from "@/lib/avatar-crop"
 
 /** Bytes leídos del inicio para detectar HEIC sin cargar el archivo entero. */
 const HEADER_BYTES = 16
 
-const HEIC_DECODE_ERROR =
+const DECODE_ERROR =
   "No pudimos leer esa imagen. Probá con otra foto o guardala como JPG."
 
-type PrepareResult =
-  | { ok: true; file: File; recompressed: boolean }
+/**
+ * El avatar siempre se guarda en WebP; JPEG queda como red de seguridad para
+ * navegadores sin soporte de encoding WebP.
+ */
+const OUTPUT_TYPES: AllowedAvatarType[] = ["image/webp", "image/jpeg"]
+
+export type AvatarCropResult =
+  | { ok: true; file: File }
   | { ok: false; error: string }
 
 function stripExtension(name: string): string {
@@ -47,14 +52,19 @@ function canvasToBlob(
 }
 
 /**
- * Deja el archivo listo para subir: valida, detecta HEIC y reduce a un avatar
- * cuadrado-ish de AVATAR_TARGET_MAX_EDGE. Nunca devuelve un archivo más
- * grande que el original.
+ * Convierte el encuadre elegido en un archivo cuadrado de AVATAR_CROP_SIZE.
+ *
+ * El recorte queda grabado en los píxeles del archivo, así que el resto de la
+ * app sigue mostrando sólo la URL: no hay coordenadas en Prisma ni en el avatar.
  *
  * Safari no decodifica HEIC con canvas, así que ese caso se rechaza con un
  * mensaje explícito en vez de fallar en silencio.
  */
-export async function prepareAvatarFile(file: File): Promise<PrepareResult> {
+export async function cropAvatarFile(
+  file: File,
+  area: CropArea,
+  natural: CropSize,
+): Promise<AvatarCropResult> {
   const quickError = avatarQuickError(file)
   if (quickError) return { ok: false, error: quickError }
 
@@ -63,67 +73,69 @@ export async function prepareAvatarFile(file: File): Promise<PrepareResult> {
   )
   if (isUnsupportedHeif(header)) return { ok: false, error: AVATAR_HEIF_ERROR }
 
-  if (file.size <= AVATAR_RECOMPRESS_THRESHOLD_BYTES) {
-    return { ok: true, file, recompressed: false }
-  }
-
   let bitmap: ImageBitmap
   try {
     // `from-image` (el default del spec) aplica la rotación EXIF, que las fotos
     // de iPhone traen puesta.
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" })
   } catch {
-    return { ok: false, error: HEIC_DECODE_ERROR }
+    return { ok: false, error: DECODE_ERROR }
   }
 
   try {
-    const longestEdge = Math.max(bitmap.width, bitmap.height)
-    if (!longestEdge) return { ok: false, error: HEIC_DECODE_ERROR }
+    const bitmapSize = { width: bitmap.width, height: bitmap.height }
+    if (!bitmapSize.width || !bitmapSize.height) {
+      return { ok: false, error: DECODE_ERROR }
+    }
 
-    const scale = Math.min(1, AVATAR_TARGET_MAX_EDGE / longestEdge)
-    const width = Math.max(1, Math.round(bitmap.width * scale))
-    const height = Math.max(1, Math.round(bitmap.height * scale))
+    // Si el navegador Orientó la foto para mostrarla pero el bitmap quedó en la
+    // orientación cruda (o al revés), el área se reexpresa en la resolución del
+    // bitmap antes de recortar.
+    const scaled = scaleArea(area, natural, bitmapSize)
+    const box = clampCropArea(scaled, bitmapSize.width, bitmapSize.height)
 
     const canvas = document.createElement("canvas")
-    canvas.width = width
-    canvas.height = height
+    canvas.width = AVATAR_CROP_SIZE
+    canvas.height = AVATAR_CROP_SIZE
     const context = canvas.getContext("2d")
-    if (!context) return { ok: false, error: HEIC_DECODE_ERROR }
+    if (!context) return { ok: false, error: DECODE_ERROR }
 
-    // JPEG/WebP sin alfa: fondo blanco para no dejar bordes negros.
+    // JPEG sin alfa: fondo blanco para no dejar bordes negros.
     context.fillStyle = "#ffffff"
-    context.fillRect(0, 0, width, height)
-    context.drawImage(bitmap, 0, 0, width, height)
+    context.fillRect(0, 0, AVATAR_CROP_SIZE, AVATAR_CROP_SIZE)
+    context.drawImage(
+      bitmap,
+      box.x,
+      box.y,
+      box.width,
+      box.height,
+      0,
+      0,
+      AVATAR_CROP_SIZE,
+      AVATAR_CROP_SIZE,
+    )
 
-    const declared = normalizeAvatarType(file.type)
-    const candidates: AllowedAvatarType[] =
-      declared === "image/png"
-        ? ["image/png", "image/jpeg"]
-        : ["image/webp", "image/jpeg"]
-
-    for (const type of candidates) {
+    for (const type of OUTPUT_TYPES) {
       const blob = await canvasToBlob(canvas, type, AVATAR_TARGET_QUALITY)
       // toBlob cae silenciosamente a PNG si el navegador no soporta el tipo.
       if (!blob || normalizeAvatarType(blob.type) !== type) continue
 
       const sizeError = avatarSizeError(blob.size)
-      if (sizeError) return { ok: false, error: AVATAR_SIZE_ERROR }
+      if (sizeError) return { ok: false, error: sizeError }
 
-      const prepared = new File(
-        [blob],
-        `${stripExtension(file.name) || "avatar"}.${extensionFor(type)}`,
-        { type, lastModified: Date.now() },
-      )
-
-      if (prepared.size >= file.size) {
-        return { ok: true, file, recompressed: false }
+      const name = stripExtension(file.name) || "avatar"
+      return {
+        ok: true,
+        file: new File([blob], `${name}.${extensionFor(type)}`, {
+          type,
+          lastModified: Date.now(),
+        }),
       }
-      return { ok: true, file: prepared, recompressed: true }
     }
 
     return {
       ok: false,
-      error: "No pudimos comprimir la imagen. Probá con una más chica.",
+      error: "No pudimos guardar el recorte. Probá con otra foto.",
     }
   } finally {
     bitmap.close?.()

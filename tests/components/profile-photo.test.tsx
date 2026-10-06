@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { removeAvatar, updateAvatar } from "@/actions/profile"
 import { ProfilePhoto } from "@/components/profile/profile-photo"
 import { toast } from "@/components/ui/toast"
-import { AVATAR_MAX_BYTES, AVATAR_TARGET_MAX_EDGE } from "@/lib/avatar"
+import { AVATAR_CROP_SIZE, AVATAR_MAX_BYTES } from "@/lib/avatar"
+import type { CropArea, CropSize } from "@/lib/avatar-crop"
 
 const routerRefresh = vi.fn()
 
@@ -16,6 +17,33 @@ vi.mock("@/actions/profile", () => ({
 vi.mock("@/components/ui/toast", () => ({ toast: vi.fn() }))
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: () => routerRefresh() }),
+}))
+
+/** El editor real se prueba en `photo-editor.test.tsx`. */
+const CROP_AREA: CropArea = { x: 200, y: 300, width: 1000, height: 1000 }
+const NATURAL: CropSize = { width: 4032, height: 3024 }
+
+vi.mock("@/components/profile/photo-editor", () => ({
+  PhotoEditor: ({
+    imageUrl,
+    onCancel,
+    onConfirm,
+  }: {
+    imageUrl: string
+    onCancel: () => void
+    onConfirm: (area: CropArea, natural: CropSize) => void
+  }) => (
+    <div data-testid="photo-editor">
+      <p>Acomodá tu foto</p>
+      <span data-testid="editor-src">{imageUrl}</span>
+      <button type="button" onClick={() => onConfirm(CROP_AREA, NATURAL)}>
+        Guardar foto
+      </button>
+      <button type="button" onClick={onCancel}>
+        Cancelar
+      </button>
+    </div>
+  ),
 }))
 
 const JPEG_HEADER = [0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]
@@ -63,9 +91,46 @@ function lastToast() {
     | undefined
 }
 
+const drawImage = vi.fn()
+
+/** jsdom no implementa canvas ni createImageBitmap. */
+function stubBrowser({ producedBytes = 40_000 } = {}) {
+  vi.stubGlobal(
+    "createImageBitmap",
+    vi.fn(async () => ({
+      width: NATURAL.width,
+      height: NATURAL.height,
+      close: vi.fn(),
+    })),
+  )
+  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+    fillStyle: "",
+    fillRect: vi.fn(),
+    drawImage,
+  })) as unknown as HTMLCanvasElement["getContext"]
+  HTMLCanvasElement.prototype.toBlob = vi.fn(function (
+    this: HTMLCanvasElement,
+    callback: BlobCallback,
+    type?: string,
+  ) {
+    callback(
+      new Blob([new Uint8Array(producedBytes)], { type: type ?? "image/png" }),
+    )
+  }) as unknown as HTMLCanvasElement["toBlob"]
+}
+
+async function selectFile(file: File) {
+  const { container } = render(<ProfilePhoto hasAvatar={false} />)
+  const input = fileInput(container)
+  await userEvent.upload(input, file, { applyAccept: false })
+  return input
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
+  drawImage.mockClear()
   routerRefresh.mockClear()
+  stubBrowser()
   // jsdom no implementa object URLs; se definen sobre la URL real para no
   // romper el resto del runtime.
   Object.defineProperty(URL, "createObjectURL", {
@@ -86,76 +151,74 @@ afterEach(() => {
 })
 
 describe("ProfilePhoto", () => {
-  it("muestra el preview y habilita guardar cuando el archivo es válido", async () => {
-    vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
+  it("abre el editor al elegir la foto y todavía no sube nada", async () => {
+    await selectFile(jpegFile(2048))
 
-    await userEvent.upload(
-      fileInput(container),
-      jpegFile(2048),
-      { applyAccept: false },
-    )
-
-    expect(await screen.findByAltText("Selección previa")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /Guardar foto/ })).toBeEnabled()
+    expect(await screen.findByTestId("photo-editor")).toBeInTheDocument()
+    expect(screen.getByText("Acomodá tu foto")).toBeInTheDocument()
+    expect(screen.getByTestId("editor-src")).toHaveTextContent("blob:mock-preview")
+    expect(updateAvatar).not.toHaveBeenCalled()
     expect(toast).not.toHaveBeenCalled()
+    expect(drawImage).not.toHaveBeenCalled()
   })
 
-  it("rechaza por tamaño antes de generar preview y avisa con el motivo", async () => {
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
+  it("cancelar no sube nada ni cambia la foto actual", async () => {
+    await selectFile(jpegFile(2048))
+    await screen.findByTestId("photo-editor")
 
-    await userEvent.upload(
-      fileInput(container),
-      jpegFile(AVATAR_MAX_BYTES + 1),
-      { applyAccept: false },
+    await userEvent.click(screen.getByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument(),
     )
-
-    await waitFor(() => expect(toast).toHaveBeenCalled())
-    expect(lastToast()?.description).toBe("La imagen supera el máximo de 5 MB.")
-    expect(screen.queryByAltText("Selección previa")).not.toBeInTheDocument()
     expect(updateAvatar).not.toHaveBeenCalled()
+    expect(drawImage).not.toHaveBeenCalled()
+    expect(toast).not.toHaveBeenCalled()
+    expect(screen.getByText("Cambiar foto")).toBeInTheDocument()
   })
 
-  it("rechaza HEIC con un mensaje que dice qué hacer", async () => {
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
+  it("confirma genera el recorte y lo sube por la action de siempre", async () => {
+    vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
+    await selectFile(jpegFile(3_000_000))
+    await screen.findByTestId("photo-editor")
 
-    await userEvent.upload(fileInput(container), heicFile(), {
-      applyAccept: false,
-    })
+    await userEvent.click(screen.getByRole("button", { name: "Guardar foto" }))
 
-    await waitFor(() => expect(toast).toHaveBeenCalled())
-    expect(lastToast()?.description).toBe(
-      "Las fotos HEIC/HEIF no se pueden subir. Abrila en Fotos y guardala como JPG.",
+    // El recorte elegido queda en los píxeles: el archivo es el avatar.
+    expect(drawImage).toHaveBeenCalledWith(
+      expect.anything(),
+      CROP_AREA.x,
+      CROP_AREA.y,
+      CROP_AREA.width,
+      CROP_AREA.height,
+      0,
+      0,
+      AVATAR_CROP_SIZE,
+      AVATAR_CROP_SIZE,
     )
-    expect(screen.queryByAltText("Selección previa")).not.toBeInTheDocument()
+
+    await waitFor(() => expect(updateAvatar).toHaveBeenCalled())
+    const sent = vi.mocked(updateAvatar).mock.calls[0]?.[0] as FormData
+    const file = sent.get("file") as File
+    expect(file.type).toBe("image/webp")
+    expect(file.size).toBe(40_000)
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith({ title: "Foto actualizada" }),
+    )
+    expect(routerRefresh).not.toHaveBeenCalled()
   })
 
-  it("detecta HEIC por magic bytes aunque se declare como JPEG", async () => {
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
+  it("cierra el editor apenas confirmó y vuelve al botón de cambiar foto", async () => {
+    vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
+    await selectFile(jpegFile(2048))
+    await screen.findByTestId("photo-editor")
 
-    await userEvent.upload(
-      fileInput(container),
-      heicFile("image/jpeg"),
-      { applyAccept: false },
+    await userEvent.click(screen.getByRole("button", { name: "Guardar foto" }))
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument(),
     )
-
-    await waitFor(() => expect(toast).toHaveBeenCalled())
-    expect(lastToast()?.description).toContain("HEIC/HEIF")
-    expect(updateAvatar).not.toHaveBeenCalled()
-  })
-
-  it("rechaza un formato fuera de la allowlist", async () => {
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
-    const gif = new File([new Uint8Array([0x47, 0x49, 0x46, 0x38])], "a.gif", {
-      type: "image/gif",
-    })
-
-    await userEvent.upload(fileInput(container), gif, { applyAccept: false })
-
-    await waitFor(() => expect(toast).toHaveBeenCalled())
-    expect(lastToast()?.description).toBe(
-      "Formato no permitido. Usá JPG, PNG o WebP.",
-    )
+    expect(screen.getByText("Cambiar foto")).toBeInTheDocument()
   })
 
   it("muestra el error del servidor cuando la action devuelve ok:false", async () => {
@@ -163,14 +226,10 @@ describe("ProfilePhoto", () => {
       ok: false,
       error: "La imagen supera el máximo de 5 MB.",
     })
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
+    await selectFile(jpegFile(2048))
+    await screen.findByTestId("photo-editor")
 
-    await userEvent.upload(fileInput(container), jpegFile(2048), {
-      applyAccept: false,
-    })
-    // handleSelect es async: espera al preview antes de buscar el botón.
-    await screen.findByAltText("Selección previa")
-    await userEvent.click(screen.getByRole("button", { name: /Guardar foto/ }))
+    await userEvent.click(screen.getByRole("button", { name: "Guardar foto" }))
 
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith(
@@ -184,13 +243,10 @@ describe("ProfilePhoto", () => {
 
   it("avisa y se recupera cuando la action revienta (413, red, serialización)", async () => {
     vi.mocked(updateAvatar).mockRejectedValue(new Error("413 Payload Too Large"))
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
+    await selectFile(jpegFile(2048))
+    await screen.findByTestId("photo-editor")
 
-    await userEvent.upload(fileInput(container), jpegFile(2048), {
-      applyAccept: false,
-    })
-    await screen.findByAltText("Selección previa")
-    await userEvent.click(screen.getByRole("button", { name: /Guardar foto/ }))
+    await userEvent.click(screen.getByRole("button", { name: "Guardar foto" }))
 
     // Antes del fix esto no mostraba nada y dejaba la UI clavada en el preview.
     await waitFor(() =>
@@ -201,74 +257,118 @@ describe("ProfilePhoto", () => {
         }),
       ),
     )
-    expect(screen.queryByAltText("Selección previa")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument()
     expect(routerRefresh).not.toHaveBeenCalled()
   })
 
-  it("confirma cuando la subida funciona", async () => {
-    vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
+  it("deja el editor abierto para reintentar cuando falla el recorte", async () => {
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn(async () => {
+        throw new Error("unsupported image format")
+      }),
+    )
+    await selectFile(jpegFile(2048))
+    await screen.findByTestId("photo-editor")
+
+    await userEvent.click(screen.getByRole("button", { name: "Guardar foto" }))
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "No se pudo preparar la foto",
+          description: expect.stringContaining("No pudimos leer esa imagen"),
+        }),
+      ),
+    )
+    expect(screen.getByTestId("photo-editor")).toBeInTheDocument()
+    expect(updateAvatar).not.toHaveBeenCalled()
+  })
+
+  it("rechaza por tamaño antes de abrir el editor y avisa con el motivo", async () => {
+    await selectFile(jpegFile(AVATAR_MAX_BYTES + 1))
+
+    await waitFor(() => expect(toast).toHaveBeenCalled())
+    expect(lastToast()?.description).toBe("La imagen supera el máximo de 5 MB.")
+    expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument()
+    expect(updateAvatar).not.toHaveBeenCalled()
+  })
+
+  it("rechaza HEIC con un mensaje que dice qué hacer", async () => {
+    await selectFile(heicFile())
+
+    await waitFor(() => expect(toast).toHaveBeenCalled())
+    expect(lastToast()?.description).toBe(
+      "Las fotos HEIC/HEIF no se pueden subir. Abrila en Fotos y guardala como JPG.",
+    )
+    expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument()
+  })
+
+  it("detecta HEIC por magic bytes aunque se declare como JPEG", async () => {
+    await selectFile(heicFile("image/jpeg"))
+
+    await waitFor(() => expect(toast).toHaveBeenCalled())
+    expect(lastToast()?.description).toContain("HEIC/HEIF")
+    expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument()
+    expect(updateAvatar).not.toHaveBeenCalled()
+  })
+
+  it("rechaza un formato fuera de la allowlist", async () => {
+    const gif = new File([new Uint8Array([0x47, 0x49, 0x46, 0x38])], "a.gif", {
+      type: "image/gif",
+    })
+    await selectFile(gif)
+
+    await waitFor(() => expect(toast).toHaveBeenCalled())
+    expect(lastToast()?.description).toBe(
+      "Formato no permitido. Usá JPG, PNG o WebP.",
+    )
+  })
+
+  it("abre el input de imágenes completo para poder usar la cámara en iOS", () => {
     const { container } = render(<ProfilePhoto hasAvatar={false} />)
+    expect(fileInput(container)).toHaveAttribute("accept", "image/*")
+  })
+
+  it("permite volver a elegir el mismo archivo después de cancelar", async () => {
+    const input = await selectFile(jpegFile(2048))
+    await screen.findByTestId("photo-editor")
+
+    await userEvent.click(screen.getByRole("button", { name: "Cancelar" }))
+    await waitFor(() =>
+      expect(screen.queryByTestId("photo-editor")).not.toBeInTheDocument(),
+    )
+
+    expect(input.value).toBe("")
+  })
+
+  it("sin foto previa sólo ofrece cambiar la foto", () => {
+    render(<ProfilePhoto hasAvatar={false} />)
+
+    expect(screen.getByText("Cambiar foto")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /Eliminar foto/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("reemplaza la foto existente y sigue ofreciendo eliminarla", async () => {
+    vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
+    const { container } = render(<ProfilePhoto hasAvatar />)
+
     await userEvent.upload(fileInput(container), jpegFile(2048), {
       applyAccept: false,
     })
-    await screen.findByAltText("Selección previa")
-    await userEvent.click(screen.getByRole("button", { name: /Guardar foto/ }))
+    await screen.findByTestId("photo-editor")
+    await userEvent.click(screen.getByRole("button", { name: "Guardar foto" }))
+
+    await waitFor(() => expect(updateAvatar).toHaveBeenCalled())
+    expect(vi.mocked(updateAvatar)).toHaveBeenCalledTimes(1)
 
     await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith({ title: "Foto actualizada" }),
+      expect(
+        screen.getByRole("button", { name: /Eliminar foto/ }),
+      ).toBeInTheDocument(),
     )
-    expect(routerRefresh).not.toHaveBeenCalled()
-  })
-
-  it("envía el FormData con el archivo comprimido y avisa que lo optimizó", async () => {
-    vi.mocked(updateAvatar).mockResolvedValue({ ok: true })
-
-    const drawImage = vi.fn()
-    vi.stubGlobal("createImageBitmap", vi.fn(async () => ({
-      width: 4032,
-      height: 3024,
-      close: vi.fn(),
-    })))
-    HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-      fillStyle: "",
-      fillRect: vi.fn(),
-      drawImage,
-    })) as unknown as HTMLCanvasElement["getContext"]
-    HTMLCanvasElement.prototype.toBlob = vi.fn(function (
-      _callback: BlobCallback,
-      type?: string,
-    ) {
-      _callback(
-        new Blob([new Uint8Array(30_000)], { type: type ?? "image/png" }),
-      )
-    }) as unknown as HTMLCanvasElement["toBlob"]
-
-    const { container } = render(<ProfilePhoto hasAvatar={false} />)
-    await userEvent.upload(
-      fileInput(container),
-      jpegFile(3_000_000),
-      { applyAccept: false },
-    )
-
-    await waitFor(() => expect(screen.getByAltText("Selección previa")).toBeTruthy())
-    expect(toast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: "Foto optimizada" }),
-    )
-    expect(drawImage).toHaveBeenCalledWith(
-      expect.anything(),
-      0,
-      0,
-      AVATAR_TARGET_MAX_EDGE,
-      expect.any(Number),
-    )
-
-    await userEvent.click(screen.getByRole("button", { name: /Guardar foto/ }))
-    await waitFor(() => expect(updateAvatar).toHaveBeenCalled())
-
-    const sent = vi.mocked(updateAvatar).mock.calls[0]?.[0] as FormData
-    const file = sent.get("file") as File
-    expect(file.type).toBe("image/webp")
-    expect(file.size).toBe(30_000)
   })
 
   it("elimina la foto", async () => {

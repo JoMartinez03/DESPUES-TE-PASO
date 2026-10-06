@@ -1,17 +1,21 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { cropAvatarFile } from "@/lib/avatar-client"
+import { centeredSquareArea, type CropArea } from "@/lib/avatar-crop"
 import {
-  AVATAR_RECOMPRESS_THRESHOLD_BYTES,
-  prepareAvatarFile,
-} from "@/lib/avatar-client"
-import {
+  AVATAR_CROP_SIZE,
   AVATAR_HEIF_ERROR,
   AVATAR_MAX_BYTES,
   AVATAR_SIZE_ERROR,
-  AVATAR_TARGET_MAX_EDGE,
+  AVATAR_TARGET_QUALITY,
 } from "@/lib/avatar"
 
 const JPEG_HEADER = [0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]
+
+/** Landscape de iPhone. */
+const LANDSCAPE = { width: 4032, height: 3024 }
+/** La misma foto rotada: portrait. */
+const PORTRAIT = { width: 3024, height: 4032 }
 
 function ascii(text: string): number[] {
   return [...text].map((char) => char.charCodeAt(0))
@@ -34,7 +38,7 @@ function heicBytes(): Uint8Array<ArrayBuffer> {
 }
 
 /** JPEG válido de cabecera, con padding para poder pedir cualquier tamaño. */
-function jpegFile(size: number, name = "foto.jpg"): File {
+function jpegFile(size = 2048, name = "foto.jpg"): File {
   const buffer = new Uint8Array(size)
   buffer.set(JPEG_HEADER, 0)
   return new File([buffer], name, { type: "image/jpeg" })
@@ -44,42 +48,70 @@ function heicFile(name = "IMG_0042.HEIC"): File {
   return new File([heicBytes()], name, { type: "image/heic" })
 }
 
-type DecodedCanvas = {
-  calls: Array<{ type: string; quality: number }>
-  fillStyle: string
-  drawn: Array<{ source: unknown; width: number; height: number }>
+type DrawCall = {
+  source: unknown
+  sx: number
+  sy: number
+  sw: number
+  sh: number
+  dx: number
+  dy: number
+  dw: number
+  dh: number
 }
 
-let decoded: DecodedCanvas
-let createImageBitmap: ReturnType<typeof vi.fn>
+type Decode = {
+  encoded: Array<{ type: string; quality: number }>
+  fillStyle: string
+  canvasSizes: Array<{ width: number; height: number }>
+  drawn: DrawCall[]
+  closed: boolean
+}
+
+let decode: Decode
+let bitmap: { width: number; height: number; close: () => void }
 
 /**
- * jsdom no implementa canvas ni createImageBitmap. El stub devuelve un blob
- * `producedBytes` para poder verificar que el helper prefiera el resultado más
- * chico y respete los tipos que el navegador dice no soportar.
+ * jsdom no implementa canvas ni createImageBitmap. El stub registra el
+ * rectángulo de origen que se le pasa a `drawImage` para poder verificar que el
+ * archivo final lleva el recorte elegido, y devuelve un blob `producedBytes`
+ * con el tipo que el navegador dice soporta.
  */
-function stubCanvas({ producedBytes, supportedTypes }: {
-  producedBytes: number
-  supportedTypes: string[]
-}) {
-  createImageBitmap = vi.fn(async () => ({
-    width: 4032,
-    height: 3024,
-    close: vi.fn(),
-  }))
+function stubBrowser({
+  producedBytes = 40_000,
+  supportedTypes = ["image/webp"],
+  size = LANDSCAPE,
+}: {
+  producedBytes?: number
+  supportedTypes?: string[]
+  size?: { width: number; height: number }
+} = {}) {
+  bitmap = { ...size, close: vi.fn(() => { decode.closed = true }) }
+  vi.stubGlobal("createImageBitmap", vi.fn(async () => bitmap))
 
-  vi.stubGlobal("createImageBitmap", createImageBitmap)
   HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
     set fillStyle(value: string) {
-      decoded.fillStyle = value
+      decode.fillStyle = value
     },
     get fillStyle() {
-      return decoded.fillStyle
+      return decode.fillStyle
     },
     fillRect: vi.fn(),
-    drawImage: vi.fn((source: unknown, _x: number, _y: number, width: number, height: number) => {
-      decoded.drawn.push({ source, width, height })
-    }),
+    drawImage: vi.fn(
+      (
+        source: unknown,
+        sx: number,
+        sy: number,
+        sw: number,
+        sh: number,
+        dx: number,
+        dy: number,
+        dw: number,
+        dh: number,
+      ) => {
+        decode.drawn.push({ source, sx, sy, sw, sh, dx, dy, dw, dh })
+      },
+    ),
   })) as unknown as HTMLCanvasElement["getContext"]
 
   HTMLCanvasElement.prototype.toBlob = vi.fn(function (
@@ -88,7 +120,8 @@ function stubCanvas({ producedBytes, supportedTypes }: {
     type?: string,
     quality?: number,
   ) {
-    decoded.calls.push({ type: type ?? "", quality: quality ?? 0 })
+    decode.encoded.push({ type: type ?? "", quality: quality ?? 0 })
+    decode.canvasSizes.push({ width: this.width, height: this.height })
     if (!supportedTypes.includes(type ?? "")) {
       // El navegador cae silenciosamente a PNG, como manda el spec.
       callback(new Blob([new Uint8Array(producedBytes)], { type: "image/png" }))
@@ -98,8 +131,15 @@ function stubCanvas({ producedBytes, supportedTypes }: {
   })
 }
 
+/** El rectángulo que el editor pasó a `drawImage`. */
+function sourceBox(): DrawCall {
+  const call = decode.drawn[0]
+  if (!call) throw new Error("no se dibujó nada en el canvas")
+  return call
+}
+
 beforeEach(() => {
-  decoded = { calls: [], fillStyle: "", drawn: [] }
+  decode = { encoded: [], fillStyle: "", canvasSizes: [], drawn: [], closed: false }
 })
 
 afterEach(() => {
@@ -107,90 +147,226 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe("prepareAvatarFile", () => {
-  it("deja pasar sin retocar los archivos chicos", async () => {
-    const original = jpegFile(1024)
-    const result = await prepareAvatarFile(original)
+describe("cropAvatarFile", () => {
+  it("graba el recorte elegido en un archivo cuadrado del tamaño de avatar", async () => {
+    stubBrowser()
 
-    expect(result).toEqual({ ok: true, file: original, recompressed: false })
-    expect(createImageBitmap).toBeUndefined()
-  })
-
-  it("rechaza HEIC antes de intentar decodificarlo", async () => {
-    const result = await prepareAvatarFile(heicFile())
-
-    expect(result).toEqual({ ok: false, error: AVATAR_HEIF_ERROR })
-  })
-
-  it("rechaza por tamaño sin tocar el canvas", async () => {
-    stubCanvas({ producedBytes: 10, supportedTypes: ["image/webp"] })
-    const result = await prepareAvatarFile(
-      jpegFile(AVATAR_MAX_BYTES + 1),
+    const result = await cropAvatarFile(
+      jpegFile(),
+      { x: 100, y: 200, width: 1200, height: 1200 },
+      LANDSCAPE,
     )
-
-    expect(result).toEqual({ ok: false, error: AVATAR_SIZE_ERROR })
-  })
-
-  it("reduce una foto de iPhone y respeta el lado máximo", async () => {
-    stubCanvas({ producedBytes: 40_000, supportedTypes: ["image/webp"] })
-    const original = jpegFile(AVATAR_RECOMPRESS_THRESHOLD_BYTES + 1)
-
-    const result = await prepareAvatarFile(original)
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.recompressed).toBe(true)
-    expect(result.file.size).toBe(40_000)
     expect(result.file.type).toBe("image/webp")
+    expect(result.file.size).toBe(40_000)
     expect(result.file.name).toBe("foto.webp")
 
-    // 4032x3024 -> el lado mayor queda en AVATAR_TARGET_MAX_EDGE.
-    expect(decoded.drawn[0]?.width).toBe(AVATAR_TARGET_MAX_EDGE)
-    expect(decoded.drawn[0]?.height).toBe(
-      Math.round((AVATAR_TARGET_MAX_EDGE * 3024) / 4032),
+    // El canvas es el avatar: siempre cuadrado y del tamaño acordado.
+    expect(decode.canvasSizes[0]).toEqual({
+      width: AVATAR_CROP_SIZE,
+      height: AVATAR_CROP_SIZE,
+    })
+
+    // El rectángulo de origen es exactamente el encuadre, y ocupa todo el
+    // canvas de destino.
+    expect(sourceBox()).toMatchObject({
+      sx: 100,
+      sy: 200,
+      sw: 1200,
+      sh: 1200,
+      dx: 0,
+      dy: 0,
+      dw: AVATAR_CROP_SIZE,
+      dh: AVATAR_CROP_SIZE,
+    })
+    expect(decode.fillStyle).toBe("#ffffff")
+    expect(decode.encoded[0]).toEqual({
+      type: "image/webp",
+      quality: AVATAR_TARGET_QUALITY,
+    })
+    expect(decode.closed).toBe(true)
+  })
+
+  it("encaja una horizontal sin dejar partes fuera del círculo", async () => {
+    stubBrowser({ size: LANDSCAPE })
+
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height),
+      LANDSCAPE,
     )
-    // Fondo blanco: JPEG/WebP no tienen canal alfa.
-    expect(decoded.fillStyle).toBe("#ffffff")
-    expect(decoded.calls[0]?.type).toBe("image/webp")
+
+    expect(result.ok).toBe(true)
+    // 4032x3024 -> cuadrado de 3024 centrado: sobran 504px a cada lado.
+    expect(sourceBox()).toMatchObject({ sx: 504, sy: 0, sw: 3024, sh: 3024 })
+    expect(bitmap.close).toHaveBeenCalled()
+  })
+
+  it("encaja una vertical sin dejar partes fuera del círculo", async () => {
+    stubBrowser({ size: PORTRAIT })
+
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(PORTRAIT.width, PORTRAIT.height),
+      PORTRAIT,
+    )
+
+    expect(result.ok).toBe(true)
+    expect(sourceBox()).toMatchObject({ sx: 0, sy: 504, sw: 3024, sh: 3024 })
+  })
+
+  it("mueve la fuente cuando el usuario arrastra la imagen", async () => {
+    stubBrowser()
+    const area = centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height)
+    const dragged: CropArea = { ...area, x: area.x + 300 }
+
+    await cropAvatarFile(jpegFile(), dragged, LANDSCAPE)
+
+    expect(sourceBox()).toMatchObject({ sx: area.x + 300, sy: area.y })
+    expect(sourceBox().sw).toBe(area.width)
+  })
+
+  it("agranda la fuente cuando el usuario hace zoom", async () => {
+    stubBrowser()
+    const area = centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height)
+    // Zoom x2 sobre una horizontal: el círculo pasa a tomar 1512px de fuente,
+    // pero el archivo de salida sigue siendo el mismo cuadrado.
+    const zoomed: CropArea = {
+      x: area.x + (area.width - 1512) / 2,
+      y: area.y + (area.height - 1512) / 2,
+      width: 1512,
+      height: 1512,
+    }
+
+    await cropAvatarFile(jpegFile(), zoomed, LANDSCAPE)
+
+    expect(sourceBox()).toMatchObject({ sw: 1512, sh: 1512 })
+    expect(decode.canvasSizes[0]?.width).toBe(AVATAR_CROP_SIZE)
+  })
+
+  it("ajusta un área desfasada para que el círculo nunca quede vacío", async () => {
+    stubBrowser()
+
+    const result = await cropAvatarFile(
+      jpegFile(),
+      { x: -200, y: -200, width: 9000, height: 9000 },
+      LANDSCAPE,
+    )
+
+    expect(result.ok).toBe(true)
+    const box = sourceBox()
+    expect(box.sw).toBeGreaterThan(0)
+    expect(box.sh).toBeGreaterThan(0)
+    expect(box.sx).toBeGreaterThanOrEqual(0)
+    expect(box.sy).toBeGreaterThanOrEqual(0)
+    expect(box.sx + box.sw).toBeLessThanOrEqual(LANDSCAPE.width)
+    expect(box.sy + box.sh).toBeLessThanOrEqual(LANDSCAPE.height)
+  })
+
+  it("reexpresa el área cuando el bitmap es más chico que el preview", async () => {
+    // El bitmap llega reducido (por ejemplo, un navegador que decodifica con
+    // su propio límite de memoria): el área hay que expresarla en esa escala.
+    stubBrowser({ size: { width: 2016, height: 1512 } })
+
+    await cropAvatarFile(
+      jpegFile(),
+      { x: 100, y: 200, width: 1200, height: 1200 },
+      LANDSCAPE,
+    )
+
+    expect(sourceBox()).toMatchObject({ sx: 50, sy: 100, sw: 600, sh: 600 })
+  })
+
+  it("reexpresa el área cuando la orientación EXIF difiere entre el preview y el bitmap", async () => {
+    // El preview se mostró rotado (4032 de ancho) pero el bitmap quedó crudo:
+    // usar las coordenadas sin reexpresar sacaría el recorte de la imagen.
+    stubBrowser({ size: PORTRAIT })
+
+    await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height),
+      LANDSCAPE,
+    )
+
+    const box = sourceBox()
+    expect(box).toMatchObject({ sx: 378, sy: 0, sw: 2268, sh: 3024 })
+    expect(box.sx + box.sw).toBeLessThanOrEqual(PORTRAIT.width)
+    expect(box.sy + box.sh).toBeLessThanOrEqual(PORTRAIT.height)
+  })
+
+  it("rechaza HEIC antes de intentar decodificarlo", async () => {
+    const result = await cropAvatarFile(
+      heicFile(),
+      centeredSquareArea(4032, 3024),
+      LANDSCAPE,
+    )
+
+    expect(result).toEqual({ ok: false, error: AVATAR_HEIF_ERROR })
+    expect(decode.drawn).toHaveLength(0)
+  })
+
+  it("rechaza por tamaño sin tocar el canvas", async () => {
+    stubBrowser()
+
+    const result = await cropAvatarFile(
+      jpegFile(AVATAR_MAX_BYTES + 1),
+      centeredSquareArea(4032, 3024),
+      LANDSCAPE,
+    )
+
+    expect(result).toEqual({ ok: false, error: AVATAR_SIZE_ERROR })
+    expect(decode.drawn).toHaveLength(0)
   })
 
   it("cae a JPEG cuando el navegador no codifica WebP", async () => {
-    stubCanvas({ producedBytes: 55_000, supportedTypes: ["image/jpeg"] })
-    const original = jpegFile(AVATAR_RECOMPRESS_THRESHOLD_BYTES + 1)
+    stubBrowser({ producedBytes: 55_000, supportedTypes: ["image/jpeg"] })
 
-    const result = await prepareAvatarFile(original)
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height),
+      LANDSCAPE,
+    )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.file.type).toBe("image/jpeg")
-    expect(decoded.calls.map((call) => call.type)).toEqual([
+    expect(result.file.name).toBe("foto.jpg")
+    expect(decode.encoded.map((call) => call.type)).toEqual([
       "image/webp",
       "image/jpeg",
     ])
   })
 
-  it("preserva el canal alfa del PNG antes de caer a JPEG", async () => {
-    stubCanvas({ producedBytes: 60_000, supportedTypes: ["image/png"] })
-    const pngBytes = new Uint8Array(AVATAR_RECOMPRESS_THRESHOLD_BYTES + 1)
-    pngBytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0)
-    const original = new File([pngBytes], "logo.png", { type: "image/png" })
+  it("informa un error claro cuando ningún formato se puede codificar", async () => {
+    stubBrowser({ supportedTypes: [] })
 
-    const result = await prepareAvatarFile(original)
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height),
+      LANDSCAPE,
+    )
 
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.file.type).toBe("image/png")
-    expect(result.file.name).toBe("logo.png")
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toContain("No pudimos guardar el recorte")
+    expect(decode.closed).toBe(true)
   })
 
-  it("mantiene el archivo original si comprimirlo no ayuda", async () => {
-    const originalSize = AVATAR_RECOMPRESS_THRESHOLD_BYTES + 1
-    stubCanvas({ producedBytes: originalSize + 10, supportedTypes: ["image/webp"] })
-    const original = jpegFile(originalSize)
+  it("rechaza el resultado si el canvas devuelve null", async () => {
+    stubBrowser()
+    HTMLCanvasElement.prototype.toBlob = vi.fn(
+      (callback: BlobCallback) => callback(null),
+    ) as unknown as HTMLCanvasElement["toBlob"]
 
-    const result = await prepareAvatarFile(original)
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(LANDSCAPE.width, LANDSCAPE.height),
+      LANDSCAPE,
+    )
 
-    expect(result).toEqual({ ok: true, file: original, recompressed: false })
+    expect(result.ok).toBe(false)
   })
 
   it("informa un error claro cuando el navegador no puede decodificar", async () => {
@@ -200,9 +376,12 @@ describe("prepareAvatarFile", () => {
         throw new Error("unsupported image format")
       }),
     )
-    const original = jpegFile(AVATAR_RECOMPRESS_THRESHOLD_BYTES + 1)
 
-    const result = await prepareAvatarFile(original)
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(4032, 3024),
+      LANDSCAPE,
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -210,15 +389,19 @@ describe("prepareAvatarFile", () => {
   })
 
   it("informa un error cuando el canvas no está disponible", async () => {
-    stubCanvas({ producedBytes: 1000, supportedTypes: ["image/webp"] })
+    stubBrowser()
     HTMLCanvasElement.prototype.getContext = vi.fn(() => null) as unknown as
       HTMLCanvasElement["getContext"]
-    const original = jpegFile(AVATAR_RECOMPRESS_THRESHOLD_BYTES + 1)
 
-    const result = await prepareAvatarFile(original)
+    const result = await cropAvatarFile(
+      jpegFile(),
+      centeredSquareArea(4032, 3024),
+      LANDSCAPE,
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error).toContain("No pudimos leer esa imagen")
+    expect(decode.closed).toBe(true)
   })
 })

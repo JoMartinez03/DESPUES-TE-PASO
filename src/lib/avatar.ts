@@ -7,9 +7,19 @@ export const ALLOWED_AVATAR_TYPES = [
 
 export type AllowedAvatarType = (typeof ALLOWED_AVATAR_TYPES)[number]
 
-/** Lado máximo del avatar una vez comprimido en el cliente. */
-export const AVATAR_TARGET_MAX_EDGE = 1024
-/** Calidad del re-encode a JPEG/WebP en el cliente. */
+/**
+ * Lado del avatar ya recortado en el cliente. El avatar más grande que
+ * renderiza la app es de 64px, así que 1024 da margen de sobra para pantallas
+ * de alta densidad sin subir la foto original entera.
+ */
+export const AVATAR_CROP_SIZE = 1024
+/**
+ * El recorte nunca se aleja de 1: es lo que garantiza que la imagen siempre
+ * cubra el círculo y no queden áreas vacías dentro del avatar.
+ */
+export const AVATAR_CROP_MIN_ZOOM = 1
+export const AVATAR_CROP_MAX_ZOOM = 4
+/** Calidad del encode a WebP/JPEG del recorte. */
 export const AVATAR_TARGET_QUALITY = 0.82
 
 /**
