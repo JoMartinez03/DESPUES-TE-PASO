@@ -112,7 +112,8 @@ export const NotificationType: {
   TRANSACTION_PENDING: 'TRANSACTION_PENDING',
   TRANSACTION_CONFIRMED: 'TRANSACTION_CONFIRMED',
   TRANSACTION_REJECTED: 'TRANSACTION_REJECTED',
-  GENERAL: 'GENERAL'
+  GENERAL: 'GENERAL',
+  DEBT_REMINDER: 'DEBT_REMINDER'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

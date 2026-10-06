@@ -40,6 +40,7 @@ enum NotificationType {
   TRANSACTION_CONFIRMED
   TRANSACTION_REJECTED
   GENERAL
+  DEBT_REMINDER
 }
 
 model User {
@@ -217,6 +218,9 @@ model Notification {
   relatedGathering   Gathering?   @relation(fields: [relatedGatheringId], references: [id], onDelete: Cascade)
 
   @@index([userId, read, createdAt])
+  /// Cooldown del recordatorio de deuda: última notificación DEBT_REMINDER
+  /// de un par hacia un destinatario (direccional: userId es el destinatario).
+  @@index([userId, type, relatedFriendshipId, createdAt])
   @@map("notifications")
 }
 

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AddDebtSheet } from "@/components/transactions/add-debt-sheet"
 import { PendingPaymentsList } from "@/components/transactions/pending-payments"
 import { RegisterPaymentSheet } from "@/components/transactions/register-payment-sheet"
+import { RemindDebtButton } from "@/components/transactions/remind-debt-button"
 import { TransactionHistory } from "@/components/transactions/transaction-history"
 import { auth } from "@/lib/auth"
 import { formatDate, formatMoney } from "@/lib/format"
@@ -124,7 +125,7 @@ export default async function PersonaPage({
         </CardContent>
       </Card>
 
-      <div className={cn("grid gap-2", youOwe && "grid-cols-2")}>
+      <div className={cn("grid gap-2", (owesYou || youOwe) && "grid-cols-2")}>
         <AddDebtSheet friendId={id} friendName={target.name} />
         {youOwe ? (
           <RegisterPaymentSheet
@@ -132,6 +133,11 @@ export default async function PersonaPage({
             friendName={target.name}
             maxPayableText={formatMoney(maxPayable)}
           />
+        ) : null}
+        {/* Solo cuando el amigo le debe al usuario autenticado (balance > 0);
+            el cooldown lo valida la server action. */}
+        {owesYou ? (
+          <RemindDebtButton friendId={id} friendName={target.name} />
         ) : null}
       </div>
 

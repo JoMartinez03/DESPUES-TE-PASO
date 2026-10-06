@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   confirmedPaymentPushMessage,
   debtPushMessage,
+  debtReminderPushMessage,
   friendRequestPushMessage,
   gatheringClosedPushMessage,
   newExpensePushMessage,
@@ -96,5 +97,32 @@ describe("mensajes de push", () => {
       body: "Tino cerró la juntada. Las deudas de sus gastos quedaron saldadas.",
       url: "/juntadas/g-1",
     })
+  })
+
+  it("el recordatorio de deuda nombra al actor y formatea el monto en ARS", () => {
+    expect(
+      debtReminderPushMessage({ actorId: "actor-1", actorName: "José Gómez" }, "6000"),
+    ).toEqual({
+      title: "José te recuerda una deuda 💸",
+      body: "José te recuerda que le pases los $6.000 que le debés.",
+      url: "/personas/actor-1",
+    })
+  })
+
+  it("el recordatorio habla del destinatario como deudor, no del actor", () => {
+    const message = debtReminderPushMessage(
+      { actorId: "acreedor", actorName: "Tino" },
+      "6000",
+    )
+
+    expect(message.body).toContain("le pases")
+    expect(message.body).toContain("que le debés")
+    expect(message.body).not.toContain("Tino registró")
+    expect(message.url).toBe("/personas/acreedor")
+  })
+
+  it("el recordatorio reutiliza el formatter ARS sin variantes propias", () => {
+    expect(debtReminderPushMessage(actor, "1000").body).toContain("$1.000")
+    expect(debtReminderPushMessage(actor, "28445").body).toContain("$28.445")
   })
 })

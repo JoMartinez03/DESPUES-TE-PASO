@@ -38,6 +38,22 @@ export function debtPushMessage(actor: Actor, amount: Money): PushMessage {
   }
 }
 
+/**
+ * Recordatorio de deuda: el actor le pide al destinatario que pague. El monto
+ * viene calculado por servidor desde la perspectiva del actor (balance > 0),
+ * así que el body habla del destinatario como deudor.
+ */
+export function debtReminderPushMessage(
+  actor: Actor,
+  amount: Money,
+): PushMessage {
+  return {
+    title: `${firstName(actor.actorName)} te recuerda una deuda 💸`,
+    body: `${firstName(actor.actorName)} te recuerda que le pases los ${formatMoney(amount)} que le debés.`,
+    url: actorProfile(actor),
+  }
+}
+
 export function pendingPaymentPushMessage(
   actor: Actor,
   amount: Money,
