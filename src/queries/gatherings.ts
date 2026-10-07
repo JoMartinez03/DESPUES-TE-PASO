@@ -1,12 +1,10 @@
 import { Prisma } from "@/generated/prisma"
 import { prisma } from "@/lib/prisma"
 import {
-  calculateSuggestedTransfers,
-  type GatheringBalance as SettlementBalance,
-  type SuggestedTransfer,
-} from "@/lib/gatherings/settlement"
-import type { PairDebtRow } from "@/lib/gatherings/pair-debts"
-import { sumSigned } from "@/lib/transactions"
+  historicalEconomicsFromExpenses,
+  type DebtGroupRow,
+  type GatheringEconomics,
+} from "@/lib/gatherings/economics"
 
 const ZERO = new Prisma.Decimal(0)
 
@@ -67,24 +65,6 @@ export type GatheringView = {
   participants: Array<UserSummary & { joinedAt: Date }>
   expenses: ExpenseView[]
 }
-
-export type GatheringEconomics =
-  | {
-      ok: true
-      balances: SettlementBalance[]
-      transfers: SuggestedTransfer[]
-      /**
-       * DEBT de esta juntada agrupadas por par dirigido, sin netear. El panel
-       * "Tus pagos" las netea por par con `netPairDebtsFor`.
-       */
-      pairDebts: PairDebtRow[]
-    }
-  | {
-      ok: false
-      code: "INCONSISTENT_BALANCE" | "INVALID_DATA"
-      message: string
-      totalBalanceCents: number
-    }
 
 /**
  * Juntadas en las que participa `userId`, ordenadas por fecha más reciente.
@@ -203,34 +183,27 @@ export async function getGatheringView(
 }
 
 /**
- * Balance PERSONAL dentro de una juntada, solo con las DEBT derivadas de sus
- * gastos (expenseId no nulo). Convención igual a Issue 3:
- *   > 0 te deben · < 0 debés · 0 estás al día.
+ * DEBT derivadas de una juntada, agrupadas por par dirigido, para balancearlas
+ * con `economicsFromDebtGroups`.
+ *
+ * Los `expenseIds` ya vienen cargados por `getGatheringView` (son los gastos de
+ * la juntada): no se vuelven a leer las cabeceras ni los gastos. Con `expenseIds`
+ * vacío no hay DEBT que agrupar: devuelve `[]` sin consultar nada.
  */
-export async function getGatheringBalanceForUser(
-  gatheringId: string,
-  userId: string,
-): Promise<Prisma.Decimal> {
-  const expenses = await prisma.expense.findMany({
-    where: { gatheringId },
-    select: { id: true },
-  })
-  if (expenses.length === 0) return ZERO
+export async function getGatheringDebtGroups(
+  expenseIds: string[],
+): Promise<DebtGroupRow[]> {
+  if (expenseIds.length === 0) return []
 
-  const rows = await prisma.transaction.findMany({
+  return (await prisma.transaction.groupBy({
+    by: ["debtorId", "creditorId"],
     where: {
       type: "DEBT",
       status: "CONFIRMED",
-      expenseId: { in: expenses.map((expense) => expense.id) },
-      OR: [{ debtorId: userId }, { creditorId: userId }],
+      expenseId: { in: expenseIds },
     },
-    select: { debtorId: true, creditorId: true, amount: true },
-  })
-
-  return sumSigned(
-    rows.map((row) => ({ ...row, type: "DEBT" as const })),
-    userId,
-  )
+    _sum: { amount: true },
+  })) as unknown as DebtGroupRow[]
 }
 
 /**
@@ -243,9 +216,6 @@ export async function getGatheringBalanceForUser(
  * se perdería la información de quién pagó qué. Los gastos son la fuente
  * histórica, así que el panel sigue mostrando la posición real de cada
  * participante, sin efecto sobre los balances.
- *
- * Reproduce exactamente la misma aritmética que genera las DEBT: el pagador
- * suma lo que adelantó, y cada otro participante descuenta su `shareAmount`.
  */
 export async function getHistoricalGatheringEconomics(
   gatheringId: string,
@@ -265,170 +235,10 @@ export async function getHistoricalGatheringEconomics(
     }),
   ])
 
-  const centsByUser = new Map<string, number>(
-    participants.map((participant) => [participant.userId, 0]),
-  )
-
-  for (const expense of expenses) {
-    const totalCents = decimalToCents(expense.amount)
-    if (totalCents === null) {
-      return {
-        ok: false,
-        code: "INVALID_DATA",
-        message: "La juntada contiene datos de balance inconsistentes",
-        totalBalanceCents: 0,
-      }
-    }
-
-    for (const share of expense.participants) {
-      const shareCents = decimalToCents(share.shareAmount)
-      if (shareCents === null) {
-        return {
-          ok: false,
-          code: "INVALID_DATA",
-          message: "La juntada contiene datos de balance inconsistentes",
-          totalBalanceCents: 0,
-        }
-      }
-      // El pagador recupera su parte y cobra el resto.
-      if (share.userId === expense.payerId) continue
-
-      const nextPayer = (centsByUser.get(expense.payerId) ?? 0) + shareCents
-      const nextShare = (centsByUser.get(share.userId) ?? 0) - shareCents
-      if (
-        !Number.isSafeInteger(nextPayer) ||
-        !Number.isSafeInteger(nextShare)
-      ) {
-        return {
-          ok: false,
-          code: "INVALID_DATA",
-          message: "La juntada contiene datos de balance inconsistentes",
-          totalBalanceCents: 0,
-        }
-      }
-      centsByUser.set(expense.payerId, nextPayer)
-      centsByUser.set(share.userId, nextShare)
-    }
-  }
-
-  const balances: SettlementBalance[] = participants.map((participant) => ({
-    userId: participant.userId,
-    balanceCents: centsByUser.get(participant.userId) ?? 0,
-  }))
-
-  const settlement = calculateSuggestedTransfers(balances)
-  if (!settlement.ok) {
-    return {
-      ok: false,
-      code: settlement.code === "UNBALANCED" ? "INCONSISTENT_BALANCE" : "INVALID_DATA",
-      message: settlement.message,
-      totalBalanceCents: settlement.totalBalanceCents,
-    }
-  }
-
-  return { ok: true, balances, transfers: [], pairDebts: [] }
-}
-
-function decimalToCents(value: Prisma.Decimal): number | null {
-  const scaled = value.mul(100)
-  const rounded = scaled.toDecimalPlaces(0)
-  if (!scaled.equals(rounded)) return null
-  const cents = rounded.toNumber()
-  return Number.isSafeInteger(cents) ? cents : null
-}
-
-/**
- * Balance de una juntada ACTIVA, derivado de las DEBT CONFIRMED de sus gastos.
- *
- * `balanceCents` es la posición del ESE participante dentro de la juntada:
- * > 0 le deben a ese participante · < 0 ese participante debe.
- */
-export async function getGatheringEconomics(
-  gatheringId: string,
-): Promise<GatheringEconomics> {
-  const [participants, expenses] = await Promise.all([
-    prisma.gatheringParticipant.findMany({
-      where: { gatheringId },
-      select: { userId: true },
-    }),
-    prisma.expense.findMany({
-      where: { gatheringId },
-      select: { id: true },
-    }),
-  ])
-
-  const balancesByUser = new Map<string, number>(
-    participants.map((participant) => [participant.userId, 0]),
-  )
-  const balances: SettlementBalance[] = participants.map((participant) => ({
-    userId: participant.userId,
-    balanceCents: 0,
-  }))
-  const pairDebts: PairDebtRow[] = []
-
-  if (expenses.length > 0) {
-    const grouped = await prisma.transaction.groupBy({
-      by: ["debtorId", "creditorId"],
-      where: {
-        type: "DEBT",
-        status: "CONFIRMED",
-        expenseId: { in: expenses.map((expense) => expense.id) },
-      },
-      _sum: { amount: true },
-    })
-
-    for (const row of grouped) {
-      const amountCents = row._sum.amount
-        ? decimalToCents(row._sum.amount)
-        : null
-      const debtorBalance = balancesByUser.get(row.debtorId)
-      const creditorBalance = balancesByUser.get(row.creditorId)
-      if (amountCents === null || debtorBalance === undefined || creditorBalance === undefined) {
-        return {
-          ok: false,
-          code: "INVALID_DATA",
-          message: "La juntada contiene datos de balance inconsistentes",
-          totalBalanceCents: 0,
-        }
-      }
-      const nextDebtorBalance = debtorBalance - amountCents
-      const nextCreditorBalance = creditorBalance + amountCents
-      if (
-        !Number.isSafeInteger(nextDebtorBalance) ||
-        !Number.isSafeInteger(nextCreditorBalance)
-      ) {
-        return {
-          ok: false,
-          code: "INVALID_DATA",
-          message: "La juntada contiene datos de balance inconsistentes",
-          totalBalanceCents: 0,
-        }
-      }
-      balancesByUser.set(row.debtorId, nextDebtorBalance)
-      balancesByUser.set(row.creditorId, nextCreditorBalance)
-      pairDebts.push({
-        debtorId: row.debtorId,
-        creditorId: row.creditorId,
-        amountCents,
-      })
-    }
-
-    for (const balance of balances) {
-      balance.balanceCents = balancesByUser.get(balance.userId) ?? 0
-    }
-  }
-
-  const settlement = calculateSuggestedTransfers(balances)
-  if (!settlement.ok) {
-    return {
-      ok: false,
-      code: settlement.code === "UNBALANCED" ? "INCONSISTENT_BALANCE" : "INVALID_DATA",
-      message: settlement.message,
-      totalBalanceCents: settlement.totalBalanceCents,
-    }
-  }
-
-  return { ok: true, balances, transfers: settlement.transfers, pairDebts }
+  return historicalEconomicsFromExpenses({
+    participantUserIds: participants.map((participant) => participant.userId),
+    expenses,
+  })
 }
 
 /**

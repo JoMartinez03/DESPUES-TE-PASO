@@ -14,19 +14,37 @@ import { requireUser } from "@/lib/session"
 import { formatDate, formatMoney, formatSignedMoney } from "@/lib/format"
 import { centsToAmountString } from "@/lib/gatherings/money"
 import { netPairDebtsFor } from "@/lib/gatherings/pair-debts"
-import { toExpenseItemDto } from "@/lib/gatherings/serializable"
 import {
-  getGatheringBalanceForUser,
-  getGatheringEconomics,
-  getGatheringTotal,
-  getGatheringView,
-  getHistoricalGatheringEconomics,
-} from "@/queries/gatherings"
+  economicsFromDebtGroups,
+  historicalEconomicsFromExpenses,
+  type DebtGroupRow,
+} from "@/lib/gatherings/economics"
+import { toExpenseItemDto } from "@/lib/gatherings/serializable"
+import { maxPayableFrom, toDecimal } from "@/lib/transactions"
+import { getGatheringDebtGroups, getGatheringView } from "@/queries/gatherings"
 import { getFriendSummaries } from "@/queries/friendships"
-import { maxPayableBetween } from "@/queries/transactions"
+import {
+  ZERO,
+  netBalancesForUser,
+  pendingOutgoingPaymentsForUser,
+} from "@/queries/transactions"
 
 function centsMoney(cents: number): string {
   return formatMoney(centsToAmountString(cents))
+}
+
+/** Balance neto de `userId` desde las DEBT agrupadas (el mismo `sumSigned` de siempre). */
+function signedDebtBalance(
+  groups: readonly DebtGroupRow[],
+  userId: string,
+) {
+  let balance = ZERO
+  for (const row of groups) {
+    const amount = row._sum.amount ?? ZERO
+    if (row.debtorId === userId) balance = balance.minus(amount)
+    if (row.creditorId === userId) balance = balance.plus(amount)
+  }
+  return balance
 }
 
 export default async function JuntadaPage({
@@ -37,45 +55,83 @@ export default async function JuntadaPage({
   const user = await requireUser()
   const { id } = await params
 
-  const gathering = await getGatheringView(id, user.id)
+  // DOS oleadas de consultas paralelas, sin waterfalls: la segunda solo necesita
+  // datos que ya están en la primera (ids de gastos y de participantes).
+  const [gathering, netBalances, pendingOutgoing] = await Promise.all([
+    getGatheringView(id, user.id),
+    netBalancesForUser(user.id),
+    pendingOutgoingPaymentsForUser(user.id),
+  ])
   if (!gathering) notFound()
 
   const isCreator = gathering.creatorId === user.id
   const isActive = gathering.status === "ACTIVE"
+  const expenseIds = gathering.expenses.map((expense) => expense.id)
+
+  const [groups, friends] = await Promise.all([
+    isActive ? getGatheringDebtGroups(expenseIds) : Promise.resolve([]),
+    isCreator && isActive ? getFriendSummaries(user.id) : Promise.resolve([]),
+  ])
+
   // Una juntada ACTIVA se balancea desde las DEBT derivadas. Una CERRADA las tiene
   // saldadas (se borraron al cerrar), así que su balance histórico se reconstruye
   // desde Expense + ExpenseParticipant para no perder quién pagó qué.
-  const [total, balance, economics, friends] = await Promise.all([
-    getGatheringTotal(gathering.id),
-    getGatheringBalanceForUser(gathering.id, user.id),
-    isActive
-      ? getGatheringEconomics(gathering.id)
-      : getHistoricalGatheringEconomics(gathering.id),
-    isCreator && isActive ? getFriendSummaries(user.id) : Promise.resolve([]),
-  ])
+  const participantUserIds = gathering.participants.map(
+    (participant) => participant.id,
+  )
+  const economics = isActive
+    ? economicsFromDebtGroups({ participantUserIds, groups })
+    : historicalEconomicsFromExpenses({
+        participantUserIds,
+        expenses: gathering.expenses.map((expense) => ({
+          payerId: expense.payer.id,
+          amount: expense.amount,
+          participants: expense.participants,
+        })),
+      })
 
   const participantById = new Map(
     gathering.participants.map((participant) => [participant.id, participant]),
   )
   const paymentMaxByTransfer = new Map<string, string>()
-  const myBalanceCents = economics.ok
-    ? (economics.balances.find((row) => row.userId === user.id)?.balanceCents ??
-      0)
-    : 0
+  // Misma regla de siempre para `maxPayable`, resuelta con los mapas del batch
+  // (balance y pendientes del par) en vez de 2 queries por acreedor.
   if (economics.ok && isActive) {
-    const myPayments = netPairDebtsFor(economics.pairDebts, user.id)
-    const values = await Promise.all(
-      myPayments.map(async (payment) => {
-        const max = await maxPayableBetween(user.id, payment.creditorId)
-        return {
-          key: `${user.id}:${payment.creditorId}`,
-          value: max.toString(),
-        }
-      }),
-    )
-    for (const value of values) paymentMaxByTransfer.set(value.key, value.value)
+    for (const payment of netPairDebtsFor(economics.pairDebts, user.id)) {
+      paymentMaxByTransfer.set(
+        `${user.id}:${payment.creditorId}`,
+        maxPayableFrom(
+          netBalances.get(payment.creditorId) ?? ZERO,
+          pendingOutgoing.get(payment.creditorId) ?? ZERO,
+        ).toString(),
+      )
+    }
   }
 
+  // Idéntico al balance que mostraba la página: ACTIVA usa la posición real (del
+  // resultado económico o, si los datos no cierran, neteando el groupBy),
+  // CERRADA muestra 0 (sus deudas quedaron saldadas al cerrar).
+  const balance = !isActive
+    ? ZERO
+    : economics.ok
+      ? toDecimal(
+          centsToAmountString(
+            economics.balances.find((row) => row.userId === user.id)
+              ?.balanceCents ?? 0,
+          ),
+        )
+      : signedDebtBalance(groups, user.id)
+
+  // En centavos, para la cabecera de "Tus pagos" de MyPaymentsCard.
+  const myBalanceCents = economics.ok
+    ? (economics.balances.find((row) => row.userId === user.id)
+        ?.balanceCents ?? 0)
+    : 0
+
+  const total = gathering.expenses.reduce(
+    (acc, expense) => acc.plus(expense.amount),
+    ZERO,
+  )
   const signed = formatSignedMoney(balance)
   const balanceTone =
     balance.greaterThan(0) ? "positive" : balance.lessThan(0) ? "negative" : "neutral"

@@ -16,11 +16,7 @@ import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session"
 import { cn } from "@/lib/utils"
 import { getFriendshipBetween } from "@/queries/friendships"
-import {
-  balanceBetween,
-  getPendingPaymentsBetween,
-  getTransactionHistory,
-} from "@/queries/transactions"
+import { getPairLedger } from "@/queries/transactions"
 
 export default async function PersonaPage({
   params,
@@ -35,28 +31,29 @@ export default async function PersonaPage({
   if (id === user.id) notFound()
 
   // Una sola lectura de cada cosa: `maxPayable` se DERIVA del balance y de los
-  // pagos pendientes que ya trajo la lista, en vez de volver a consultar las
-  // mismas transacciones. `maxPayableFrom` es la misma regla de siempre.
-  const [target, friendship, balance, pendingPayments, history] =
-    await Promise.all([
-      prisma.user.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          avatar: true,
-          transferAlias: true,
-          createdAt: true,
-        },
-      }),
-      getFriendshipBetween(user.id, id),
-      balanceBetween(user.id, id),
-      getPendingPaymentsBetween(user.id, id),
-      getTransactionHistory(user.id, id),
-    ])
+  // pagos pendientes que ya trajo el ledger del par, en vez de volver a
+  // consultar las mismas transacciones. `maxPayableFrom` es la misma regla de
+  // siempre. El balance sale de TODAS las filas confirmadas (sin truncar),
+  // aunque el historial mostrado siga siendo la ventana más reciente.
+  const [target, friendship, ledger] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        avatar: true,
+        transferAlias: true,
+        createdAt: true,
+      },
+    }),
+    getFriendshipBetween(user.id, id),
+    getPairLedger(user.id, id),
+  ])
 
   if (!target || !friendship) notFound()
+
+  const { balance, pendingPayments, history } = ledger
 
   const maxPayable = maxPayableFrom(balance, sumPendingOutgoing(pendingPayments))
 

@@ -152,40 +152,6 @@ export type Movement = {
   } | null
 }
 
-export async function getTransactionHistory(
-  userId: string,
-  friendId: string,
-): Promise<Movement[]> {
-  return prisma.transaction.findMany({
-    where: {
-      OR: [
-        { debtorId: userId, creditorId: friendId },
-        { debtorId: friendId, creditorId: userId },
-      ],
-    },
-    select: {
-      id: true,
-      type: true,
-      status: true,
-      description: true,
-      amount: true,
-      currency: true,
-      debtorId: true,
-      creditorId: true,
-      occurredAt: true,
-      createdAt: true,
-      expense: {
-        select: {
-          title: true,
-          gathering: { select: { name: true } },
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  })
-}
-
 export type PendingPaymentDirection = "incoming" | "outgoing"
 
 export type PendingPayment = {
@@ -229,6 +195,84 @@ export async function getPendingPaymentsBetween(
     description: row.description,
     createdAt: row.createdAt,
   }))
+}
+
+/**
+ * Ledger completo de un par (todas las transacciones entre `userId` y
+ * `friendId`, sin límite): balance, pagos pendientes e historial resueltos en
+ * UNA sola lectura.
+ *
+ * El balance se deriva de TODAS las filas CONFIRMED, no del historial
+ * truncado a 200: sigue siendo correcto aunque haya más de 200 transacciones
+ * entre las dos personas. El historial expuesto es solo la ventana de los 200
+ * movimientos más recientes, idéntica a la que traía `getTransactionHistory`.
+ */
+export type PairLedger = {
+  balance: Prisma.Decimal
+  pendingPayments: PendingPayment[]
+  history: Movement[]
+  /** Total de transacciones entre el par. */
+  total: number
+}
+
+export function derivePairLedger(
+  userId: string,
+  rows: readonly Movement[],
+): PairLedger {
+  const balance = sumSigned(
+    rows.filter((row) => row.status === "CONFIRMED"),
+    userId,
+  )
+
+  const pendingPayments = rows
+    .filter((row) => row.type === "PAYMENT" && row.status === "PENDING")
+    .map((row) => ({
+      id: row.id,
+      direction:
+        row.debtorId === userId ? ("outgoing" as const) : ("incoming" as const),
+      amount: row.amount,
+      currency: row.currency,
+      description: row.description,
+      createdAt: row.createdAt,
+    }))
+
+  const history = rows.slice(0, 200)
+  return { balance, pendingPayments, history, total: rows.length }
+}
+
+export async function getPairLedger(
+  userId: string,
+  friendId: string,
+): Promise<PairLedger> {
+  const rows = await prisma.transaction.findMany({
+    where: {
+      OR: [
+        { debtorId: userId, creditorId: friendId },
+        { debtorId: friendId, creditorId: userId },
+      ],
+    },
+    select: {
+      id: true,
+      type: true,
+      status: true,
+      description: true,
+      amount: true,
+      currency: true,
+      debtorId: true,
+      creditorId: true,
+      occurredAt: true,
+      createdAt: true,
+      expense: {
+        select: {
+          title: true,
+          gathering: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
+
+  return derivePairLedger(userId, rows)
 }
 
 export { ZERO }
