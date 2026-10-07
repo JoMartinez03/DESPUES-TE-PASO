@@ -6,6 +6,8 @@ import {
   XCircle,
 } from "lucide-react"
 import { EmptyState } from "@/components/shared/empty-state"
+import { DeleteDebtButton } from "@/components/transactions/delete-debt-button"
+import { EditDebtSheet } from "@/components/transactions/edit-debt-sheet"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatMoney, formatShortDate } from "@/lib/format"
 import type { Movement, MovementStatus } from "@/queries/transactions"
@@ -85,6 +87,12 @@ export function TransactionHistory({
               const view = movementView(movement, viewerId, firstName)
               const rejected = movement.status === "REJECTED"
               const pending = movement.status === "PENDING"
+              // Editable solo una deuda manual creada por quien mira. Es la
+              // condición de UI: la action re-valida creatorId en servidor.
+              const editable =
+                movement.type === "DEBT" &&
+                movement.expense === null &&
+                movement.creatorId === viewerId
 
               return (
                 <li
@@ -137,6 +145,23 @@ export function TransactionHistory({
                     {view.incoming ? "+" : "−"}
                     {view.amount}
                   </p>
+                  {editable ? (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <EditDebtSheet
+                        transactionId={movement.id}
+                        initialDescription={movement.description}
+                        initialAmount={movement.amount.toFixed(2)}
+                      />
+                      <DeleteDebtButton
+                        transactionId={movement.id}
+                        description={movement.description}
+                        amountText={formatMoney(
+                          movement.amount,
+                          movement.currency,
+                        )}
+                      />
+                    </div>
+                  ) : null}
                 </li>
               )
             })}

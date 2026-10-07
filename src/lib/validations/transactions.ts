@@ -9,16 +9,24 @@ export const moneyString = z
   .refine((value) => Number(value) > 0, "El monto debe ser mayor a 0")
   .refine((value) => Number(value) <= MAX_AMOUNT, "Monto demasiado grande")
 
+const debtDescription = z
+  .string()
+  .trim()
+  .min(1, "Ingresá el concepto")
+  .max(120, "Máximo 120 caracteres")
+
 export const createDebtSchema = z.object({
-  description: z
-    .string()
-    .trim()
-    .min(1, "Ingresá el concepto")
-    .max(120, "Máximo 120 caracteres"),
+  description: debtDescription,
   amount: moneyString,
   paidBy: z.enum(["me", "friend"], {
     error: "Indicá quién pagó",
   }),
+})
+
+export const editDebtSchema = z.object({
+  transactionId: z.string().min(1, "Falta la operación"),
+  description: debtDescription,
+  amount: moneyString,
 })
 
 export const registerPaymentSchema = z.object({
@@ -30,5 +38,6 @@ export const transactionIdSchema = z.object({
 })
 
 export type CreateDebtInput = z.infer<typeof createDebtSchema>
+export type EditDebtInput = z.infer<typeof editDebtSchema>
 export type RegisterPaymentInput = z.infer<typeof registerPaymentSchema>
 export type TransactionIdInput = z.infer<typeof transactionIdSchema>

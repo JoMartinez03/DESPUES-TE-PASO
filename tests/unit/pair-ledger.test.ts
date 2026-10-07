@@ -18,7 +18,9 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-const { derivePairLedger } = await import("@/queries/transactions")
+const { derivePairLedger, getPairLedger } = await import(
+  "@/queries/transactions"
+)
 
 const ANA = "usr-ana"
 const TINO = "usr-tino"
@@ -33,6 +35,7 @@ function movement(
     id: "m-" + Math.random().toString(36).slice(2),
     description: "Movimiento",
     currency: "ARS",
+    creatorId: ANA,
     occurredAt: new Date("2026-01-01"),
     createdAt: new Date("2026-01-01"),
     expense: null,
@@ -134,5 +137,19 @@ describe("derivePairLedger", () => {
 
     expect(ledger.balance).toEqual(dec("-50"))
     expect(ledger.total).toBe(2)
+  })
+})
+
+describe("getPairLedger", () => {
+  it("selecciona creatorId (quién creó, para el lápiz de edición)", async () => {
+    transactionFindMany.mockResolvedValue([])
+
+    await getPairLedger(ANA, TINO)
+
+    const query = transactionFindMany.mock.calls[0][0]
+    expect(query.select.creatorId).toBe(true)
+    expect(query.select.debtorId).toBe(true)
+    expect(query.select.creditorId).toBe(true)
+    expect(query.select.type).toBe(true)
   })
 })

@@ -144,6 +144,8 @@ export type Movement = {
   currency: string
   debtorId: string
   creditorId: string
+  /** Quien CREÓ el registro (actor de sesión), distinto de debtor/creditor. */
+  creatorId: string
   occurredAt: Date
   createdAt: Date
   expense: {
@@ -260,6 +262,7 @@ export async function getPairLedger(
       currency: true,
       debtorId: true,
       creditorId: true,
+      creatorId: true,
       occurredAt: true,
       createdAt: true,
       expense: {

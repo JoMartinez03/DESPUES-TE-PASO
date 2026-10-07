@@ -18,9 +18,11 @@ import { maxPayableFrom, toDecimal } from "@/lib/transactions"
 import { userIdSchema, type UserIdInput } from "@/lib/validations/friendship"
 import {
   createDebtSchema,
+  editDebtSchema,
   registerPaymentSchema,
   transactionIdSchema,
   type CreateDebtInput,
+  type EditDebtInput,
   type RegisterPaymentInput,
   type TransactionIdInput,
 } from "@/lib/validations/transactions"
@@ -167,6 +169,111 @@ export async function createDebt(
         ? `${firstName(friend.name)} te deberá ${formatMoney(amount)}`
         : `Le deberás ${formatMoney(amount)} a ${firstName(friend.name)}`,
   }
+}
+
+/**
+ * Corrige el concepto y/o el monto de una deuda manual.
+ *
+ * La autorización vive en el SERVIDOR, dentro del WHERE de la propia
+ * actualización: solo matchea si la fila existe, si la creó el usuario
+ * autenticado (`creatorId`), si es `type = DEBT` y si es manual
+ * (`expenseId = null`). Un PAYMENT, una deuda de juntada o una deuda ajena
+ * no matchea => `count !== 1` => forbidden.
+ *
+ * Actualiza la MISMA fila (mismo id): no crea otra deuda y deja intactos
+ * debtor, creditor, type, status y creator por construcción. Únicos campos
+ * mutables: description y amount, con las mismas validaciones monetarias
+ * que `createDebt` (comparten `moneyString` y `debtDescription`).
+ */
+export async function updateDebt(input: EditDebtInput): Promise<ActionResult> {
+  const selfId = await sessionUserId()
+  if (!selfId) return { ok: false, code: "unauthorized", message: "No estás autenticado" }
+
+  const parsed = editDebtSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, code: "invalid", message: "Datos inválidos" }
+
+  const { transactionId, description } = parsed.data
+  const amount = toDecimal(parsed.data.amount)
+
+  const row = await prisma.transaction.findUnique({
+    where: { id: transactionId },
+    select: { debtorId: true, creditorId: true },
+  })
+  if (!row) return { ok: false, code: "not_found", message: "La deuda no existe" }
+
+  const updated = await prisma.transaction.updateMany({
+    where: {
+      id: transactionId,
+      creatorId: selfId,
+      type: "DEBT",
+      expenseId: null,
+    },
+    data: { description, amount },
+  })
+  if (updated.count !== 1) {
+    return {
+      ok: false,
+      code: "forbidden",
+      message: "Solo podés editar deudas que creaste",
+    }
+  }
+
+  // La contraparte: el otro integrante del par, para revalidar su ficha también.
+  const peerId = row.debtorId === selfId ? row.creditorId : row.debtorId
+  revalidateEconomicRoutes(peerId)
+  return { ok: true, message: "Deuda actualizada" }
+}
+
+/**
+ * Elimina una deuda manual cargada por error.
+ *
+ * Aplica EXACTAMENTE la misma regla de autoría que `updateDebt` (misma fuente
+ * de verdad): el `where` compuesto de la propia operación exige que la fila
+ * exista, que la creó el usuario autenticado (`creatorId = selfId`), que sea
+ * `type = DEBT` y que sea manual (`expenseId = null`). El cliente sólo envía
+ * `transactionId`: debtor, creditor, monto o creatorId jamás llegan desde el
+ * input. Si el where no matchea => `count !== 1` => forbidden.
+ *
+ * No crea transacciones compensatorias: es la corrección de un registro mal
+ * cargado. El balance, el historial, el Dashboard y maxPayable se recalculan
+ * solos porque se derivan de las filas de `transactions` (Etapa 1) y la
+ * revalidación de rutas (Etapa 2) refresca las lecturas cacheadas.
+ * Las notificaciones asociadas caen en cascada por la FK de la base.
+ */
+export async function deleteDebt(input: TransactionIdInput): Promise<ActionResult> {
+  const selfId = await sessionUserId()
+  if (!selfId) return { ok: false, code: "unauthorized", message: "No estás autenticado" }
+
+  const parsed = transactionIdSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, code: "invalid", message: "Datos inválidos" }
+
+  const { transactionId } = parsed.data
+
+  const row = await prisma.transaction.findUnique({
+    where: { id: transactionId },
+    select: { debtorId: true, creditorId: true },
+  })
+  if (!row) return { ok: false, code: "not_found", message: "La deuda no existe" }
+
+  const deleted = await prisma.transaction.deleteMany({
+    where: {
+      id: transactionId,
+      creatorId: selfId,
+      type: "DEBT",
+      expenseId: null,
+    },
+  })
+  if (deleted.count !== 1) {
+    return {
+      ok: false,
+      code: "forbidden",
+      message: "Solo podés eliminar deudas que creaste",
+    }
+  }
+
+  const peerId = row.debtorId === selfId ? row.creditorId : row.debtorId
+  revalidateEconomicRoutes(peerId)
+  return { ok: true, message: "Deuda eliminada" }
 }
 
 export async function registerPayment(
