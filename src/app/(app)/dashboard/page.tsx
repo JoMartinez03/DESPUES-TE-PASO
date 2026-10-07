@@ -1,6 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Hourglass } from "lucide-react"
 import { PageHeader } from "@/components/shared/page-header"
 import { StatCard } from "@/components/shared/stat-card"
+import { Confirmations } from "@/components/dashboard/confirmations"
 import { PendingBalances } from "@/components/dashboard/pending-balances"
 import { auth } from "@/lib/auth"
 import { formatMoney } from "@/lib/format"
@@ -59,6 +60,10 @@ export default async function DashboardPage() {
           balance: friend.balance.amount,
         }))}
       />
+
+      {summary.confirmations.length > 0 ? (
+        <Confirmations items={summary.confirmations} />
+      ) : null}
     </div>
   )
 }

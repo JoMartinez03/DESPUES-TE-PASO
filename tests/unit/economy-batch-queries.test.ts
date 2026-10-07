@@ -92,6 +92,12 @@ function row(
 let friendships: ReturnType<typeof friendshipRow>[]
 let confirmedRows: BalanceRow[]
 let pendingOutgoing: Map<string, Prisma.Decimal>
+let incomingConfirmations: Array<{
+  id: string
+  amount: Prisma.Decimal
+  currency: string
+  debtor: ReturnType<typeof userSummary>
+}>
 
 function pendingRow(debtorId: string, creditorId: string, amount: string): BalanceRow {
   return row("PAYMENT", debtorId, creditorId, amount)
@@ -132,6 +138,22 @@ beforeEach(() => {
     [MAURO, dec("9000")],
   ])
 
+  // Pagos PENDING que Ana debe confirmar (el remitente registró el pago).
+  incomingConfirmations = [
+    {
+      id: "txn-conf-1",
+      amount: dec("5000"),
+      currency: "ARS",
+      debtor: userSummary(TINO),
+    },
+    {
+      id: "txn-conf-2",
+      amount: dec("1500"),
+      currency: "ARS",
+      debtor: userSummary(MAURO),
+    },
+  ]
+
   friendshipFindMany.mockResolvedValue(friendships)
 
   // Mock fiel a los filtros de las queries reales, para que el lote y las
@@ -145,6 +167,10 @@ beforeEach(() => {
     const clauses = where.OR ?? []
 
     if (where.type === "PAYMENT" && where.status === "PENDING") {
+      // Listado de confirmaciones entrantes: filas con `debtor` poblado.
+      if ("pendingConfirmationFromId" in where) {
+        return incomingConfirmations.map((row) => ({ ...row }))
+      }
       const out: BalanceRow[] = []
       for (const [creditorId, amount] of pendingOutgoing) {
         if (matchesClauses({ debtorId: ANA, creditorId }, clauses)) {
@@ -401,6 +427,45 @@ describe("dashboard · una sola fuente económica", () => {
       status: "CONFIRMED",
       OR: [{ debtorId: ANA }, { creditorId: ANA }],
     })
+  })
+
+  it("toConfirm y la Card salen del MISMO listado: una query, sin count, sin N+1", async () => {
+    const summary = await getDashboardSummary(ANA)
+
+    // Fuente única: el conteo es la longitud del listado.
+    expect(summary.confirmations).toHaveLength(2)
+    expect(summary.toConfirm).toBe(summary.confirmations.length)
+
+    // balances + confirmaciones = 2 lecturas fijas; jamás un count por fila.
+    expect(transactionFindMany).toHaveBeenCalledTimes(2)
+    expect(transactionCount).not.toHaveBeenCalled()
+
+    const confirmationQuery = transactionFindMany.mock.calls[1][0]
+    expect(confirmationQuery.where).toEqual({
+      type: "PAYMENT",
+      status: "PENDING",
+      pendingConfirmationFromId: ANA,
+    })
+    // El remitente viene poblado en la MISMA query: sin lecturas por fila.
+    expect(confirmationQuery.select).toEqual({
+      id: true,
+      amount: true,
+      currency: true,
+      debtor: { select: { id: true, name: true, username: true, avatar: true } },
+    })
+    expect(summary.confirmations.map((c) => c.payer.id)).toEqual([
+      TINO,
+      MAURO,
+    ])
+  })
+
+  it("sin pagos por confirmar: toConfirm = 0 y lista vacía", async () => {
+    incomingConfirmations = []
+    const summary = await getDashboardSummary(ANA)
+
+    expect(summary.toConfirm).toBe(0)
+    expect(summary.confirmations).toHaveLength(0)
+    expect(transactionCount).not.toHaveBeenCalled()
   })
 
   it("los amigos con saldo 0 no suman a ninguna tarjeta", () => {
