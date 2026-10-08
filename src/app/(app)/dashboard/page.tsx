@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/shared/page-header"
 import { StatCard } from "@/components/shared/stat-card"
 import { Confirmations } from "@/components/dashboard/confirmations"
 import { PendingBalances } from "@/components/dashboard/pending-balances"
+import { HowToUse } from "@/components/onboarding/how-to-use"
 import { auth } from "@/lib/auth"
 import { formatMoney } from "@/lib/format"
 import { requireUser } from "@/lib/session"
@@ -28,6 +29,7 @@ export default async function DashboardPage() {
       <PageHeader
         title={`Hola, ${firstName} 👋`}
         description="Este es tu resumen de cuentas."
+        action={<HowToUse />}
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
