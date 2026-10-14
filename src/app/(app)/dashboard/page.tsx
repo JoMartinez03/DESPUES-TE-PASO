@@ -11,6 +11,9 @@ import { getDashboardSummary } from "@/queries/dashboard"
 import { getProfileExcerpt } from "@/queries/profile"
 import { getFriends } from "@/queries/friendships"
 
+const statEnter =
+  "animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out fill-mode-both motion-reduce:animate-none"
+
 export default async function DashboardPage() {
   await requireUser()
   const session = await auth()
@@ -38,18 +41,21 @@ export default async function DashboardPage() {
           amount={formatMoney(summary.owed)}
           icon={ArrowDownLeft}
           tone="positive"
+          className={`${statEnter} delay-0`}
         />
         <StatCard
           label="Debés"
           amount={formatMoney(summary.owe)}
           icon={ArrowUpRight}
           tone="negative"
+          className={`${statEnter} delay-75`}
         />
         <StatCard
           label="Por confirmar"
           amount={String(summary.toConfirm)}
           icon={Hourglass}
           tone="neutral"
+          className={`${statEnter} delay-150`}
         />
       </div>
 
