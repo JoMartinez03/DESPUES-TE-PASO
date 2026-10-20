@@ -15,6 +15,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { toast } from "@/components/ui/toast"
+import { sanitizeMoneyInput } from "@/lib/money-input"
+import { registerPaymentSchema } from "@/lib/validations/transactions"
 
 export function RegisterPaymentSheet({
   friendId,
@@ -51,8 +53,18 @@ export function RegisterPaymentSheet({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+    // Misma validación que el servidor (misma schema): normaliza la coma
+    // decimal y rechaza cero, negativos o más de 2 decimales sin viaje.
+    const parsed = registerPaymentSchema.safeParse({ amount })
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Monto inválido")
+      return
+    }
     startTransition(async () => {
-      const result = await registerPayment({ userId: friendId, amount })
+      const result = await registerPayment({
+        userId: friendId,
+        amount: parsed.data.amount,
+      })
       if (result.ok) {
         toast({ title: "Pago registrado", description: result.message })
         handleOpenChange(false)
@@ -97,7 +109,9 @@ export function RegisterPaymentSheet({
                 placeholder="0"
                 className="pl-7 tabular-nums"
                 value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                onChange={(event) =>
+                  setAmount(sanitizeMoneyInput(event.target.value))
+                }
                 autoFocus
               />
             </div>

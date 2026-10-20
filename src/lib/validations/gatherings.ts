@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { toCanonicalMoney } from "@/lib/money-input"
 import { moneyString } from "@/lib/validations/transactions"
 
 export const gatheringNameSchema = z.object({
@@ -31,12 +32,17 @@ export const updateGatheringParticipantsSchema = z.object({
 
 /**
  * Parte personalizada: puede ser $0 (participante seleccionado sin deuda).
+ * Misma normalización que `moneyString` (coma o punto decimal), con la única
+ * diferencia que acá se admite cero.
  */
-const customShareString = z
-  .string()
-  .trim()
-  .regex(/^\d+(\.\d{1,2})?$/, "Valor inválido")
-  .refine((value) => Number(value) >= 0, "No puede ser negativo")
+const customShareString = z.preprocess(
+  (value) =>
+    typeof value === "string" ? (toCanonicalMoney(value) ?? value) : value,
+  z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, "Valor inválido")
+    .refine((value) => Number(value) >= 0, "No puede ser negativo"),
+)
 
 export const expenseMutationSchema = z.object({
   gatheringId: gatheringIdSchema.shape.gatheringId,

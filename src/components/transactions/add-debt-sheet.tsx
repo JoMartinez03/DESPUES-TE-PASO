@@ -15,6 +15,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { toast } from "@/components/ui/toast"
+import { sanitizeMoneyInput } from "@/lib/money-input"
+import { createDebtSchema } from "@/lib/validations/transactions"
 import { cn } from "@/lib/utils"
 
 type Payer = "me" | "friend"
@@ -52,12 +54,19 @@ export function AddDebtSheet({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+    // Misma validación que el servidor (misma schema): normaliza la coma
+    // decimal y rechaza montos inválidos sin viaje.
+    const parsed = createDebtSchema.safeParse({ description, amount, paidBy })
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Datos inválidos")
+      return
+    }
     startTransition(async () => {
       const result = await createDebt({
         userId: friendId,
-        description,
-        amount,
-        paidBy,
+        description: parsed.data.description,
+        amount: parsed.data.amount,
+        paidBy: parsed.data.paidBy,
       })
       if (result.ok) {
         toast({ title: "Deuda registrada", description: result.message })
@@ -114,7 +123,9 @@ export function AddDebtSheet({
                 placeholder="0"
                 className="pl-7 tabular-nums"
                 value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                onChange={(event) =>
+                  setAmount(sanitizeMoneyInput(event.target.value))
+                }
               />
             </div>
           </div>

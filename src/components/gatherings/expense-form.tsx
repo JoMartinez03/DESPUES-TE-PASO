@@ -24,6 +24,7 @@ import {
   splitEqualCents,
   sumCents,
 } from "@/lib/gatherings/money"
+import { sanitizeMoneyInput, toCanonicalMoney } from "@/lib/money-input"
 import { cn } from "@/lib/utils"
 import { formatMoney } from "@/lib/format"
 import { firstName } from "@/lib/names"
@@ -41,9 +42,14 @@ export type ExpenseFormModel = {
 
 type SplitType = "EQUAL" | "CUSTOM"
 
+/**
+ * Centavos exactos de un monto tipeado por el usuario, aceptando coma o
+ * punto decimal. Devuelve 0 si el valor todavía no es interpretable.
+ */
 function parseSafeCents(value: string): number {
-  if (!/^\d+(\.\d{1,2})?$/.test(value)) return 0
-  return parseMoneyToCents(value)
+  const canonical = toCanonicalMoney(value)
+  if (canonical === null) return 0
+  return parseMoneyToCents(canonical)
 }
 
 function splitToShares(
@@ -131,7 +137,7 @@ export function ExpenseForm({
     splitType === "CUSTOM" && remainingCents === 0 && amountCents > 0
   const customCoverage = selectedMembers.every((participant) => {
     const value = shares[participant.id] ?? ""
-    return /^\d+(\.\d{1,2})?$/.test(value)
+    return toCanonicalMoney(value) !== null
   })
 
   function resetForm() {
@@ -249,7 +255,9 @@ export function ExpenseForm({
                 placeholder="0"
                 className="pl-7 tabular-nums"
                 value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                onChange={(event) =>
+                  setAmount(sanitizeMoneyInput(event.target.value))
+                }
               />
             </div>
           </div>
@@ -377,7 +385,9 @@ export function ExpenseForm({
                         onChange={(event) =>
                           setShares((current) => ({
                             ...current,
-                            [participant.id]: event.target.value,
+                            [participant.id]: sanitizeMoneyInput(
+                              event.target.value,
+                            ),
                           }))
                         }
                         aria-label={`Parte de ${participant.name}`}

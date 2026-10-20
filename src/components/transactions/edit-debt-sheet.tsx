@@ -15,6 +15,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { toast } from "@/components/ui/toast"
+import { sanitizeMoneyInput } from "@/lib/money-input"
+import { editDebtSchema } from "@/lib/validations/transactions"
 
 export function EditDebtSheet({
   transactionId,
@@ -45,8 +47,19 @@ export function EditDebtSheet({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+    // Misma validación que el servidor (misma schema): normaliza la coma
+    // decimal y rechaza montos inválidos sin viaje.
+    const parsed = editDebtSchema.safeParse({ transactionId, description, amount })
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Datos inválidos")
+      return
+    }
     startTransition(async () => {
-      const result = await updateDebt({ transactionId, description, amount })
+      const result = await updateDebt({
+        transactionId,
+        description: parsed.data.description,
+        amount: parsed.data.amount,
+      })
       if (result.ok) {
         toast({ title: "Deuda actualizada", description: result.message })
         setOpen(false)
@@ -106,7 +119,9 @@ export function EditDebtSheet({
                 placeholder="0"
                 className="pl-7 tabular-nums"
                 value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                onChange={(event) =>
+                  setAmount(sanitizeMoneyInput(event.target.value))
+                }
               />
             </div>
           </div>

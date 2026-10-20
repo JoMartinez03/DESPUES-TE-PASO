@@ -714,5 +714,48 @@ describeSmoke(
     expect(number(tinoCardAfter!.balance.amount)).toBe(-1000)
     expect(stance(tinoCardAfter!.balance.amount)).toBe("Le debés")
   })
+  it("CASO 12 — pago con centavos: deuda 6600.83 saldada exactamente", async () => {
+    const jose = await createSmokeUser("Jose")
+    const tino = await createSmokeUser("Tino")
+    await befriend(jose.id, tino.id)
+
+    await signInAs(jose.id)
+    const manual = await createDebt({
+      userId: tino.id,
+      description: "Deuda con centavos",
+      amount: "6600.83",
+      paidBy: "me",
+    })
+    expect(manual.ok).toBe(true)
+    expect(number(await balanceBetween(tino.id, jose.id))).toBe(-6600.83)
+    expect(number(await maxPayableBetween(tino.id, jose.id))).toBe(6600.83)
+
+    // Tino paga el máximo exacto tecleado con coma decimal.
+    await signInAs(tino.id)
+    const payment = await registerPayment({
+      userId: jose.id,
+      amount: "6600,83",
+    })
+    expect(payment.ok).toBe(true)
+
+    // El pago PENDING no mueve el balance y agota el máximo.
+    expect(number(await maxPayableBetween(tino.id, jose.id))).toBe(0)
+
+    const pendingRow = await prisma.transaction.findFirstOrThrow({
+      where: { type: "PAYMENT", status: "PENDING" },
+    })
+    // Se almacenó como Decimal exacto, sin rezos de float.
+    expect(pendingRow.amount.toString()).toBe("6600.83")
+
+    await signInAs(jose.id)
+    const confirmed = await confirmPayment({ transactionId: pendingRow.id })
+    expect(confirmed.ok).toBe(true)
+
+    // Exactamente cero: ni 0.01 ni 0.0000000001.
+    const balance = await balanceBetween(tino.id, jose.id)
+    expect(number(balance)).toBe(0)
+    expect(balance.toString()).toBe("0")
+    expect(stance(await balanceBetween(jose.id, tino.id))).toBe("Al día")
+  })
   },
 )

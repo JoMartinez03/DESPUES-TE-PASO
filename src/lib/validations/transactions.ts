@@ -1,13 +1,30 @@
 import { z } from "zod"
+import { toCanonicalMoney } from "@/lib/money-input"
 
 const MAX_AMOUNT = 999999999999.99 // tope del Decimal(14,2)
 
-export const moneyString = z
+/**
+ * Forma canónica que debe cumplir todo monto después de normalizar:
+ * dígitos con punto decimal y hasta 2 posiciones. Cero, negativos, NaN,
+ * Infinity y demás caracteres caen fuera de este patrón o de los refinados.
+ */
+const canonicalAmount = z
   .string()
-  .trim()
   .regex(/^\d+(\.\d{1,2})?$/, "Monto inválido")
   .refine((value) => Number(value) > 0, "El monto debe ser mayor a 0")
   .refine((value) => Number(value) <= MAX_AMOUNT, "Monto demasiado grande")
+
+/**
+ * Monto en texto tal como lo escribe el usuario: acepta coma o punto decimal
+ * ("6600,83" y "6600.83") y lo normaliza a la forma canónica con punto antes
+ * de validar. Un valor irrecuperable se deja pasar sin normalizar para que el
+ * regex falle con "Monto inválido".
+ */
+export const moneyString = z.preprocess(
+  (value) =>
+    typeof value === "string" ? (toCanonicalMoney(value) ?? value) : value,
+  canonicalAmount,
+)
 
 const debtDescription = z
   .string()
