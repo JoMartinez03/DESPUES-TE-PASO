@@ -128,3 +128,42 @@
     @apply font-sans;
   }
 }
+
+/**
+ * Transición de actualización de valores (AnimatedValue).
+ * Fade + desplazamiento corto en el sentido del cambio. El remonte del nodo
+ * provoca la animación; `prefers-reduced-motion` la desactiva por completo.
+ */
+@keyframes value-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--value-in-shift, 0));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes value-flash {
+  from {
+    background-color: color-mix(in oklab, currentColor 25%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@utility value-highlight {
+  animation:
+    value-in 240ms ease-out,
+    value-flash 240ms ease-out;
+
+  &[data-direction="down"] {
+    --value-in-shift: -0.3rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

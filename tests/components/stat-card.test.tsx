@@ -39,4 +39,21 @@ describe("StatCard", () => {
     expect(card?.className).toContain("delay-75")
     expect(card?.className).toContain("motion-reduce:animate-none")
   })
+
+  it("anima el cambio del monto sin romper el tabular-nums", () => {
+    const { rerender } = render(
+      <StatCard label="Te deben" amount="$22.650" icon={ArrowDownLeft} />,
+    )
+    expect(document.querySelector("[data-animated-value]")).toBeNull()
+
+    rerender(<StatCard label="Te deben" amount="$16.650" icon={ArrowDownLeft} />)
+
+    expect(screen.getByText("$16.650")).toBeDefined()
+    const animated = document.querySelector("[data-animated-value]")
+    expect(animated?.getAttribute("data-direction")).toBe("down")
+
+    const live = document.querySelector('[aria-live="polite"]')
+    expect(live?.className).toContain("tabular-nums")
+    expect(live?.getAttribute("aria-label")).toBe("Te deben: $16.650")
+  })
 })

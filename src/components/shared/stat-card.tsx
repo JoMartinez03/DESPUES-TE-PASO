@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from "react"
+import { AnimatedValue } from "@/components/shared/animated-value"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -28,13 +29,8 @@ export function StatCard({
       <CardContent className="flex items-center justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <p className="truncate text-sm text-muted-foreground">{label}</p>
-          <p
-            className={cn(
-              "text-xl font-semibold tracking-tight tabular-nums",
-              tones[tone],
-            )}
-          >
-            {amount}
+          <p className="text-xl font-semibold tracking-tight">
+            <AnimatedValue value={amount} label={label} className={tones[tone]} />
           </p>
         </div>
         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
