@@ -32,11 +32,13 @@ export function PendingBalances({ items }: PendingBalancesProps) {
     return (
       <Card className="rounded-2xl">
         <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-          <CheckCircle2 className="size-6 text-emerald-600" />
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-emerald-600/10 text-emerald-600">
+            <CheckCircle2 className="size-5" />
+          </span>
           <div className="space-y-1">
-            <h3 className="text-base font-semibold">Estás al día</h3>
+            <h3 className="text-base font-semibold">Todo saldado 🎉</h3>
             <p className="text-sm text-muted-foreground">
-              No tenés cuentas pendientes con tus amigos.
+              No tenés cuentas pendientes.
             </p>
           </div>
         </CardContent>

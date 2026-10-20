@@ -39,7 +39,7 @@ export default async function PersonasPage() {
         <EmptyState
           icon={UserPlus}
           title="Todavía no agregaste amigos"
-          description="Buscá a tus amigos por nombre o username para empezar a manejar las cuentas juntos."
+          description="Agregá a alguien para empezar a llevar sus cuentas."
           action={<AddFriendSheet />}
         />
       ) : (

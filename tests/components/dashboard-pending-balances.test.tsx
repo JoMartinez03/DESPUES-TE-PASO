@@ -105,7 +105,7 @@ describe("PendingBalances", () => {
     )
 
     expect(screen.queryByText("B")).toBeNull()
-    expect(screen.getByText("Estás al día")).toBeDefined()
+    expect(screen.getByText("Todo saldado 🎉")).toBeDefined()
   })
 
   it("CASO 4: suma verde coincide", () => {
@@ -222,7 +222,7 @@ describe("PendingBalances", () => {
     )
 
     expect(screen.queryByText("B")).toBeNull()
-    expect(screen.getByText("Estás al día")).toBeDefined()
+    expect(screen.getByText("Todo saldado 🎉")).toBeDefined()
   })
 
   it("CASO 8: deuda + pago confirmado -> saldo 0", () => {
@@ -241,7 +241,7 @@ describe("PendingBalances", () => {
     )
 
     expect(screen.queryByText("B")).toBeNull()
-    expect(screen.getByText("Estás al día")).toBeDefined()
+    expect(screen.getByText("Todo saldado 🎉")).toBeDefined()
   })
 
   it("CASO 9: orden por dirección y monto absoluto", () => {

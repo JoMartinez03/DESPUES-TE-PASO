@@ -17,23 +17,33 @@ export function JuntadasList({
   friends: UserSummary[]
   showCreateAction?: boolean
 }) {
+  const isEmpty = gatherings.length === 0
+  // Con la lista vacía el CTA vive dentro del empty state: así no aparece dos
+  // veces el mismo botón "Nueva juntada" en pantalla.
+  const showHeaderAction = showCreateAction && !isEmpty
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Juntadas"
         description="Gastos y vueltos compartidos en grupo."
         action={
-          showCreateAction ? (
+          showHeaderAction ? (
             <CreateGatheringSheet friends={friends} triggerVariant="sm" />
           ) : undefined
         }
       />
 
-      {gatherings.length === 0 ? (
+      {isEmpty ? (
         <EmptyState
           icon={PartyPopper}
-          title="Todavía no participás de ninguna juntada"
-          description="Organizá una para dividir gastos con tus amigos sin vueltas."
+          title="Todavía no hay juntadas"
+          description="Creá una para dividir los gastos con tus amigos."
+          action={
+            showCreateAction ? (
+              <CreateGatheringSheet friends={friends} triggerVariant="default" />
+            ) : undefined
+          }
         />
       ) : (
         <ul className="flex flex-col gap-3">
