@@ -167,3 +167,28 @@
     animation: none;
   }
 }
+
+/**
+ * Salida de una fila resuelta (usePendingExit). Fade + translate cortos, con
+ * `forwards` para que la fila quede invisible mientras la revalidación la quita.
+ * `prefers-reduced-motion` la reduce a un fade instantáneo (sin desplazamiento).
+ */
+@keyframes row-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@utility row-exit {
+  animation: row-exit 200ms ease-out forwards;
+  pointer-events: none;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 1ms;
+  }
+}

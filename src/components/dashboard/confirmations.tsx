@@ -4,14 +4,17 @@ import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { confirmPayment, rejectPayment } from "@/actions/transactions"
 import { UserAvatar } from "@/components/shared/user-avatar"
+import { usePendingExit } from "@/components/shared/use-pending-exit"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "@/components/ui/toast"
 import { formatMoney } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { ConfirmationItem } from "@/queries/dashboard"
 
 export function Confirmations({ items }: { items: ConfirmationItem[] }) {
   const [busyId, setBusyId] = useState<string | null>(null)
+  const { rows, isLeaving, resolve } = usePendingExit(items)
 
   async function handleResult(
     action: "confirm" | "reject",
@@ -28,6 +31,9 @@ export function Confirmations({ items }: { items: ConfirmationItem[] }) {
         title: action === "confirm" ? "Pago confirmado" : "Pago rechazado",
         description: result.message,
       })
+      // Sólo una respuesta OK saca la fila. Un `ok: false` (conflict, forbidden)
+      // deja la fila visible para que el usuario pueda reintentar.
+      if (result.ok) resolve(item.id)
     } catch {
       toast({ description: "No pudimos procesar el pago. Intentá de nuevo." })
     } finally {
@@ -35,7 +41,7 @@ export function Confirmations({ items }: { items: ConfirmationItem[] }) {
     }
   }
 
-  if (items.length === 0) return null
+  if (items.length === 0 && rows.length === 0) return null
 
   return (
     <Card className="rounded-2xl">
@@ -44,10 +50,14 @@ export function Confirmations({ items }: { items: ConfirmationItem[] }) {
           Confirmaciones
         </p>
         <ul className="flex flex-col gap-2">
-          {items.map((item) => (
+          {rows.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded-xl border bg-background p-3"
+              data-leaving={item.leaving ? "true" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-xl border bg-background p-3",
+                item.leaving && "row-exit",
+              )}
             >
               <UserAvatar name={item.payer.name} avatar={item.payer.avatar} />
               <div className="min-w-0 flex-1">
@@ -62,7 +72,7 @@ export function Confirmations({ items }: { items: ConfirmationItem[] }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={busyId === item.id}
+                  disabled={busyId === item.id || isLeaving(item.id)}
                   onClick={() => handleResult("reject", item)}
                 >
                   {busyId === item.id ? (
@@ -73,7 +83,7 @@ export function Confirmations({ items }: { items: ConfirmationItem[] }) {
                 </Button>
                 <Button
                   size="sm"
-                  disabled={busyId === item.id}
+                  disabled={busyId === item.id || isLeaving(item.id)}
                   onClick={() => handleResult("confirm", item)}
                 >
                   {busyId === item.id ? (

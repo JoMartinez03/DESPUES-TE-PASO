@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { ArrowDownLeft, Clock, Loader2 } from "lucide-react"
 import { confirmPayment, rejectPayment } from "@/actions/transactions"
+import { usePendingExit } from "@/components/shared/use-pending-exit"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "@/components/ui/toast"
 import { formatMoney } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { PendingPayment } from "@/queries/transactions"
 
 export function PendingPaymentsList({
@@ -17,6 +19,7 @@ export function PendingPaymentsList({
   items: PendingPayment[]
 }) {
   const [busyId, setBusyId] = useState<string | null>(null)
+  const { rows, isLeaving, resolve } = usePendingExit(items)
 
   const firstName = friendName.split(" ")[0] ?? friendName
 
@@ -35,6 +38,9 @@ export function PendingPaymentsList({
         title: action === "confirm" ? "Pago confirmado" : "Pago rechazado",
         description: result.message,
       })
+      // Sólo una respuesta OK saca la fila. Un `ok: false` (conflict, forbidden)
+      // deja la fila visible para que el usuario pueda reintentar.
+      if (result.ok) resolve(item.id)
     } catch {
       toast({ description: "No pudimos procesar el pago. Intentá de nuevo." })
     } finally {
@@ -42,7 +48,7 @@ export function PendingPaymentsList({
     }
   }
 
-  if (items.length === 0) return null
+  if (items.length === 0 && rows.length === 0) return null
 
   return (
     <Card className="rounded-2xl">
@@ -51,12 +57,17 @@ export function PendingPaymentsList({
           Pagos pendientes
         </p>
         <ul className="flex flex-col gap-2">
-          {items.map((item) => {
+          {rows.map((item) => {
             const incoming = item.direction === "incoming"
+            const leaving = item.leaving
             return (
               <li
                 key={item.id}
-                className="flex items-center gap-3 rounded-xl border bg-background p-3"
+                data-leaving={leaving ? "true" : undefined}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border bg-background p-3",
+                  leaving && "row-exit",
+                )}
               >
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                   {incoming ? (
@@ -81,7 +92,7 @@ export function PendingPaymentsList({
                   <div className="flex shrink-0 gap-2">
                     <Button
                       size="sm"
-                      disabled={busyId === item.id}
+                      disabled={busyId === item.id || isLeaving(item.id)}
                       onClick={() => handleResult("confirm", item)}
                     >
                       {busyId === item.id ? (
@@ -93,7 +104,7 @@ export function PendingPaymentsList({
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={busyId === item.id}
+                      disabled={busyId === item.id || isLeaving(item.id)}
                       onClick={() => handleResult("reject", item)}
                     >
                       Rechazar
