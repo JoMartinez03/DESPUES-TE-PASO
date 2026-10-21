@@ -253,14 +253,22 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/**
+ * Clases de título y descripción del Sheet.
+ *
+ * Se exportan para poder replicar la tipografía sin registrar un segundo
+ * título/descripción en el diálogo: en Base UI el `SheetTitle` es el que nombra
+ * al popup, así que un segundo `SheetTitle` cambiaría el nombre accesible del
+ * Sheet mientras está montado.
+ */
+const SHEET_TITLE_CLASS = "font-heading text-base font-medium text-foreground"
+const SHEET_DESCRIPTION_CLASS = "text-sm text-muted-foreground"
+
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
-      className={cn(
-        "font-heading text-base font-medium text-foreground",
-        className
-      )}
+      className={cn(SHEET_TITLE_CLASS, className)}
       {...props}
     />
   )
@@ -273,13 +281,15 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn(SHEET_DESCRIPTION_CLASS, className)}
       {...props}
     />
   )
 }
 
 export {
+  SHEET_TITLE_CLASS,
+  SHEET_DESCRIPTION_CLASS,
   Sheet,
   SheetTrigger,
   SheetClose,

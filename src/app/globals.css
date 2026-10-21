@@ -229,3 +229,61 @@
     animation: none;
   }
 }
+
+/**
+ * Cambio de paso del tutorial "Cómo usar DespuésTePaso".
+ *
+ * El bloque entrante aparece con fade + un desplazamiento horizontal corto y el
+ * saliente se desvanece por encima: los dos se cruzan, así que no se ve un
+ * corte. Al volver, la dirección se invierte (mismos keyframes, desplazamiento
+ * espejado) y el bloque se mantiene siempre en el mismo alto.
+ * `prefers-reduced-motion` deja sólo el fade, sin desplazamiento.
+ */
+@keyframes tutorial-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--tutorial-step-from, 0.75rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tutorial-step-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(var(--tutorial-step-to, -0.75rem));
+  }
+}
+
+@utility tutorial-step-in {
+  animation: tutorial-step-in var(--sheet-duration) var(--sheet-ease);
+
+  &[data-direction="backward"] {
+    --tutorial-step-from: -0.75rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 1ms;
+    --tutorial-step-from: 0rem;
+  }
+}
+
+@utility tutorial-step-out {
+  animation: tutorial-step-out var(--sheet-duration) var(--sheet-ease) forwards;
+  pointer-events: none;
+
+  &[data-direction="backward"] {
+    --tutorial-step-to: 0.75rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 1ms;
+    --tutorial-step-to: 0rem;
+  }
+}
