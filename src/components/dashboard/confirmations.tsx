@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { confirmPayment, rejectPayment } from "@/actions/transactions"
+import { celebrateSettledFromResult } from "@/components/shared/celebrate-settled"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { usePendingExit } from "@/components/shared/use-pending-exit"
 import { Button } from "@/components/ui/button"
@@ -33,7 +34,10 @@ export function Confirmations({ items }: { items: ConfirmationItem[] }) {
       })
       // Sólo una respuesta OK saca la fila. Un `ok: false` (conflict, forbidden)
       // deja la fila visible para que el usuario pueda reintentar.
-      if (result.ok) resolve(item.id)
+      if (result.ok) {
+        resolve(item.id)
+        celebrateSettledFromResult(result)
+      }
     } catch {
       toast({ description: "No pudimos procesar el pago. Intentá de nuevo." })
     } finally {

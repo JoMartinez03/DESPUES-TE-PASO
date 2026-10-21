@@ -12,10 +12,15 @@ const { confirmPayment, rejectPayment } = vi.hoisted(() => ({
   rejectPayment: vi.fn(),
 }))
 
+const { celebrateSettled } = vi.hoisted(() => ({ celebrateSettled: vi.fn() }))
+
 const routerRefresh = vi.hoisted(() => vi.fn())
 
 vi.mock("@/actions/transactions", () => ({ confirmPayment, rejectPayment }))
-vi.mock("@/components/ui/toast", () => ({ toast: vi.fn() }))
+vi.mock("@/components/ui/toast", () => ({
+  toast: vi.fn(),
+  celebrateSettled,
+}))
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }))
@@ -202,5 +207,67 @@ describe("Confirmaciones", () => {
     await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
 
     expect(routerRefresh).not.toHaveBeenCalled()
+  })
+
+  it("celebra cuando la acción deja el par en 0 (settled)", async () => {
+    confirmPayment.mockResolvedValue({
+      ok: true,
+      message: "Pago confirmado",
+      settled: { peerId: "usr-juanma", peerName: "Juanma" },
+    })
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+
+    await waitFor(() =>
+      expect(celebrateSettled).toHaveBeenCalledWith({ peerName: "Juanma" }),
+    )
+  })
+
+  it("NO celebra si la acción no dejó el par en 0", async () => {
+    confirmPayment.mockResolvedValue({ ok: true, message: "Pago confirmado" })
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+
+    expect(celebrateSettled).not.toHaveBeenCalled()
+  })
+
+  it("NO celebra al rechazar (aunque el server mandara settled)", async () => {
+    rejectPayment.mockResolvedValue({
+      ok: true,
+      message: "Pago rechazado",
+    })
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Rechazar" }))
+    await waitFor(() => expect(rejectPayment).toHaveBeenCalled())
+
+    expect(celebrateSettled).not.toHaveBeenCalled()
+  })
+
+  it("NO celebra si la acción falla (ok:false)", async () => {
+    confirmPayment.mockResolvedValue({
+      ok: false,
+      code: "conflict",
+      message: "El pago ya no está pendiente",
+    })
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+
+    expect(celebrateSettled).not.toHaveBeenCalled()
+  })
+
+  it("NO celebra si la acción lanza una excepción", async () => {
+    confirmPayment.mockRejectedValue(new Error("boom"))
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+
+    expect(celebrateSettled).not.toHaveBeenCalled()
   })
 })

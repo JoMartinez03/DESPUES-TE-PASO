@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { Loader2, Trash2 } from "lucide-react"
 import { deleteDebt } from "@/actions/transactions"
+import { celebrateSettledFromResult } from "@/components/shared/celebrate-settled"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -39,6 +40,7 @@ export function DeleteDebtButton({
       if (result.ok) {
         toast({ title: "Deuda eliminada", description: result.message })
         setOpen(false)
+        celebrateSettledFromResult(result)
       } else {
         setError(result.message)
       }

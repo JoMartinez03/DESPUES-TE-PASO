@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { Loader2, Pencil } from "lucide-react"
 import { updateDebt } from "@/actions/transactions"
+import { celebrateSettledFromResult } from "@/components/shared/celebrate-settled"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -63,6 +64,7 @@ export function EditDebtSheet({
       if (result.ok) {
         toast({ title: "Deuda actualizada", description: result.message })
         setOpen(false)
+        celebrateSettledFromResult(result)
       } else {
         setError(result.message)
       }

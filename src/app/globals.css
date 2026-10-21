@@ -192,3 +192,26 @@
     animation-duration: 1ms;
   }
 }
+
+/**
+ * Microcelebración "¡Están a mano!". Pop-in corto y sutil del toast enriquecido.
+ * Con `prefers-reduced-motion` se deja sólo un fade instantáneo (sin escala).
+ */
+@keyframes settled-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@utility settled-toast {
+  animation: settled-toast-in 220ms ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

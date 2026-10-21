@@ -17,7 +17,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { createGathering, closeGathering, updateGatheringParticipants } from "@/actions/gatherings"
 import { createExpense, updateExpense, deleteExpense } from "@/actions/expenses"
-import { createDebt, registerPayment, confirmPayment } from "@/actions/transactions"
+import { createDebt, registerPayment, confirmPayment, rejectPayment } from "@/actions/transactions"
 import { getDashboardSummary } from "@/queries/dashboard"
 import { getFriends } from "@/queries/friendships"
 import {
@@ -390,10 +390,103 @@ describeSmoke(
       transactionId: pendingRow.id,
     })
     expect(confirmed.ok).toBe(true)
+    // El pago saldó exactamente: la acción lo informa para la microcelebración.
+    expect(confirmed.ok && confirmed.settled).toMatchObject({
+      peerId: tino.id,
+      peerName: "Tino",
+    })
 
     expect(number(await balanceBetween(jose.id, tino.id))).toBe(0)
     expect(number(await balanceBetween(tino.id, jose.id))).toBe(0)
     expect(stance(await balanceBetween(jose.id, tino.id))).toBe("Al día")
+  })
+
+  it("CASO 5b — confirmar un pago parcial NO marca settled", async () => {
+    const jose = await createSmokeUser("Jose")
+    const tino = await createSmokeUser("Tino")
+    await befriend(jose.id, tino.id)
+
+    await signInAs(jose.id)
+    const manual = await createDebt({
+      userId: tino.id,
+      description: "Deuda grande",
+      amount: "10000",
+      paidBy: "me",
+    })
+    expect(manual.ok).toBe(true)
+
+    // Tino paga sólo una parte.
+    await signInAs(tino.id)
+    const payment = await registerPayment({ userId: jose.id, amount: "4000" })
+    expect(payment.ok).toBe(true)
+
+    const pendingRow = await prisma.transaction.findFirstOrThrow({
+      where: { type: "PAYMENT", status: "PENDING", debtorId: tino.id },
+    })
+    await signInAs(jose.id)
+    const confirmed = await confirmPayment({ transactionId: pendingRow.id })
+    expect(confirmed.ok).toBe(true)
+    // Queda saldo ≠ 0: no celebra.
+    expect(confirmed.ok && confirmed.settled).toBeUndefined()
+    expect(number(await balanceBetween(jose.id, tino.id))).toBe(6000)
+  })
+
+  it("CASO 5c — rechazar un pago NUNCA marca settled", async () => {
+    const jose = await createSmokeUser("Jose")
+    const tino = await createSmokeUser("Tino")
+    await befriend(jose.id, tino.id)
+
+    await signInAs(jose.id)
+    await createDebt({
+      userId: tino.id,
+      description: "Deuda",
+      amount: "5000",
+      paidBy: "me",
+    })
+
+    await signInAs(tino.id)
+    const payment = await registerPayment({ userId: jose.id, amount: "5000" })
+    expect(payment.ok).toBe(true)
+
+    const pendingRow = await prisma.transaction.findFirstOrThrow({
+      where: { type: "PAYMENT", status: "PENDING", debtorId: tino.id },
+    })
+    await signInAs(jose.id)
+    const rejected = await rejectPayment({ transactionId: pendingRow.id })
+    expect(rejected.ok).toBe(true)
+    expect(rejected.ok && rejected.settled).toBeUndefined()
+    // El balance confirmado no se movió (el pago quedó REJECTED).
+    expect(number(await balanceBetween(jose.id, tino.id))).toBe(5000)
+  })
+
+  it("CASO 5d — un pago sobre un par que ya estaba en 0 no marca settled", async () => {
+    const jose = await createSmokeUser("Jose")
+    const tino = await createSmokeUser("Tino")
+    await befriend(jose.id, tino.id)
+
+    // Deuda 3000 y pago 3000 registrado SIN confirmar: al confirmar queda en 0,
+    // pero para el caso de "ya estaba en 0" primero saldamos y reintentamos.
+    await signInAs(jose.id)
+    await createDebt({
+      userId: tino.id,
+      description: "Deuda",
+      amount: "3000",
+      paidBy: "me",
+    })
+    await signInAs(tino.id)
+    await registerPayment({ userId: jose.id, amount: "3000" })
+    const first = await prisma.transaction.findFirstOrThrow({
+      where: { type: "PAYMENT", status: "PENDING", debtorId: tino.id },
+    })
+    await signInAs(jose.id)
+    const firstConfirm = await confirmPayment({ transactionId: first.id })
+    expect(firstConfirm.ok && firstConfirm.settled).toBeDefined()
+    expect(number(await balanceBetween(jose.id, tino.id))).toBe(0)
+
+    // Reconfirmar (already) no celebra: no hubo transición ≠0 → 0.
+    const again = await confirmPayment({ transactionId: first.id })
+    expect(again.ok).toBe(true)
+    expect(again.ok && again.settled).toBeUndefined()
   })
 
   it("CASO 6 — cerrar la juntada salda sus deudas y conserva el historial", async () => {
@@ -750,6 +843,7 @@ describeSmoke(
     await signInAs(jose.id)
     const confirmed = await confirmPayment({ transactionId: pendingRow.id })
     expect(confirmed.ok).toBe(true)
+    expect(confirmed.ok && confirmed.settled).toBeDefined()
 
     // Exactamente cero: ni 0.01 ni 0.0000000001.
     const balance = await balanceBetween(tino.id, jose.id)

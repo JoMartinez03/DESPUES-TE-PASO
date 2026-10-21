@@ -12,8 +12,13 @@ const { confirmPayment, rejectPayment } = vi.hoisted(() => ({
   rejectPayment: vi.fn(),
 }))
 
+const { celebrateSettled } = vi.hoisted(() => ({ celebrateSettled: vi.fn() }))
+
 vi.mock("@/actions/transactions", () => ({ confirmPayment, rejectPayment }))
-vi.mock("@/components/ui/toast", () => ({ toast: vi.fn() }))
+vi.mock("@/components/ui/toast", () => ({
+  toast: vi.fn(),
+  celebrateSettled,
+}))
 
 afterEach(() => {
   cleanup()
@@ -115,5 +120,57 @@ describe("PendingPaymentsList", () => {
     for (const button of screen.getAllByRole("button")) {
       expect(button).toBeDisabled()
     }
+  })
+
+  it("celebra cuando la acción deja el par en 0 (settled)", async () => {
+    confirmPayment.mockResolvedValue({
+      ok: true,
+      message: "Pago confirmado",
+      settled: { peerId: "usr-juanma", peerName: "Juanma" },
+    })
+    render(
+      <PendingPaymentsList friendName="Juanma" items={[payment("txn-1")]} />,
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+
+    await waitFor(() =>
+      expect(celebrateSettled).toHaveBeenCalledWith({ peerName: "Juanma" }),
+    )
+  })
+
+  it("NO celebra si la acción no dejó el par en 0", async () => {
+    confirmPayment.mockResolvedValue({ ok: true, message: "Pago confirmado" })
+    render(
+      <PendingPaymentsList friendName="Juanma" items={[payment("txn-1")]} />,
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+
+    expect(celebrateSettled).not.toHaveBeenCalled()
+  })
+
+  it("NO celebra si la acción falla o lanza", async () => {
+    confirmPayment.mockResolvedValue({
+      ok: false,
+      code: "conflict",
+      message: "El pago ya no está pendiente",
+    })
+    const { unmount } = render(
+      <PendingPaymentsList friendName="Juanma" items={[payment("txn-1")]} />,
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+    expect(celebrateSettled).not.toHaveBeenCalled()
+    unmount()
+
+    confirmPayment.mockRejectedValue(new Error("boom"))
+    render(
+      <PendingPaymentsList friendName="Juanma" items={[payment("txn-2")]} />,
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+    expect(celebrateSettled).not.toHaveBeenCalled()
   })
 })

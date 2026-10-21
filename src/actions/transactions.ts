@@ -32,9 +32,42 @@ import {
   primePendingOutgoingPaymentsSum,
 } from "@/queries/transactions"
 
+/**
+ * Señal de que una acción dejó a DOS usuarios exactamente a mano (balance 0).
+ *
+ * Se calcula en el SERVIDOR, dentro de la misma transacción que aplica el
+ * cambio, usando `primeBalanceBetween` (misma fuente que el resto de la app).
+ * El cliente sólo transporta el hecho: nunca compara montos por su cuenta.
+ */
+export type SettledPair = { peerId: string; peerName: string }
+
 type ActionResult =
-  | { ok: true; message: string }
+  | { ok: true; message: string; settled?: SettledPair }
   | { ok: false; code: string; message: string }
+
+/**
+ * Determina si una acción dejó el par (`selfId`, `peerId`) exactamente en 0.
+ *
+ * Regla: hubo balance antes (≠ 0) y ya no lo hay después (= 0). El "antes" se
+ * captura con `primeBalanceBetween` ANTES de mutar; el "después" se vuelve a
+ * leer con la MISMA función DESPUÉS de mutar, sobre el mismo `tx`, así que ve
+ * la fila recién escrita y refleja el estado que se va a commitear.
+ *
+ * No decide economía: reutiliza `sumSigned` (vía `primeBalanceBetween`), la
+ * única fuente de verdad de balances. Sólo compara contra 0.
+ */
+async function settledPairIfJustBalanced(
+  tx: Prisma.TransactionClient,
+  selfId: string,
+  peerId: string,
+  balanceBefore: Prisma.Decimal,
+  peerName: string,
+): Promise<SettledPair | undefined> {
+  if (balanceBefore.isZero()) return undefined
+  const balanceAfter = await primeBalanceBetween(tx, selfId, peerId)
+  if (!balanceAfter.isZero()) return undefined
+  return { peerId, peerName }
+}
 
 async function sessionUserId(): Promise<string | null> {
   const session = await auth()
@@ -201,16 +234,40 @@ export async function updateDebt(input: EditDebtInput): Promise<ActionResult> {
   })
   if (!row) return { ok: false, code: "not_found", message: "La deuda no existe" }
 
-  const updated = await prisma.transaction.updateMany({
-    where: {
-      id: transactionId,
-      creatorId: selfId,
-      type: "DEBT",
-      expenseId: null,
-    },
-    data: { description, amount },
+  // La contraparte: el otro integrante del par. Se necesita para leer el saldo
+  // antes/después y para revalidar su ficha.
+  const peerId = row.debtorId === selfId ? row.creditorId : row.debtorId
+  const peer = await prisma.user.findUnique({
+    where: { id: peerId },
+    select: { name: true },
   })
-  if (updated.count !== 1) {
+  const peerName = peer?.name ?? "tu amigo"
+
+  const outcome = await prisma.$transaction(async (tx) => {
+    const balanceBefore = await primeBalanceBetween(tx, selfId, peerId)
+
+    const updated = await tx.transaction.updateMany({
+      where: {
+        id: transactionId,
+        creatorId: selfId,
+        type: "DEBT",
+        expenseId: null,
+      },
+      data: { description, amount },
+    })
+    if (updated.count !== 1) return { ok: false as const }
+
+    const settled = await settledPairIfJustBalanced(
+      tx,
+      selfId,
+      peerId,
+      balanceBefore,
+      peerName,
+    )
+    return { ok: true as const, settled }
+  })
+
+  if (!outcome.ok) {
     return {
       ok: false,
       code: "forbidden",
@@ -218,10 +275,8 @@ export async function updateDebt(input: EditDebtInput): Promise<ActionResult> {
     }
   }
 
-  // La contraparte: el otro integrante del par, para revalidar su ficha también.
-  const peerId = row.debtorId === selfId ? row.creditorId : row.debtorId
   revalidateEconomicRoutes(peerId)
-  return { ok: true, message: "Deuda actualizada" }
+  return { ok: true, message: "Deuda actualizada", settled: outcome.settled }
 }
 
 /**
@@ -255,15 +310,37 @@ export async function deleteDebt(input: TransactionIdInput): Promise<ActionResul
   })
   if (!row) return { ok: false, code: "not_found", message: "La deuda no existe" }
 
-  const deleted = await prisma.transaction.deleteMany({
-    where: {
-      id: transactionId,
-      creatorId: selfId,
-      type: "DEBT",
-      expenseId: null,
-    },
+  const peerId = row.debtorId === selfId ? row.creditorId : row.debtorId
+  const peer = await prisma.user.findUnique({
+    where: { id: peerId },
+    select: { name: true },
   })
-  if (deleted.count !== 1) {
+  const peerName = peer?.name ?? "tu amigo"
+
+  const outcome = await prisma.$transaction(async (tx) => {
+    const balanceBefore = await primeBalanceBetween(tx, selfId, peerId)
+
+    const deleted = await tx.transaction.deleteMany({
+      where: {
+        id: transactionId,
+        creatorId: selfId,
+        type: "DEBT",
+        expenseId: null,
+      },
+    })
+    if (deleted.count !== 1) return { ok: false as const }
+
+    const settled = await settledPairIfJustBalanced(
+      tx,
+      selfId,
+      peerId,
+      balanceBefore,
+      peerName,
+    )
+    return { ok: true as const, settled }
+  })
+
+  if (!outcome.ok) {
     return {
       ok: false,
       code: "forbidden",
@@ -271,9 +348,8 @@ export async function deleteDebt(input: TransactionIdInput): Promise<ActionResul
     }
   }
 
-  const peerId = row.debtorId === selfId ? row.creditorId : row.debtorId
   revalidateEconomicRoutes(peerId)
-  return { ok: true, message: "Deuda eliminada" }
+  return { ok: true, message: "Deuda eliminada", settled: outcome.settled }
 }
 
 export async function registerPayment(
@@ -362,7 +438,12 @@ async function resolvePayment(
   input: TransactionIdInput,
   target: "confirm" | "reject",
 ): Promise<
-  | { status: "done"; peerId: string; push: PushMessage }
+  | {
+      status: "done"
+      peerId: string
+      push: PushMessage
+      settled?: SettledPair
+    }
   | { status: "not_found" | "forbidden" | "already" | "conflict" }
 > {
   const selfId = await sessionUserId()
@@ -400,6 +481,13 @@ async function resolvePayment(
     const desired = target === "confirm" ? "CONFIRMED" : "REJECTED"
     if (payment.status === desired) return { status: "already" as const }
     if (payment.status !== "PENDING") return { status: "conflict" as const }
+
+    // Sólo confirmar puede dejar el par en 0 (rechazar no toca el balance).
+    // Capturamos el saldo ANTES de aplicar, en la misma transacción.
+    const balanceBefore =
+      target === "confirm"
+        ? await primeBalanceBetween(tx, selfId, payment.debtorId)
+        : null
 
     const now = new Date()
     const updated = await tx.transaction.updateMany({
@@ -443,7 +531,24 @@ async function resolvePayment(
         ? confirmedPaymentPushMessage(actor, payment.amount)
         : rejectedPaymentPushMessage(actor, payment.amount)
 
-    return { status: "done" as const, peerId: payment.debtorId, push }
+    // El par confirma/rechaza es (selfId, deudor). El nombre visible es el del
+    // otro, que acá es el deudor.
+    let settled: SettledPair | undefined
+    if (target === "confirm" && balanceBefore) {
+      const debtor = await tx.user.findUnique({
+        where: { id: payment.debtorId },
+        select: { name: true },
+      })
+      settled = await settledPairIfJustBalanced(
+        tx,
+        selfId,
+        payment.debtorId,
+        balanceBefore,
+        debtor?.name ?? "tu amigo",
+      )
+    }
+
+    return { status: "done" as const, peerId: payment.debtorId, push, settled }
   })
 }
 
@@ -452,6 +557,7 @@ export async function confirmPayment(input: TransactionIdInput): Promise<ActionR
   if (result.status === "done") {
     revalidateEconomicRoutes(result.peerId)
     await sendPushToUser(result.peerId, result.push)
+    return { ok: true, message: "Pago confirmado", settled: result.settled }
   }
   if (result.status === "already") {
     return { ok: true, message: "El pago ya estaba confirmado" }
@@ -462,10 +568,7 @@ export async function confirmPayment(input: TransactionIdInput): Promise<ActionR
   if (result.status === "forbidden") {
     return { ok: false, code: "forbidden", message: "Solo el receptor puede confirmar el pago" }
   }
-  if (result.status === "conflict") {
-    return { ok: false, code: "conflict", message: "El pago ya no está pendiente" }
-  }
-  return { ok: true, message: "Pago confirmado" }
+  return { ok: false, code: "conflict", message: "El pago ya no está pendiente" }
 }
 
 export async function rejectPayment(input: TransactionIdInput): Promise<ActionResult> {
@@ -473,6 +576,7 @@ export async function rejectPayment(input: TransactionIdInput): Promise<ActionRe
   if (result.status === "done") {
     revalidateEconomicRoutes(result.peerId)
     await sendPushToUser(result.peerId, result.push)
+    return { ok: true, message: "Pago rechazado" }
   }
   if (result.status === "already") {
     return { ok: true, message: "El pago ya estaba rechazado" }
@@ -483,8 +587,5 @@ export async function rejectPayment(input: TransactionIdInput): Promise<ActionRe
   if (result.status === "forbidden") {
     return { ok: false, code: "forbidden", message: "Solo el receptor puede confirmar el pago" }
   }
-  if (result.status === "conflict") {
-    return { ok: false, code: "conflict", message: "El pago ya no está pendiente" }
-  }
-  return { ok: true, message: "Pago rechazado" }
+  return { ok: false, code: "conflict", message: "El pago ya no está pendiente" }
 }

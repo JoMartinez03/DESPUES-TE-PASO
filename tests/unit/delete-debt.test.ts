@@ -4,16 +4,22 @@ import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
 import { deleteDebt } from "@/actions/transactions"
 import { sumSigned } from "@/lib/transactions"
+import { primeBalanceBetween } from "@/queries/transactions"
 
-const { prisma: prismaMock } = vi.hoisted(() => ({
-  prisma: {
+const { prisma: prismaMock } = vi.hoisted(() => {
+  const mock = {
     transaction: {
       findUnique: vi.fn(),
       deleteMany: vi.fn(),
     },
     user: { findUnique: vi.fn() },
-  },
-}))
+    $transaction: vi.fn(),
+  }
+  mock.$transaction.mockImplementation(
+    (fn: (tx: typeof mock) => unknown) => fn(mock),
+  )
+  return { prisma: mock }
+})
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }))
@@ -50,6 +56,8 @@ beforeEach(() => {
     creditorId: FRIEND_ID,
   })
   prismaMock.transaction.deleteMany.mockResolvedValue({ count: 1 })
+  prismaMock.user.findUnique.mockResolvedValue({ name: "Beto" })
+  vi.mocked(primeBalanceBetween).mockResolvedValue(new Prisma.Decimal(5000))
 })
 
 describe("deleteDebt · autorización en servidor (misma fuente que updateDebt)", () => {

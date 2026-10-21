@@ -1,17 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@/generated/prisma"
 import { auth } from "@/lib/auth"
 import { updateDebt } from "@/actions/transactions"
+import { primeBalanceBetween } from "@/queries/transactions"
 
-const { prisma: prismaMock } = vi.hoisted(() => ({
-  prisma: {
+const { prisma: prismaMock } = vi.hoisted(() => {
+  const mock = {
     transaction: {
       findUnique: vi.fn(),
       updateMany: vi.fn(),
     },
     user: { findUnique: vi.fn() },
-  },
-}))
+    $transaction: vi.fn(),
+  }
+  // El código corre dentro de `$transaction`: ejecuta el callback contra el
+  // mismo mock, así los spies de las operaciones siguen siendo observables.
+  mock.$transaction.mockImplementation(
+    (fn: (tx: typeof mock) => unknown) => fn(mock),
+  )
+  return { prisma: mock }
+})
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }))
@@ -48,6 +57,9 @@ beforeEach(() => {
     creditorId: FRIEND_ID,
   })
   prismaMock.transaction.updateMany.mockResolvedValue({ count: 1 })
+  prismaMock.user.findUnique.mockResolvedValue({ name: "Beto" })
+  // Por defecto el par NO queda en 0: la mayoría de los tests no celebra.
+  vi.mocked(primeBalanceBetween).mockResolvedValue(new Prisma.Decimal(5000))
 })
 
 describe("updateDebt · autorización en servidor", () => {
