@@ -12,6 +12,24 @@ const KEYBOARD_INSET_THRESHOLD = 60
 const KEYBOARD_FOCUS_SLACK = 16
 const SCROLLABLE_OVERFLOW = /auto|scroll|overlay/
 
+/**
+ * Movimiento compartido por todos los Sheets.
+ *
+ * - entrada: 200ms con un ease-out marcado (arranca rápido, frena suave)
+ * - salida: 150ms con ease-in (se retira sin rebotar)
+ * - `motion-reduce:transition-none` lo desactiva por completo cuando el
+ *   usuario pidió menos movimiento.
+ *
+ * Los valores salen de los tokens de `globals.css`: ningún Sheet define su
+ * propia transición, así que abrir/cerrar se siente igual en todas partes.
+ *
+ * `transition` (y no `transition-all`) a propósito: la lista de propiedades de
+ * Tailwind no incluye `bottom` ni `max-height`, de modo que el ajuste del
+ * inset del teclado virtual sigue siendo instantáneo.
+ */
+const SHEET_MOTION =
+  "duration-(--sheet-duration) ease-(--sheet-ease) data-ending-style:duration-(--sheet-duration-exit) data-ending-style:ease-(--sheet-ease-exit) motion-reduce:transition-none"
+
 function findScrollableAncestor(element: HTMLElement, boundary: HTMLElement) {
   let current = element.parentElement
   while (current && current !== boundary) {
@@ -145,7 +163,9 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/10 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs",
+        "fixed inset-0 z-50 bg-black/30 transition-opacity",
+        SHEET_MOTION,
+        "data-starting-style:opacity-0 data-ending-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs",
         className
       )}
       {...props}
@@ -173,7 +193,19 @@ function SheetContent({
         data-slot="sheet-content"
         data-side={side}
         className={cn(
-          "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-[var(--sheet-keyboard-inset,0px)] data-[side=bottom]:h-auto data-[side=bottom]:max-h-[calc(100dvh_-_var(--sheet-keyboard-inset,0px))] data-[side=bottom]:overflow-y-auto data-[side=bottom]:overscroll-contain data-[side=bottom]:scroll-pb-[calc(var(--sheet-keyboard-inset,0px)_+_1rem)] data-[side=bottom]:pb-[env(safe-area-inset-bottom)] data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem] data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm",
+          // Base: sin padding propio. Cada lado define su geometría y el
+          // contenido se acomoda con `SheetHeader`/`SheetFooter`.
+          "fixed z-50 flex flex-col gap-0 bg-popover bg-clip-padding p-0 text-sm text-popover-foreground shadow-lg transition",
+          SHEET_MOTION,
+          "data-starting-style:opacity-0 data-ending-style:opacity-0",
+          // Bottom (mobile): panel de ancho completo, esquinas superiores
+          // redondeadas y centrado en pantallas grandes.
+          "data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-[var(--sheet-keyboard-inset,0px)] data-[side=bottom]:h-auto data-[side=bottom]:max-h-[calc(100dvh_-_var(--sheet-keyboard-inset,0px))] data-[side=bottom]:overflow-y-auto data-[side=bottom]:overscroll-contain data-[side=bottom]:scroll-pb-[calc(var(--sheet-keyboard-inset,0px)_+_1rem)] data-[side=bottom]:pb-[env(safe-area-inset-bottom)] data-[side=bottom]:border-t data-[side=bottom]:rounded-t-2xl data-[side=bottom]:data-starting-style:translate-y-(--sheet-offset) data-[side=bottom]:data-ending-style:translate-y-(--sheet-offset) data-[side=bottom]:sm:mx-auto data-[side=bottom]:sm:max-w-md",
+          // Laterales: panels con padding propio.
+          "data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:p-6 data-[side=left]:border-r data-[side=left]:data-starting-style:translate-x-(--sheet-offset) data-[side=left]:data-ending-style:translate-x-(--sheet-offset) data-[side=left]:sm:max-w-sm",
+          "data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:p-6 data-[side=right]:border-l data-[side=right]:data-starting-style:translate-x-(--sheet-offset) data-[side=right]:data-ending-style:translate-x-(--sheet-offset) data-[side=right]:sm:max-w-sm",
+          // Top.
+          "data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:p-6 data-[side=top]:border-b data-[side=top]:data-starting-style:translate-y-(--sheet-offset) data-[side=top]:data-ending-style:translate-y-(--sheet-offset)",
           className
         )}
         {...props}
@@ -204,7 +236,8 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-header"
-      className={cn("flex flex-col gap-0.5 p-4", className)}
+      // `pr-12` reserva el lugar de la X global: el título nunca queda debajo.
+      className={cn("flex flex-col gap-1 px-5 pt-5 pb-2 pr-12", className)}
       {...props}
     />
   )
@@ -214,7 +247,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-footer"
-      className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+      className={cn("mt-auto flex flex-col gap-2 px-5 pt-3 pb-5", className)}
       {...props}
     />
   )

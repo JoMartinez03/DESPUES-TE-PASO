@@ -11,6 +11,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -114,53 +115,54 @@ export function ParticipantsManager({
       >
         <Users className="size-4" />
       </SheetTrigger>
-      <SheetContent
-        side="bottom"
-        className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>Participantes</SheetTitle>
           <SheetDescription>
             Solo podés agregar a tus amigos. El organizador no se puede quitar.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-5 p-5 pt-2">
-          <div className="space-y-1.5">
-            <Label>Miembros actuales</Label>
-            <ul className="flex flex-col gap-1">
-              {ordered.map((member) =>
-                renderRow(member, member.id === creatorId, true),
-              )}
-            </ul>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Sumar amigos</Label>
-            {available.length === 0 ? (
-              <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                No tenés más amigos para sumar.
-              </p>
-            ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="space-y-5 px-5 pt-2">
+            <div className="space-y-1.5">
+              <Label>Miembros actuales</Label>
               <ul className="flex flex-col gap-1">
-                {available
-                  .filter((friend) => !selected.has(friend.id))
-                  .map((friend) =>
-                    renderRow(friend, false, false),
-                  )}
+                {ordered.map((member) =>
+                  renderRow(member, member.id === creatorId, true),
+                )}
               </ul>
-            )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Sumar amigos</Label>
+              {available.length === 0 ? (
+                <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  No tenés más amigos para sumar.
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-1">
+                  {available
+                    .filter((friend) => !selected.has(friend.id))
+                    .map((friend) =>
+                      renderRow(friend, false, false),
+                    )}
+                </ul>
+              )}
+            </div>
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Users className="size-4" />
-            )}
-            Guardar cambios
-          </Button>
+          <SheetFooter>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Users className="size-4" />
+              )}
+              Guardar cambios
+            </Button>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

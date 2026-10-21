@@ -8,6 +8,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -47,40 +48,40 @@ export function CloseGatheringButton({ gatheringId }: { gatheringId: string }) {
         <LockKeyhole className="size-4" />
         Cerrar juntada
       </SheetTrigger>
-      <SheetContent side="bottom" className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md">
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>Cerrar juntada</SheetTitle>
           <SheetDescription>
             Al cerrar la juntada, las deudas generadas por estos gastos se
             considerarán saldadas y dejarán de aparecer en los balances.
           </SheetDescription>
         </SheetHeader>
-        <div className="space-y-4 p-5 pt-2">
+        <div className="px-5 pt-2">
           <p className="text-sm text-muted-foreground">
             Los gastos y el historial de la juntada se conservarán. Se notificará
             a los demás participantes.
           </p>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              onClick={() => handleOpenChange(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isPending}
-              onClick={handleClose}
-            >
-              {isPending ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
-              Cerrar juntada
-            </Button>
-          </div>
         </div>
+        <SheetFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isPending}
+            onClick={() => handleOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isPending}
+            onClick={handleClose}
+          >
+            {isPending ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
+            Cerrar juntada
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

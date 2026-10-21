@@ -81,8 +81,8 @@ export function FabAction({ options }: { options: QuickTransactionOptions }) {
         >
           <Plus className="size-6" />
         </SheetTrigger>
-        <SheetContent side="bottom" className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md">
-          <SheetHeader className="p-5 pb-2">
+        <SheetContent side="bottom">
+          <SheetHeader>
             <div className="flex items-center gap-2">
               {mode !== "menu" ? (
                 <Button
@@ -103,7 +103,7 @@ export function FabAction({ options }: { options: QuickTransactionOptions }) {
           </SheetHeader>
 
           {mode === "menu" ? (
-            <div className="flex flex-col p-3">
+            <div className="flex flex-col px-5 pt-2 pb-5">
               <QuickActionButton
                 label="Agregar deuda"
                 icon={HandCoins}
@@ -128,7 +128,7 @@ export function FabAction({ options }: { options: QuickTransactionOptions }) {
               </Link>
             </div>
           ) : (
-            <div className="max-h-[55vh] overflow-y-auto p-3">
+            <div className="max-h-[55vh] overflow-y-auto px-5 pt-2 pb-5">
               {mode === "debt" ? (
                 <FriendList
                   friends={options.friends}

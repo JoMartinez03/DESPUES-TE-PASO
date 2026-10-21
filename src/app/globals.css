@@ -73,6 +73,20 @@
   --chart-4: oklch(0.7 0.16 65);
   --chart-5: oklch(0.65 0.15 220);
   --radius: 0.625rem;
+
+  /*
+   * Sheets: tokens de movimiento compartidos por todos los paneles.
+   * Duración, easing y recorrido viven acá para que ningún Sheet defina su
+   * propia transición: todos abren y cierran con el mismo movimiento.
+   *  - entrada: 200ms con un ease-out marcado (arranca rápido, frena suave)
+   *  - salida: 150ms con ease-in (se retira sin rebotar)
+   */
+  --sheet-duration: 200ms;
+  --sheet-duration-exit: 150ms;
+  --sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --sheet-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --sheet-offset: 1.5rem;
+
   --sidebar: oklch(0.985 0.002 60);
   --sidebar-foreground: oklch(0.13 0.01 291);
   --sidebar-primary: oklch(0.541 0.281 293.009);

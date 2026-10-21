@@ -10,6 +10,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -88,88 +89,89 @@ export function AddDebtSheet({
           Agregar deuda
         </SheetTrigger>
       ) : null}
-      <SheetContent
-        side="bottom"
-        className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>Agregar deuda</SheetTitle>
           <SheetDescription>
             Registrá un gasto con {firstName}.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 p-5 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="debt-description">Concepto</Label>
-            <Input
-              id="debt-description"
-              placeholder="ej: hamburguesas"
-              maxLength={120}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              autoFocus
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="debt-amount">Monto</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
-                $
-              </span>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="space-y-4 px-5 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="debt-description">Concepto</Label>
               <Input
-                id="debt-amount"
-                inputMode="decimal"
-                placeholder="0"
-                className="pl-7 tabular-nums"
-                value={amount}
-                onChange={(event) =>
-                  setAmount(sanitizeMoneyInput(event.target.value))
-                }
+                id="debt-description"
+                placeholder="ej: hamburguesas"
+                maxLength={120}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                autoFocus
               />
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <Label>¿Quién pagó?</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setPaidBy("me")}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                  paidBy === "me"
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-input text-muted-foreground hover:bg-muted",
-                )}
-              >
-                Yo
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaidBy("friend")}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                  paidBy === "friend"
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-input text-muted-foreground hover:bg-muted",
-                )}
-              >
-                {firstName}
-              </button>
+            <div className="space-y-1.5">
+              <Label htmlFor="debt-amount">Monto</Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="debt-amount"
+                  inputMode="decimal"
+                  placeholder="0"
+                  className="pl-7 tabular-nums"
+                  value={amount}
+                  onChange={(event) =>
+                    setAmount(sanitizeMoneyInput(event.target.value))
+                  }
+                />
+              </div>
             </div>
+
+            <div className="space-y-1.5">
+              <Label>¿Quién pagó?</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaidBy("me")}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    paidBy === "me"
+                      ? "border-primary bg-primary/5 text-foreground"
+                      : "border-input text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  Yo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaidBy("friend")}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    paidBy === "friend"
+                      ? "border-primary bg-primary/5 text-foreground"
+                      : "border-input text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  {firstName}
+                </button>
+              </div>
+            </div>
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-            Guardar deuda
-          </Button>
+          <SheetFooter>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              Guardar deuda
+            </Button>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

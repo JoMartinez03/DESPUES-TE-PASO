@@ -13,6 +13,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -76,90 +77,91 @@ export function CreateGatheringSheet({
           Nueva juntada
         </SheetTrigger>
       )}
-      <SheetContent
-        side="bottom"
-        className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>Nueva juntada</SheetTitle>
           <SheetDescription>
             Elegí un nombre y las personas que participan.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-5 p-5 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="gathering-name">Nombre</Label>
-            <Input
-              id="gathering-name"
-              placeholder="ej: Juntada viernes"
-              maxLength={100}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="space-y-5 px-5 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="gathering-name">Nombre</Label>
+              <Input
+                id="gathering-name"
+                placeholder="ej: Juntada viernes"
+                maxLength={100}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <Label>Participantes</Label>
-            <p className="text-xs text-muted-foreground">
-              Solo podés invitar a tus amigos. Tu cuenta se suma automáticamente.
-            </p>
-            {friends.length === 0 ? (
-              <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                Todavía no tenés amigos para invitar. Agregalos desde Personas.
+            <div className="space-y-1.5">
+              <Label>Participantes</Label>
+              <p className="text-xs text-muted-foreground">
+                Solo podés invitar a tus amigos. Tu cuenta se suma automáticamente.
               </p>
-            ) : (
-              <ul className="flex flex-col gap-1">
-                {friends.map((friend) => {
-                  const isChecked = selected.has(friend.id)
-                  return (
-                    <li key={friend.id}>
-                      <label
-                        className={cn(
-                          "flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors",
-                          isChecked
-                            ? "border-primary bg-primary/5"
-                            : "border-input hover:bg-muted",
-                        )}
-                      >
-                        <UserAvatar
-                          name={friend.name}
-                          avatar={friend.avatar}
-                          size="sm"
-                        />
-                        <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                          {friend.name}
-                        </span>
-                        <Checkbox
-                          checked={isChecked}
-                          onCheckedChange={(checked) => {
-                            if (checked) selected.add(friend.id)
-                            else selected.delete(friend.id)
-                            setSelected(new Set(selected))
-                          }}
-                          aria-label={`Incluir a ${friend.name}`}
-                        />
-                      </label>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
+              {friends.length === 0 ? (
+                <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  Todavía no tenés amigos para invitar. Agregalos desde Personas.
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-1">
+                  {friends.map((friend) => {
+                    const isChecked = selected.has(friend.id)
+                    return (
+                      <li key={friend.id}>
+                        <label
+                          className={cn(
+                            "flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors",
+                            isChecked
+                              ? "border-primary bg-primary/5"
+                              : "border-input hover:bg-muted",
+                          )}
+                        >
+                          <UserAvatar
+                            name={friend.name}
+                            avatar={friend.avatar}
+                            size="sm"
+                          />
+                          <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                            {friend.name}
+                          </span>
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              if (checked) selected.add(friend.id)
+                              else selected.delete(friend.id)
+                              setSelected(new Set(selected))
+                            }}
+                            aria-label={`Incluir a ${friend.name}`}
+                          />
+                        </label>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isPending || selected.size === 0 || name.trim().length === 0}
-          >
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Users className="size-4" />
-            )}
-            Crear juntada
-          </Button>
+          <SheetFooter>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isPending || selected.size === 0 || name.trim().length === 0}
+            >
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Users className="size-4" />
+              )}
+              Crear juntada
+            </Button>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

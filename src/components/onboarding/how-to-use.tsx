@@ -14,6 +14,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -174,18 +175,15 @@ export function HowToUse() {
         Cómo usar
         <span className="hidden sm:inline"> DespuésTePaso</span>
       </SheetTrigger>
-      <SheetContent
-        side="bottom"
-        className="gap-0 rounded-t-3xl p-0 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="gap-1 p-5 pr-12 pb-1">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>{current.title}</SheetTitle>
           <SheetDescription>{current.description}</SheetDescription>
         </SheetHeader>
         <div className="flex min-h-44 items-center justify-center px-5">
           {current.visual}
         </div>
-        <div className="mt-auto border-t p-4">
+        <SheetFooter className="gap-4 border-t">
           <div
             className="flex items-center justify-center gap-2"
             aria-hidden="true"
@@ -203,9 +201,7 @@ export function HowToUse() {
           <p className="sr-only">
             Paso {step + 1} de {steps.length}
           </p>
-          <div
-            className={cn("mt-4 flex gap-2", isFirst && "justify-end")}
-          >
+          <div className={cn("flex gap-2", isFirst && "justify-end")}>
             {isFirst ? null : (
               <Button
                 variant="outline"
@@ -231,7 +227,7 @@ export function HowToUse() {
               </Button>
             )}
           </div>
-        </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

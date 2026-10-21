@@ -9,6 +9,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
@@ -142,20 +143,23 @@ export function ExpenseItem({
       </CardContent>
 
       <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <SheetContent
-          side="bottom"
-          className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
-        >
-          <SheetHeader className="p-5 pb-2">
+        <SheetContent side="bottom">
+          <SheetHeader>
             <SheetTitle>¿Eliminar este gasto?</SheetTitle>
             <SheetDescription>
               Las deudas generadas por este gasto también se eliminarán.
             </SheetDescription>
           </SheetHeader>
-          <div className="flex flex-col gap-2 p-5 pt-2">
+          <SheetFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
             <Button
               variant="destructive"
-              className="w-full"
               onClick={handleDelete}
               disabled={isPending}
             >
@@ -166,15 +170,7 @@ export function ExpenseItem({
               )}
               Eliminar gasto
             </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setConfirmOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-          </div>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </Card>

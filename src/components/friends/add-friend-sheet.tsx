@@ -118,12 +118,12 @@ export function AddFriendSheet() {
         <UserPlus className="size-4" />
         Agregar amigo
       </SheetTrigger>
-      <SheetContent side="bottom" className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md">
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>Agregar amigo</SheetTitle>
           <SheetDescription>Buscá a tus amigos por nombre o username.</SheetDescription>
         </SheetHeader>
-        <div className="space-y-3 p-5 pt-2">
+        <div className="space-y-3 px-5 pt-2 pb-5">
           <div className="space-y-1.5">
             <Label htmlFor="friend-search">Buscar</Label>
             <div className="relative">

@@ -10,6 +10,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -86,50 +87,51 @@ export function RegisterPaymentSheet({
           Realizar pago
         </SheetTrigger>
       ) : null}
-      <SheetContent
-        side="bottom"
-        className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>Realizar pago</SheetTitle>
           <SheetDescription>
             {firstName} va a tener que confirmarlo.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 p-5 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="payment-amount">Monto</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
-                $
-              </span>
-              <Input
-                id="payment-amount"
-                inputMode="decimal"
-                placeholder="0"
-                className="pl-7 tabular-nums"
-                value={amount}
-                onChange={(event) =>
-                  setAmount(sanitizeMoneyInput(event.target.value))
-                }
-                autoFocus
-              />
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="space-y-4 px-5 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="payment-amount">Monto</Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="payment-amount"
+                  inputMode="decimal"
+                  placeholder="0"
+                  className="pl-7 tabular-nums"
+                  value={amount}
+                  onChange={(event) =>
+                    setAmount(sanitizeMoneyInput(event.target.value))
+                  }
+                  autoFocus
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Máximo que podés pagar hoy: {maxPayableText}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Máximo que podés pagar hoy: {maxPayableText}
-            </p>
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <CircleDollarSign className="size-4" />
-            )}
-            Realizar pago
-          </Button>
+          <SheetFooter>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <CircleDollarSign className="size-4" />
+              )}
+              Realizar pago
+            </Button>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

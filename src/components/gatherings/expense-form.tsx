@@ -14,6 +14,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -219,11 +220,8 @@ export function ExpenseForm({
       }}
     >
       {trigger ? <SheetTrigger render={trigger} /> : null}
-      <SheetContent
-        side="bottom"
-        className="gap-0 rounded-t-2xl p-0 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="p-5 pb-2">
+      <SheetContent side="bottom">
+        <SheetHeader>
           <SheetTitle>{editing ? "Editar gasto" : "Agregar gasto"}</SheetTitle>
           <SheetDescription>
             {editing
@@ -231,209 +229,213 @@ export function ExpenseForm({
               : `Nuevo gasto en ${gathering.name}.`}
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 p-5 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="expense-title">Concepto</Label>
-            <Input
-              id="expense-title"
-              placeholder="ej: hamburguesas"
-              maxLength={120}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="expense-amount">Monto</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
-                $
-              </span>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="space-y-4 px-5 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="expense-title">Concepto</Label>
               <Input
-                id="expense-amount"
-                inputMode="decimal"
-                placeholder="0"
-                className="pl-7 tabular-nums"
-                value={amount}
-                onChange={(event) =>
-                  setAmount(sanitizeMoneyInput(event.target.value))
-                }
+                id="expense-title"
+                placeholder="ej: hamburguesas"
+                maxLength={120}
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
               />
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <Label>¿Quién pagó?</Label>
-            <div className="flex flex-wrap gap-2">
-              {participants.map((participant) => {
-                const active = payerId === participant.id
-                return (
-                  <button
-                    key={participant.id}
-                    type="button"
-                    onClick={() => setPayerId(participant.id)}
-                    className={cn(
-                      "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                      active
-                        ? "border-primary bg-primary/5 text-foreground"
-                        : "border-input text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    {firstName(participant.name)}
-                  </button>
-                )
-              })}
+            <div className="space-y-1.5">
+              <Label htmlFor="expense-amount">Monto</Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="expense-amount"
+                  inputMode="decimal"
+                  placeholder="0"
+                  className="pl-7 tabular-nums"
+                  value={amount}
+                  onChange={(event) =>
+                    setAmount(sanitizeMoneyInput(event.target.value))
+                  }
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <Label>¿Cómo se divide?</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => switchSplitType("EQUAL")}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                  splitType === "EQUAL"
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-input text-muted-foreground hover:bg-muted",
-                )}
-              >
-                En partes iguales
-              </button>
-              <button
-                type="button"
-                onClick={() => switchSplitType("CUSTOM")}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                  splitType === "CUSTOM"
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-input text-muted-foreground hover:bg-muted",
-                )}
-              >
-                Montos distintos
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Participantes del gasto</Label>
-            <ul className="flex flex-col gap-1">
-              {participants.map((participant) => {
-                const isChecked = participantIds.has(participant.id)
-                return (
-                  <li key={participant.id}>
-                    <label
+            <div className="space-y-1.5">
+              <Label>¿Quién pagó?</Label>
+              <div className="flex flex-wrap gap-2">
+                {participants.map((participant) => {
+                  const active = payerId === participant.id
+                  return (
+                    <button
+                      key={participant.id}
+                      type="button"
+                      onClick={() => setPayerId(participant.id)}
                       className={cn(
-                        "flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors",
-                        isChecked
-                          ? "border-primary bg-primary/5"
-                          : "border-input hover:bg-muted",
+                        "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                        active
+                          ? "border-primary bg-primary/5 text-foreground"
+                          : "border-input text-muted-foreground hover:bg-muted",
                       )}
                     >
-                      <UserAvatar
-                        name={participant.name}
-                        avatar={participant.avatar}
-                        size="sm"
-                      />
-                      <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                        {participant.name}
-                        {participant.id === currentUserId ? " (vos)" : ""}
+                      {firstName(participant.name)}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>¿Cómo se divide?</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => switchSplitType("EQUAL")}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    splitType === "EQUAL"
+                      ? "border-primary bg-primary/5 text-foreground"
+                      : "border-input text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  En partes iguales
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchSplitType("CUSTOM")}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    splitType === "CUSTOM"
+                      ? "border-primary bg-primary/5 text-foreground"
+                      : "border-input text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  Montos distintos
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Participantes del gasto</Label>
+              <ul className="flex flex-col gap-1">
+                {participants.map((participant) => {
+                  const isChecked = participantIds.has(participant.id)
+                  return (
+                    <li key={participant.id}>
+                      <label
+                        className={cn(
+                          "flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors",
+                          isChecked
+                            ? "border-primary bg-primary/5"
+                            : "border-input hover:bg-muted",
+                        )}
+                      >
+                        <UserAvatar
+                          name={participant.name}
+                          avatar={participant.avatar}
+                          size="sm"
+                        />
+                        <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                          {participant.name}
+                          {participant.id === currentUserId ? " (vos)" : ""}
+                        </span>
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={(checked) => {
+                            toggleParticipant(participant.id)
+                            if (splitType === "CUSTOM" && !checked) {
+                              setShares((current) => {
+                                const next = { ...current }
+                                delete next[participant.id]
+                                return next
+                              })
+                            }
+                          }}
+                          aria-label={`Incluir a ${participant.name} en el gasto`}
+                        />
+                      </label>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+
+            {splitType === "CUSTOM" ? (
+              <div className="space-y-3">
+                <Label>Partes</Label>
+                <ul className="flex flex-col gap-2">
+                  {selectedMembers.map((participant) => (
+                    <li
+                      key={participant.id}
+                      className="flex items-center gap-3 rounded-xl border border-input p-2 pl-3"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                        {firstName(participant.name)}
                       </span>
-                      <Checkbox
-                        checked={isChecked}
-                        onCheckedChange={(checked) => {
-                          toggleParticipant(participant.id)
-                          if (splitType === "CUSTOM" && !checked) {
-                            setShares((current) => {
-                              const next = { ...current }
-                              delete next[participant.id]
-                              return next
-                            })
+                      <div className="relative">
+                        <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-xs text-muted-foreground">
+                          $
+                        </span>
+                        <Input
+                          inputMode="decimal"
+                          placeholder="0"
+                          className="h-8 w-28 pl-6 text-right tabular-nums"
+                          value={shares[participant.id] ?? ""}
+                          onChange={(event) =>
+                            setShares((current) => ({
+                              ...current,
+                              [participant.id]: sanitizeMoneyInput(
+                                event.target.value,
+                              ),
+                            }))
                           }
-                        }}
-                        aria-label={`Incluir a ${participant.name} en el gasto`}
-                      />
-                    </label>
-                  </li>
-                )
-              })}
-            </ul>
+                          aria-label={`Parte de ${participant.name}`}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <p
+                  className={cn(
+                    "text-xs",
+                    customResolved
+                      ? "text-emerald-600"
+                      : remainingCents > 0
+                        ? "text-muted-foreground"
+                        : "text-rose-600",
+                  )}
+                >
+                  {customResolved
+                    ? "Las partes suman el total exacto."
+                    : remainingCents > 0
+                      ? `Faltan ${formatMoney(remainingCents / 100)} por repartir.`
+                      : `Sobran ${formatMoney(-remainingCents / 100)}.`}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {selectedMembers.length === 0
+                  ? "Elegí al menos un participante."
+                  : `Cada uno aporta ${formatMoney(Math.floor(amountCents / selectedMembers.length) / 100)}.`}
+              </p>
+            )}
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
 
-          {splitType === "CUSTOM" ? (
-            <div className="space-y-3">
-              <Label>Partes</Label>
-              <ul className="flex flex-col gap-2">
-                {selectedMembers.map((participant) => (
-                  <li
-                    key={participant.id}
-                    className="flex items-center gap-3 rounded-xl border border-input p-2 pl-3"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-                      {firstName(participant.name)}
-                    </span>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-xs text-muted-foreground">
-                        $
-                      </span>
-                      <Input
-                        inputMode="decimal"
-                        placeholder="0"
-                        className="h-8 w-28 pl-6 text-right tabular-nums"
-                        value={shares[participant.id] ?? ""}
-                        onChange={(event) =>
-                          setShares((current) => ({
-                            ...current,
-                            [participant.id]: sanitizeMoneyInput(
-                              event.target.value,
-                            ),
-                          }))
-                        }
-                        aria-label={`Parte de ${participant.name}`}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              <p
-                className={cn(
-                  "text-xs",
-                  customResolved
-                    ? "text-emerald-600"
-                    : remainingCents > 0
-                      ? "text-muted-foreground"
-                      : "text-rose-600",
-                )}
-              >
-                {customResolved
-                  ? "Las partes suman el total exacto."
-                  : remainingCents > 0
-                    ? `Faltan ${formatMoney(remainingCents / 100)} por repartir.`
-                    : `Sobran ${formatMoney(-remainingCents / 100)}.`}
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              {selectedMembers.length === 0
-                ? "Elegí al menos un participante."
-                : `Cada uno aporta ${formatMoney(Math.floor(amountCents / selectedMembers.length) / 100)}.`}
-            </p>
-          )}
-
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : editing ? (
-              <Save className="size-4" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-            {editing ? "Guardar cambios" : "Guardar gasto"}
-          </Button>
+          <SheetFooter>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : editing ? (
+                <Save className="size-4" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              {editing ? "Guardar cambios" : "Guardar gasto"}
+            </Button>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

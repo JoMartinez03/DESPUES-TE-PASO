@@ -70,11 +70,8 @@ export function PhotoEditor({
         if (!next && !busy) onCancel()
       }}
     >
-      <SheetContent
-        side="bottom"
-        className="gap-4 rounded-t-2xl p-5 sm:mx-auto sm:max-w-md"
-      >
-        <SheetHeader className="p-0">
+      <SheetContent side="bottom" className="gap-4 p-5">
+        <SheetHeader className="px-0 pt-0 pb-0 pr-6">
           <SheetTitle>Acomodá tu foto</SheetTitle>
           <SheetDescription>
             {mediaFailed
@@ -151,7 +148,7 @@ export function PhotoEditor({
           </div>
         )}
 
-        <SheetFooter className="flex-row gap-2 p-0">
+        <SheetFooter className="flex-row gap-2 px-0 pt-0 pb-5">
           <Button
             type="button"
             variant="ghost"
