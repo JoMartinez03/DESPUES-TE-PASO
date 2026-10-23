@@ -1,15 +1,17 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { RegisterPaymentSheet } from "@/components/transactions/register-payment-sheet"
 
-const { registerPayment } = vi.hoisted(() => ({
+const { registerPayment, hapticSuccess } = vi.hoisted(() => ({
   registerPayment: vi.fn(),
+  hapticSuccess: vi.fn(),
 }))
 
 vi.mock("@/actions/transactions", () => ({ registerPayment }))
 vi.mock("@/components/ui/toast", () => ({ toast: vi.fn() }))
+vi.mock("@/lib/haptics", () => ({ hapticSuccess }))
 
 afterEach(() => {
   cleanup()
@@ -151,5 +153,45 @@ describe("RegisterPaymentSheet · montos con centavos", () => {
     expect(
       await screen.findByText("Supera el máximo. Podés pagar hasta $6.600,83."),
     ).toBeTruthy()
+  })
+
+  it("vibra recién cuando el server confirma que el pago se registró", async () => {
+    let resolvePayment!: (value: { ok: boolean; message: string }) => void
+    registerPayment.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePayment = resolve
+      }),
+    )
+    const user = userEvent.setup()
+    renderSheet()
+
+    await user.type(amountInput(), "500")
+    await user.click(submitButton())
+
+    // La action todavía está en vuelo: no hay éxito real, no hay vibración.
+    await waitFor(() => expect(registerPayment).toHaveBeenCalled())
+    expect(hapticSuccess).not.toHaveBeenCalled()
+
+    await act(async () => {
+      resolvePayment({ ok: true, message: "Pago registrado" })
+    })
+
+    await waitFor(() => expect(hapticSuccess).toHaveBeenCalledTimes(1))
+  })
+
+  it("no vibra si el server rechaza el pago", async () => {
+    registerPayment.mockResolvedValue({
+      ok: false,
+      code: "over_limit",
+      message: "Supera el máximo.",
+    })
+    const user = userEvent.setup()
+    renderSheet()
+
+    await user.type(amountInput(), "6600,84")
+    await user.click(submitButton())
+
+    expect(await screen.findByText("Supera el máximo.")).toBeTruthy()
+    expect(hapticSuccess).not.toHaveBeenCalled()
   })
 })

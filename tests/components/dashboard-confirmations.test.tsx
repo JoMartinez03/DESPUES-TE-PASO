@@ -14,6 +14,11 @@ const { confirmPayment, rejectPayment } = vi.hoisted(() => ({
 
 const { celebrateSettled } = vi.hoisted(() => ({ celebrateSettled: vi.fn() }))
 
+const { hapticSuccess, hapticCelebrate } = vi.hoisted(() => ({
+  hapticSuccess: vi.fn(),
+  hapticCelebrate: vi.fn(),
+}))
+
 const routerRefresh = vi.hoisted(() => vi.fn())
 
 vi.mock("@/actions/transactions", () => ({ confirmPayment, rejectPayment }))
@@ -21,6 +26,7 @@ vi.mock("@/components/ui/toast", () => ({
   toast: vi.fn(),
   celebrateSettled,
 }))
+vi.mock("@/lib/haptics", () => ({ hapticSuccess, hapticCelebrate }))
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: routerRefresh }),
 }))
@@ -232,6 +238,55 @@ describe("Confirmaciones", () => {
     await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
 
     expect(celebrateSettled).not.toHaveBeenCalled()
+  })
+
+  it("vibra una sola vez al confirmar un pago exitoso", async () => {
+    confirmPayment.mockResolvedValue({ ok: true, message: "Pago confirmado" })
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+
+    await waitFor(() => expect(hapticSuccess).toHaveBeenCalledTimes(1))
+    expect(hapticCelebrate).not.toHaveBeenCalled()
+  })
+
+  it("si además quedan a mano, usa sólo el pulso de celebración", async () => {
+    confirmPayment.mockResolvedValue({
+      ok: true,
+      message: "Pago confirmado",
+      settled: { peerId: "usr-juanma", peerName: "Juanma" },
+    })
+    render(<Confirmations items={[item("txn-1", "Juanma", "5000")]} />)
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+
+    await waitFor(() => expect(hapticCelebrate).toHaveBeenCalledTimes(1))
+    expect(hapticSuccess).not.toHaveBeenCalled()
+  })
+
+  it("no vibra al rechazar ni cuando la acción falla", async () => {
+    rejectPayment.mockResolvedValue({ ok: true, message: "Pago rechazado" })
+    const { unmount } = render(
+      <Confirmations items={[item("txn-1", "Juanma", "5000")]} />,
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "Rechazar" }))
+    await waitFor(() => expect(rejectPayment).toHaveBeenCalled())
+    expect(hapticSuccess).not.toHaveBeenCalled()
+    expect(hapticCelebrate).not.toHaveBeenCalled()
+    unmount()
+
+    confirmPayment.mockResolvedValue({
+      ok: false,
+      code: "conflict",
+      message: "El pago ya no está pendiente",
+    })
+    render(<Confirmations items={[item("txn-2", "Juanma", "5000")]} />)
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalled())
+
+    expect(hapticSuccess).not.toHaveBeenCalled()
+    expect(hapticCelebrate).not.toHaveBeenCalled()
   })
 
   it("NO celebra al rechazar (aunque el server mandara settled)", async () => {

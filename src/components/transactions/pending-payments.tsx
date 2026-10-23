@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "@/components/ui/toast"
 import { formatMoney } from "@/lib/format"
+import { hapticSuccess } from "@/lib/haptics"
 import { cn } from "@/lib/utils"
 import type { PendingPayment } from "@/queries/transactions"
 
@@ -43,7 +44,11 @@ export function PendingPaymentsList({
       // deja la fila visible para que el usuario pueda reintentar.
       if (result.ok) {
         resolve(item.id)
-        celebrateSettledFromResult(result)
+        // Rechazar no vibra. En confirmar, la celebración (si aplica) ya
+        // emite su propio pulso; evitamos duplicarlo en el mismo instante.
+        if (action === "confirm" && !celebrateSettledFromResult(result)) {
+          hapticSuccess()
+        }
       }
     } catch {
       toast({ description: "No pudimos procesar el pago. Intentá de nuevo." })

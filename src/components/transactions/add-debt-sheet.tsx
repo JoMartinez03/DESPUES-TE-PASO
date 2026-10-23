@@ -16,6 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { toast } from "@/components/ui/toast"
+import { hapticSuccess } from "@/lib/haptics"
 import { sanitizeMoneyInput } from "@/lib/money-input"
 import { createDebtSchema } from "@/lib/validations/transactions"
 import { cn } from "@/lib/utils"
@@ -70,6 +71,7 @@ export function AddDebtSheet({
         paidBy: parsed.data.paidBy,
       })
       if (result.ok) {
+        hapticSuccess()
         toast({ title: "Deuda registrada", description: result.message })
         handleOpenChange(false)
         setDescription("")

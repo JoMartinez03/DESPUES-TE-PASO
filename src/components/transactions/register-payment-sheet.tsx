@@ -16,6 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { toast } from "@/components/ui/toast"
+import { hapticSuccess } from "@/lib/haptics"
 import { sanitizeMoneyInput } from "@/lib/money-input"
 import { registerPaymentSchema } from "@/lib/validations/transactions"
 
@@ -67,6 +68,7 @@ export function RegisterPaymentSheet({
         amount: parsed.data.amount,
       })
       if (result.ok) {
+        hapticSuccess()
         toast({ title: "Pago registrado", description: result.message })
         handleOpenChange(false)
         setAmount("")

@@ -14,11 +14,17 @@ const { confirmPayment, rejectPayment } = vi.hoisted(() => ({
 
 const { celebrateSettled } = vi.hoisted(() => ({ celebrateSettled: vi.fn() }))
 
+const { hapticSuccess, hapticCelebrate } = vi.hoisted(() => ({
+  hapticSuccess: vi.fn(),
+  hapticCelebrate: vi.fn(),
+}))
+
 vi.mock("@/actions/transactions", () => ({ confirmPayment, rejectPayment }))
 vi.mock("@/components/ui/toast", () => ({
   toast: vi.fn(),
   celebrateSettled,
 }))
+vi.mock("@/lib/haptics", () => ({ hapticSuccess, hapticCelebrate }))
 
 afterEach(() => {
   cleanup()
@@ -63,6 +69,18 @@ describe("PendingPaymentsList", () => {
     )
     const leaving = container.querySelector('[data-leaving="true"]')
     expect(leaving?.className).toContain("row-exit")
+  })
+
+  it("vibra una sola vez al confirmar un pago exitoso", async () => {
+    confirmPayment.mockResolvedValue({ ok: true, message: "Pago confirmado" })
+    render(
+      <PendingPaymentsList friendName="Juanma" items={[payment("txn-1")]} />,
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }))
+
+    await waitFor(() => expect(hapticSuccess).toHaveBeenCalledTimes(1))
+    expect(hapticCelebrate).not.toHaveBeenCalled()
   })
 
   it("si la action lanza, la fila queda visible y sin marcar", async () => {
@@ -137,6 +155,8 @@ describe("PendingPaymentsList", () => {
     await waitFor(() =>
       expect(celebrateSettled).toHaveBeenCalledWith({ peerName: "Juanma" }),
     )
+    expect(hapticCelebrate).toHaveBeenCalledTimes(1)
+    expect(hapticSuccess).not.toHaveBeenCalled()
   })
 
   it("NO celebra si la acción no dejó el par en 0", async () => {
